@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reconciliation Data Checker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Universal Data Reconciliation Checker</title>
 <style>
   :root{
     --bg:#EEF1EF; --surface:#FFFFFF; --ink:#1B2A2F; --ink-soft:#5B6A67;
@@ -21,94 +21,99 @@
     --thead-bg:#202824; --row-hover:#212B27;
     --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.6);
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;transition:background .15s ease,color .15s ease;}
-  .wrap{max-width:1400px;margin:0 auto;padding:0 24px 56px;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden;}
+  body{background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:clamp(13px,1.4vw,14px);line-height:1.45;-webkit-font-smoothing:antialiased;transition:background .15s ease,color .15s ease;}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 clamp(10px,3vw,24px) 64px;}
 
   header{
-    display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
-    padding:22px 0 16px;margin-bottom:16px;border-bottom:2px solid var(--ink);
+    display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;
+    padding:18px 0 14px;margin-bottom:14px;border-bottom:2px solid var(--ink);
     position:sticky;top:0;z-index:45;background:var(--bg);
   }
   .brand-eyebrow{font-family:'Courier New',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 4px;}
-  h1{font-weight:800;font-size:26px;letter-spacing:-.01em;margin:0;}
-  .subtitle{color:var(--ink-soft);font-size:12.5px;margin-top:4px;font-family:'Courier New',monospace;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  h1{font-weight:800;font-size:clamp(20px,4.5vw,26px);letter-spacing:-.01em;margin:0;}
+  .subtitle{color:var(--ink-soft);font-size:12px;margin-top:4px;font-family:'Courier New',monospace;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
   .subtitle .tag{font-weight:700;}
   .subtitle .tag.ok{color:var(--ok);} .subtitle .tag.info{color:var(--info);} .subtitle .tag.warn{color:var(--warn);}
   .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 
-  button{font-family:Arial,sans-serif;font-weight:700;font-size:12.5px;border-radius:8px;border:1.5px solid var(--ink);padding:8px 14px;cursor:pointer;background:var(--surface);color:var(--ink);transition:transform .1s ease, box-shadow .1s ease;}
+  button{font-family:Arial,sans-serif;font-weight:700;font-size:12.5px;border-radius:8px;border:1.5px solid var(--ink);padding:8px 14px;cursor:pointer;background:var(--surface);color:var(--ink);transition:transform .1s ease, box-shadow .1s ease;touch-action:manipulation;}
   button:hover{box-shadow:var(--shadow);transform:translateY(-1px);}
   button:active{transform:translateY(0);}
   button:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+  button:focus-visible, input:focus-visible, select:focus-visible, .chip:focus-visible, .stat-card:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;}
   button.primary{background:var(--ink);color:var(--bg);}
   button.accent{background:var(--accent);border-color:var(--accent);color:#fff;}
   button.ghost{border-color:var(--hairline);}
   button.danger{border-color:var(--bad);color:var(--bad);}
-  button.small{padding:4px 9px;font-size:11px;border-radius:6px;margin-left:5px;}
+  button.small{padding:5px 10px;font-size:11px;border-radius:6px;margin:2px 0 2px 5px;}
   button.has-badge{position:relative;}
   .btn-badge{position:absolute;top:-7px;right:-7px;background:var(--accent);color:#fff;font-family:'Courier New',monospace;font-size:10px;font-weight:700;border-radius:20px;min-width:16px;height:16px;padding:0 4px;display:flex;align-items:center;justify-content:center;line-height:1;border:1.5px solid var(--bg);}
 
-  .tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
-  .tab-btn{border:1.5px solid var(--hairline);background:var(--surface);color:var(--ink-soft);border-radius:8px 8px 0 0;padding:9px 16px;font-weight:700;font-size:12.5px;cursor:pointer;border-bottom:none;}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .tab-btn{border:1.5px solid var(--hairline);background:var(--surface);color:var(--ink-soft);border-radius:8px 8px 0 0;padding:9px 14px;font-weight:700;font-size:12.5px;cursor:pointer;border-bottom:none;white-space:nowrap;flex-shrink:0;}
   .tab-btn.active{color:var(--ink);border-color:var(--ink);position:relative;top:1px;}
   .tab-btn .tab-count{font-family:'Courier New',monospace;font-size:10.5px;color:var(--ink-soft);margin-left:5px;}
   .tab-panel{display:none;} .tab-panel.active{display:block;}
 
-  .banner{display:flex;align-items:flex-start;gap:10px;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;font-weight:500;border:1.5px solid;}
+  .banner{display:flex;align-items:flex-start;gap:10px;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;font-weight:500;border:1.5px solid;}
   .banner.info{background:var(--info-soft);border-color:var(--info);color:var(--info);}
   .banner.warn{background:var(--warn-soft);border-color:var(--warn);color:var(--warn);}
   .banner b{font-weight:800;}
 
-  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:16px;}
-  .stat-card{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:14px 16px;cursor:pointer;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px;}
+  .stat-card{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:13px 15px;cursor:pointer;}
   .stat-card:hover{box-shadow:var(--shadow);}
   .stat-card.filter-active{border-color:var(--ink);border-width:2px;}
-  .stat-card .num{font-family:'Courier New',monospace;font-size:26px;font-weight:800;line-height:1;}
-  .stat-card .lbl{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.07em;margin-top:6px;font-weight:700;}
+  .stat-card .num{font-family:'Courier New',monospace;font-size:clamp(20px,4vw,26px);font-weight:800;line-height:1;}
+  .stat-card .lbl{font-size:10.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;margin-top:6px;font-weight:700;}
   .stat-card.total{border-color:var(--ink);}
   .stat-card.aligned .num{color:var(--ok);}
   .stat-card.misaligned .num{color:var(--bad);}
   .stat-card.notfound .num{color:var(--warn);}
   .stat-card.dupcard .num{color:var(--warn);}
   .stat-card.dupcard{border-color:var(--warn);}
+  .stat-card.confidence .num{color:var(--info);}
 
-  .bars{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;}
+  .bars{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;}
   .bars h3{margin:0 0 12px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);}
   .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;}
   .bar-row .bar-label{width:130px;flex-shrink:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .bar-row .bar-track{flex:1;background:var(--thead-bg);border-radius:6px;height:16px;overflow:hidden;border:1px solid var(--hairline);}
   .bar-row .bar-fill{height:100%;border-radius:6px 0 0 6px;}
-  .bar-row .bar-num{width:90px;text-align:right;font-family:'Courier New',monospace;font-weight:700;}
+  .bar-row .bar-num{width:90px;text-align:right;font-family:'Courier New',monospace;font-weight:700;flex-shrink:0;}
 
   .filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
-  .search-wrap{position:relative;flex:1;min-width:180px;}
-  .search-wrap input[type=search]{width:100%;border:1.5px solid var(--hairline);border-radius:8px;padding:8px 12px;font-family:Arial,sans-serif;font-size:13px;background:var(--surface);color:var(--ink);}
-  select{border:1.5px solid var(--hairline);border-radius:8px;padding:8px 10px;font-family:Arial,sans-serif;font-size:13px;background:var(--surface);color:var(--ink);}
+  .search-wrap{position:relative;flex:1;min-width:160px;}
+  .search-wrap input[type=search]{width:100%;border:1.5px solid var(--hairline);border-radius:8px;padding:9px 12px;font-family:Arial,sans-serif;font-size:13px;background:var(--surface);color:var(--ink);}
+  select{border:1.5px solid var(--hairline);border-radius:8px;padding:8px 10px;font-family:Arial,sans-serif;font-size:13px;background:var(--surface);color:var(--ink);max-width:100%;}
   .chip-row{display:flex;gap:6px;flex-wrap:wrap;}
-  .chip{font-family:'Courier New',monospace;font-size:11px;font-weight:700;padding:6px 11px;border-radius:20px;border:1.5px solid var(--hairline);cursor:pointer;background:var(--surface);color:var(--ink-soft);white-space:nowrap;}
+  .chip{font-family:'Courier New',monospace;font-size:11px;font-weight:700;padding:7px 11px;border-radius:20px;border:1.5px solid var(--hairline);cursor:pointer;background:var(--surface);color:var(--ink-soft);white-space:nowrap;}
   .chip.active{border-color:var(--ink);color:var(--ink);background:var(--accent-soft);}
   .chip.warnchip{border-color:var(--warn);color:var(--warn);}
 
-  .table-wrap{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);overflow:auto;max-height:600px;}
-  table{width:100%;border-collapse:collapse;table-layout:fixed;}
+  .table-wrap{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);overflow:auto;max-height:640px;-webkit-overflow-scrolling:touch;}
+  table{width:100%;border-collapse:collapse;}
   thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;padding:9px 10px;border-bottom:1.5px solid var(--hairline);background:var(--thead-bg);position:sticky;top:0;z-index:5;white-space:nowrap;}
   thead th[data-sort]{cursor:pointer;user-select:none;}
   thead th[data-sort]:hover{color:var(--ink);}
   .sort-arrow{font-size:9px;}
-  th.col-nr{width:52px;} th.col-badge{width:100px;} th.col-status{width:110px;} th.col-fix{width:210px;} th.col-qual{width:66px;} th.col-unit{width:100px;}
-  tbody td{padding:8px 10px;border-bottom:1px solid var(--hairline);vertical-align:top;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;}
+  th.col-nr{width:50px;} th.col-status{width:120px;} th.col-fix{width:230px;} th.col-conf{width:70px;}
+  tbody td{padding:8px 10px;border-bottom:1px solid var(--hairline);vertical-align:top;font-size:12.5px;}
   tbody tr:hover{background:var(--row-hover);}
   tbody tr.is-selected{background:var(--accent-soft);}
   tbody tr.is-dup td:first-child{box-shadow:inset 3px 0 0 var(--warn);}
   .mono{font-family:'Courier New',monospace;}
   .cell-diff{color:var(--bad);}
-  .diff-list{margin-top:3px;font-size:11px;line-height:1.7;}
-  .diff-list .diff-row{display:flex;flex-wrap:wrap;gap:4px;align-items:baseline;}
-  .diff-list .diff-row .field{color:var(--ink-soft);white-space:nowrap;}
-  .diff-list .diff-row .from{text-decoration:line-through;color:var(--bad);}
-  .diff-list .diff-row .to{color:var(--ok);font-weight:700;}
+  .diff-list{margin-top:3px;font-size:11px;line-height:1.8;}
+  .diff-list .diff-row{display:flex;flex-wrap:wrap;gap:5px;align-items:baseline;margin-bottom:2px;}
+  .diff-list .diff-row .field{color:var(--ink-soft);white-space:nowrap;font-weight:700;}
+  .difftxt{font-family:'Courier New',monospace;padding:1px 4px;border-radius:3px;}
+  .difftxt.from{background:var(--bad-soft);}
+  .difftxt.to{background:var(--ok-soft);}
+  .dch-del{background:var(--bad);color:#fff;border-radius:2px;text-decoration:line-through;}
+  .dch-ins{background:var(--ok);color:#fff;border-radius:2px;}
   .diff-list .diff-row .fieldfix{font-family:'Courier New',monospace;font-size:9px;font-weight:800;text-transform:uppercase;padding:1px 6px;border-radius:10px;border:1px solid var(--ok);color:var(--ok);background:transparent;cursor:pointer;margin-left:auto;}
   .diff-list .diff-row .fieldfix:hover{background:var(--ok-soft);}
 
@@ -117,73 +122,75 @@
   .stamp.misaligned{color:var(--bad);background:var(--bad-soft);}
   .stamp.notfound{color:var(--warn);background:var(--warn-soft);}
   .stamp.dup{color:var(--warn);background:var(--warn-soft);}
+  .conf-badge{font-family:'Courier New',monospace;font-size:11px;font-weight:800;}
 
   .fix-cell{text-align:right;white-space:nowrap;}
-  .fix-cell button{margin:2px 0 2px 5px;}
 
   .pager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;}
-  .pager .pg-controls{display:flex;gap:4px;align-items:center;}
-  .pager button{padding:5px 10px;}
-  .pager .pg-jump{display:flex;align-items:center;gap:6px;margin-left:10px;}
+  .pager .pg-controls{display:flex;gap:4px;align-items:center;flex-wrap:wrap;}
+  .pager button{padding:6px 10px;}
+  .pager .pg-jump{display:flex;align-items:center;gap:6px;margin-left:6px;}
   .pager .pg-jump input{width:52px;padding:5px 6px;border:1.5px solid var(--hairline);border-radius:6px;background:var(--surface);color:var(--ink);font-family:'Courier New',monospace;}
 
   th.col-chk, td.col-chk{width:32px;text-align:center;}
 
-  .bulk-bar{display:none;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border-radius:8px;padding:9px 14px;margin-bottom:10px;font-size:12.5px;font-weight:700;flex-wrap:wrap;}
+  .bulk-bar{display:none;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border-radius:8px;padding:9px 14px;margin-bottom:10px;font-size:12.5px;font-weight:700;flex-wrap:wrap;position:sticky;top:0;z-index:6;}
   .bulk-bar.show{display:flex;}
-  .bulk-bar button{background:var(--bg);color:var(--ink);border-color:var(--bg);padding:5px 11px;}
+  .bulk-bar button{background:var(--bg);color:var(--ink);border-color:var(--bg);padding:6px 11px;}
   .bulk-bar .bulk-spacer{flex:1;}
 
-  .empty-state{background:var(--surface);border:1.5px dashed var(--hairline);border-radius:var(--radius);padding:40px 30px;text-align:center;}
+  .empty-state{background:var(--surface);border:1.5px dashed var(--hairline);border-radius:var(--radius);padding:36px 22px;text-align:center;}
   .empty-state h3{margin:0 0 8px;font-size:16px;}
   .empty-state p{color:var(--ink-soft);font-size:13px;max-width:480px;margin:0 auto 16px;}
   .empty-state .es-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 
   .dup-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;font-weight:600;border:1.5px solid var(--warn);background:var(--warn-soft);color:var(--warn);}
-  .dup-banner button{padding:5px 11px;}
-  .dup-banner .dup-actions{display:flex;gap:8px;margin-left:auto;}
+  .dup-banner .dup-actions{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap;}
 
   .storage-line{font-size:11px;}
 
-  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s ease, bottom .25s ease;z-index:80;max-width:80vw;}
-  .toast.show{opacity:1;bottom:28px;}
+  .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s ease, bottom .25s ease;z-index:80;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;bottom:24px;}
   .toast.err{background:var(--bad);color:#fff;}
 
   footer{margin-top:16px;color:var(--ink-soft);font-size:11px;font-family:'Courier New',monospace;text-align:center;}
 
-  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:70;padding:20px;}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:70;padding:14px;}
   .modal-backdrop.show{display:flex;}
-  .modal{background:var(--surface);border-radius:var(--radius);width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:22px 24px;box-shadow:var(--shadow);}
-  .modal.wide{max-width:680px;}
-  .modal h2{font-size:18px;margin:0 0 4px;}
+  .modal{background:var(--surface);border-radius:var(--radius);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:20px 20px;box-shadow:var(--shadow);}
+  .modal.wide{max-width:720px;}
+  .modal h2{font-size:17px;margin:0 0 4px;}
   .modal .modal-sub{color:var(--ink-soft);font-size:12px;margin:0 0 16px;font-family:'Courier New',monospace;}
   .field-row{margin-bottom:12px;}
   .field-row label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin-bottom:4px;}
-  .field-row input, .field-row textarea, .field-row select{width:100%;border:1.5px solid var(--hairline);border-radius:8px;padding:8px 10px;font-family:Arial,sans-serif;font-size:13px;background:var(--surface);color:var(--ink);}
+  .field-row input, .field-row textarea, .field-row select{width:100%;border:1.5px solid var(--hairline);border-radius:8px;padding:9px 10px;font-family:Arial,sans-serif;font-size:13.5px;background:var(--surface);color:var(--ink);}
   .field-row input.field-error{border-color:var(--bad);background:var(--bad-soft);}
-  .field-row textarea{font-family:'Courier New',monospace;font-size:11.5px;min-height:140px;resize:vertical;}
+  .field-row textarea{font-family:'Courier New',monospace;font-size:11.5px;min-height:120px;resize:vertical;}
   .hint-note{color:var(--ink-soft);font-size:11px;margin-top:4px;}
-  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;flex-wrap:wrap;}
 
   .ignore-list{display:flex;flex-direction:column;gap:2px;border:1.5px solid var(--hairline);border-radius:8px;padding:6px;}
-  .ignore-row{display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;font-size:13px;}
+  .ignore-row{display:flex;align-items:center;gap:8px;padding:8px;border-radius:6px;font-size:13px;flex-wrap:wrap;}
   .ignore-row:hover{background:var(--row-hover);}
-  .ignore-row .ir-label{flex:1;}
-  .ignore-row .ir-sub{color:var(--ink-soft);font-size:11px;font-family:'Courier New',monospace;}
+  .ignore-row .ir-label{flex:1;min-width:120px;}
+  .ignore-row .ir-label input{width:100%;border:1.5px solid transparent;background:transparent;padding:3px 5px;font-size:13px;color:var(--ink);border-radius:5px;}
+  .ignore-row .ir-label input:hover, .ignore-row .ir-label input:focus{border-color:var(--hairline);background:var(--surface);}
+  .ignore-row .ir-sub{color:var(--ink-soft);font-size:10.5px;font-family:'Courier New',monospace;white-space:nowrap;}
+  .keypill{font-family:'Courier New',monospace;font-size:9.5px;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:10px;border:1px solid var(--accent);color:var(--accent);}
 
-  .undo-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;}
+  .undo-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;}
   .undo-item{border:1.5px solid var(--hairline);border-radius:8px;padding:9px 11px;font-size:12px;}
   .undo-item.latest{border-color:var(--accent);background:var(--accent-soft);}
   .undo-item .ui-meta{color:var(--ink-soft);font-family:'Courier New',monospace;font-size:10.5px;margin-top:2px;}
   .undo-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:14px 0 8px;}
   .undo-section-title:first-child{margin-top:0;}
 
-  .instr-body{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:22px 26px;}
+  .instr-body{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:20px clamp(14px,4vw,26px);}
   .instr-body h2{font-size:15px;color:var(--accent);margin:20px 0 8px;}
   .instr-body h2:first-child{margin-top:0;}
   .instr-body p, .instr-body li{font-size:13px;line-height:1.6;color:var(--ink);}
   .instr-body code{background:var(--thead-bg);border:1px solid var(--hairline);border-radius:4px;padding:1px 5px;font-family:'Courier New',monospace;font-size:12px;}
-  .instr-body table{width:100%;border-collapse:collapse;margin:8px 0 16px;}
+  .instr-body table{width:100%;border-collapse:collapse;margin:8px 0 16px;display:block;overflow-x:auto;}
   .instr-body table th, .instr-body table td{border:1px solid var(--hairline);padding:6px 9px;font-size:12px;text-align:left;}
   .instr-body table th{background:var(--thead-bg);}
   .kbd{display:inline-block;font-family:'Courier New',monospace;font-size:11px;border:1px solid var(--hairline);border-bottom-width:2px;border-radius:4px;padding:1px 6px;background:var(--thead-bg);}
@@ -192,16 +199,56 @@
   .live-check.ok{border-color:var(--ok);background:var(--ok-soft);}
   .live-check.bad{border-color:var(--bad);background:var(--bad-soft);}
   .live-check.warn{border-color:var(--warn);background:var(--warn-soft);}
-  .live-check-head{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  .live-check-head{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 
   #autosaveLine{color:var(--ink-soft);}
   #autosaveLine .as-ok{color:var(--ok);font-weight:700;}
   #autosaveLine .as-bad{color:var(--bad);font-weight:700;}
 
-  #csvMappingPreview table{border-collapse:collapse;}
-  #csvMappingPreview td{border-bottom:1px solid var(--hairline);padding:5px 6px;}
+  #csvMappingPreview table{border-collapse:collapse;width:100%;}
+  #csvMappingPreview td{border-bottom:1px solid var(--hairline);padding:6px;font-size:12px;}
+  #csvMappingPreview select{font-size:11.5px;padding:6px 7px;}
 
-  @media (max-width:640px){ header{align-items:flex-start;flex-direction:column;} .actions{width:100%;} }
+  .cmp-table{width:100%;border-collapse:collapse;margin-top:10px;}
+  .cmp-table th{background:var(--thead-bg);text-align:left;font-size:10.5px;text-transform:uppercase;padding:7px 8px;border-bottom:1.5px solid var(--hairline);}
+  .cmp-table td{padding:8px;border-bottom:1px solid var(--hairline);font-size:12.5px;vertical-align:top;}
+  .cmp-table tr.cmp-mismatch td{background:var(--bad-soft);}
+  .cmp-table tr.cmp-key td{background:var(--accent-soft);}
+
+  .schema-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+
+  /* ============ RESPONSIVE / MOBILE AUTO-FIT ============ */
+  @media (max-width:900px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:640px){
+    header{align-items:flex-start;flex-direction:column;gap:10px;}
+    .actions{width:100%;}
+    .actions button{flex:1 1 auto;font-size:11.5px;padding:9px 8px;}
+    .filter-bar{flex-direction:column;align-items:stretch;}
+    .filter-bar select, .filter-bar .search-wrap{width:100%;}
+    .bar-row .bar-label{width:88px;font-size:11px;}
+    .bar-row .bar-num{width:64px;font-size:11px;}
+    .modal{padding:16px 14px;}
+    .modal-actions{flex-direction:column-reverse;}
+    .modal-actions button{width:100%;}
+  }
+  /* Card layout for data tables on narrow phones */
+  @media (max-width:620px){
+    .table-wrap.responsive-table{border:none;background:transparent;max-height:none;overflow:visible;}
+    .table-wrap.responsive-table table{border-collapse:separate;border-spacing:0 10px;}
+    .table-wrap.responsive-table thead{position:absolute;left:-9999px;top:-9999px;}
+    .table-wrap.responsive-table tbody tr{display:block;background:var(--surface);border:1.5px solid var(--hairline);border-radius:10px;padding:8px 4px;box-shadow:var(--shadow);}
+    .table-wrap.responsive-table tbody tr.is-dup{box-shadow:inset 0 0 0 2px var(--warn), var(--shadow);}
+    .table-wrap.responsive-table tbody td{display:flex;gap:8px;align-items:flex-start;border-bottom:1px dashed var(--hairline);padding:7px 10px;font-size:12.5px;}
+    .table-wrap.responsive-table tbody td:last-child{border-bottom:none;}
+    .table-wrap.responsive-table tbody td:before{content:attr(data-label);flex:0 0 40%;max-width:40%;font-weight:800;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);}
+    .table-wrap.responsive-table tbody td[data-label=""]:before{display:none;}
+    .table-wrap.responsive-table tbody td.col-chk{justify-content:flex-start;}
+    .table-wrap.responsive-table tbody td.col-chk:before{content:"Select";}
+    .table-wrap.responsive-table .fix-cell{text-align:left;}
+    .table-wrap.responsive-table .fix-cell button{margin:3px 5px 3px 0;}
+  }
   @media print{
     header .actions, .tabs, .filter-bar, .pager, .col-chk, .fix-cell, .bulk-bar { display:none !important; }
     body{background:#fff;color:#000;}
@@ -215,33 +262,33 @@
 
   <header>
     <div>
-      <p class="brand-eyebrow">Personnel &amp; Account Records &middot; Reconciliation</p>
-      <h1>Reconciliation Data Checker</h1>
+      <p class="brand-eyebrow">Any Master File &middot; Any Working File</p>
+      <h1>Universal Data Reconciliation Checker</h1>
       <p class="subtitle" id="subtitle">Loading&hellip;</p>
       <p class="subtitle storage-line" id="autosaveLine">&nbsp;</p>
     </div>
     <div class="actions">
       <button class="ghost" id="themeToggleBtn" title="Toggle light / dark theme">&#127769; Dark</button>
       <button class="ghost" id="printBtn">Print</button>
-      <button class="ghost" id="downloadErrorsBtn" title="Download every Misaligned / Not Found row as CSV, for manual review or fixing outside this tool">Download Errors (CSV)</button>
-      <button class="ghost" id="downloadRosterBtn">Download Roster (CSV)</button>
+      <button class="ghost" id="downloadErrorsBtn" title="Download every Misaligned / Not Found row as CSV">Errors CSV</button>
+      <button class="ghost" id="downloadRosterBtn">Working CSV</button>
       <button class="ghost" id="importCsvBtn">Import CSV</button>
-      <button class="ghost" id="backupBtn" title="Download a full JSON backup of every record, the audit log, and settings">Export Backup</button>
+      <button class="ghost" id="backupBtn" title="Download a full JSON backup: records, schema, audit log, settings">Export Backup</button>
       <button class="ghost" id="restoreBtn" title="Restore all data from a previously exported JSON backup (replaces current data)">Restore Backup</button>
       <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none;">
-      <button class="ghost" id="loadSampleBtn" title="Add 11,000 generated sample records on top of your current data, purely to demo every feature">Load Sample Data</button>
-      <button class="ghost" id="settingsBtn">&#9881; Settings</button>
+      <button class="ghost" id="loadSampleBtn" title="Add 6,000 generated sample records, purely to demo every feature">Sample Data</button>
+      <button class="ghost" id="settingsBtn">&#9881; Schema &amp; Settings</button>
       <button class="ghost has-badge" id="undoBtn" disabled title="Undo (Ctrl/Cmd+Z)">&#8630; Undo</button>
       <button class="ghost has-badge" id="redoBtn" disabled title="Redo (Ctrl/Cmd+Shift+Z)">&#8631; Redo</button>
-      <button class="ghost danger" id="newSessionBtn" title="Permanently delete every Roster and MasterList record, the audit log, and undo history from this browser">Clear All Data</button>
+      <button class="ghost danger" id="newSessionBtn" title="Permanently delete everything from this browser">Clear All</button>
       <button class="accent" id="autoCorrectAllBtn">Auto-Correct All</button>
     </div>
   </header>
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
-    <button class="tab-btn" data-tab="roster">Roster <span class="tab-count" id="tabCountRoster"></span></button>
-    <button class="tab-btn" data-tab="master">MasterList <span class="tab-count" id="tabCountMaster"></span></button>
+    <button class="tab-btn" data-tab="roster">Working Data <span class="tab-count" id="tabCountRoster"></span></button>
+    <button class="tab-btn" data-tab="master">Master File <span class="tab-count" id="tabCountMaster"></span></button>
     <button class="tab-btn" data-tab="audit">Audit Log <span class="tab-count" id="tabCountAudit"></span></button>
     <button class="tab-btn" data-tab="instructions">Instructions</button>
   </div>
@@ -249,10 +296,10 @@
   <!-- ================= DASHBOARD ================= -->
   <div class="tab-panel active" id="tab-dashboard">
     <div class="banner info">
-      <span>&#10003;&nbsp;<b>Spacing-safe comparison is on.</b> Extra or doubled spaces in either sheet never by themselves cause a Misaligned flag. When a field IS corrected, it is written back as MasterList's exact literal cell &mdash; same spacing, casing and punctuation, for every field &mdash; so Roster ends up byte-for-byte identical to the reference record, even where MasterList's own cell happens to carry a stray space.</span>
+      <span>&#10003;&nbsp;<b>Spacing-safe comparison is on.</b> Extra or doubled spaces never by themselves cause a Misaligned flag. When a field IS corrected, it's written back exactly as the Master File has it &mdash; same spacing, casing and punctuation &mdash; for whichever fields your schema defines.</span>
     </div>
     <div class="banner warn">
-      <span>&#128190;&nbsp;<b>Your work autosaves to this browser's local database</b> (nothing leaves your machine). Records are stored in IndexedDB with no practical row limit, so large rosters won't hit a storage ceiling the way plain browser storage would. Use <b>Export Backup</b> for a portable copy, or <b>Clear All Data</b> in the header to permanently wipe everything and start from empty.</span>
+      <span>&#128190;&nbsp;<b>Your work autosaves to this browser's local database</b> (nothing leaves your machine). Use <b>Export Backup</b> for a portable copy, or <b>Clear All</b> in the header to wipe everything and start from empty.</span>
     </div>
     <div class="dup-banner" id="dupBanner" style="display:none;">
       <span id="dupBannerText"></span>
@@ -264,7 +311,7 @@
     <section class="stats" id="emptyStateWrap" style="display:none;">
       <div class="empty-state" style="grid-column:1/-1;">
         <h3>No data yet</h3>
-        <p>Import your real MasterList and Roster exports, add records by hand, restore a JSON backup, or load the generated sample dataset to see every feature in action.</p>
+        <p>Import <b>any</b> Master File and Working File CSV export &mdash; column headers are detected automatically and become the schema for this session &mdash; add records by hand, restore a JSON backup, or load generated sample data to see every feature in action.</p>
         <div class="es-actions">
           <button type="button" class="primary" id="emptyImportBtn">Import CSV</button>
           <button type="button" class="ghost" id="emptySampleBtn">Load Sample Data</button>
@@ -272,11 +319,12 @@
       </div>
     </section>
     <section class="stats" id="statsGrid">
-      <div class="stat-card total" data-statfilter="all"><div class="num" id="statTotal">&mdash;</div><div class="lbl">Total Records</div></div>
-      <div class="stat-card aligned" data-statfilter="Aligned"><div class="num" id="statAligned">&mdash;</div><div class="lbl">Aligned</div></div>
-      <div class="stat-card misaligned" data-statfilter="Misaligned"><div class="num" id="statMisaligned">&mdash;</div><div class="lbl">Misaligned</div></div>
-      <div class="stat-card notfound" data-statfilter="Badge Not Found in MasterList"><div class="num" id="statNotFound">&mdash;</div><div class="lbl">Badge Not Found</div></div>
-      <div class="stat-card dupcard" data-statfilter="dup"><div class="num" id="statDup">&mdash;</div><div class="lbl">Duplicate Badges</div></div>
+      <div class="stat-card total" data-statfilter="all" tabindex="0"><div class="num" id="statTotal">&mdash;</div><div class="lbl">Total Records</div></div>
+      <div class="stat-card aligned" data-statfilter="Aligned" tabindex="0"><div class="num" id="statAligned">&mdash;</div><div class="lbl">Aligned</div></div>
+      <div class="stat-card misaligned" data-statfilter="Misaligned" tabindex="0"><div class="num" id="statMisaligned">&mdash;</div><div class="lbl">Misaligned</div></div>
+      <div class="stat-card notfound" data-statfilter="Key Not Found in Master"><div class="num" id="statNotFound">&mdash;</div><div class="lbl">Key Not Found</div></div>
+      <div class="stat-card dupcard" data-statfilter="dup"><div class="num" id="statDup">&mdash;</div><div class="lbl">Duplicate Keys</div></div>
+      <div class="stat-card confidence"><div class="num" id="statConfidence">&mdash;</div><div class="lbl">Avg. Match Confidence</div></div>
     </section>
     <div class="bars" id="barsStatusDist">
       <h3>Status Distribution</h3>
@@ -287,25 +335,26 @@
       <div id="fieldChart"></div>
     </div>
     <div class="bars" id="barsUnitChart">
-      <h3>Roster by Unit</h3>
+      <h3>Breakdown by <span id="unitChartLabel">Field</span></h3>
       <div id="unitChart"></div>
+      <select id="unitChartField" style="margin-top:10px;"></select>
     </div>
     <footer id="dashFooter">&nbsp;</footer>
   </div>
 
-  <!-- ================= ROSTER ================= -->
+  <!-- ================= WORKING DATA (ROSTER) ================= -->
   <div class="tab-panel" id="tab-roster">
     <div class="filter-bar">
-      <div class="search-wrap"><input type="search" id="searchInput" placeholder="Search name, badge no., unit, sub-unit&hellip; (press / to focus)"></div>
+      <div class="search-wrap"><input type="search" id="searchInput" placeholder="Search any field&hellip; (press / to focus)"></div>
       <div class="chip-row" id="statusChips">
         <span class="chip active" data-status="all">All</span>
         <span class="chip" data-status="Misaligned">Misaligned</span>
-        <span class="chip" data-status="Badge Not Found in MasterList">Not Found</span>
+        <span class="chip" data-status="Key Not Found in Master">Not Found</span>
         <span class="chip" data-status="Aligned">Aligned</span>
         <span class="chip warnchip" data-status="dup" id="dupChip" style="display:none;">Duplicates</span>
       </div>
-      <select id="unitSelect"><option value="all">All Units</option></select>
-      <select id="subUnitSelect"><option value="all">All Sub-Units</option></select>
+      <select id="filterFieldSelect"><option value="all">All (choose a field to filter by)</option></select>
+      <select id="filterValueSelect"><option value="all">Any value</option></select>
       <select id="pageSizeSelect" title="Rows per page">
         <option value="25">25 / page</option>
         <option value="50" selected>50 / page</option>
@@ -314,78 +363,50 @@
         <option value="1000">1000 / page</option>
         <option value="all">Show all (no paging)</option>
       </select>
-      <button class="ghost" id="downloadFilteredBtn" title="Download only the rows matching the current search / status / unit / sub-unit filters">Export Filtered (CSV)</button>
+      <button class="ghost" id="downloadFilteredBtn" title="Download only the rows matching the current filters">Export Filtered</button>
       <button class="primary" id="addRosterBtn">+ Add Record</button>
     </div>
     <div class="bulk-bar" id="bulkBar">
       <span id="bulkCount">0 selected</span>
       <button type="button" id="bulkFixBtn">Auto-Correct Selected</button>
       <button type="button" id="bulkPromoteBtn">Promote Selected</button>
-      <button type="button" id="bulkExportBtn">Export Selected (CSV)</button>
+      <button type="button" id="bulkExportBtn">Export Selected</button>
       <button type="button" id="bulkDeleteBtn">Delete Selected</button>
       <span class="bulk-spacer"></span>
       <button type="button" id="bulkSelectAllFilteredBtn">Select all matching filter</button>
       <button type="button" id="bulkClearBtn">Clear Selection</button>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap responsive-table">
       <table>
-        <thead>
-          <tr id="rosterHead">
-            <th class="col-chk"><input type="checkbox" id="chkAllRoster" title="Select all rows on this page"></th>
-            <th class="col-nr" data-sort="nr">Nr<span class="sort-arrow"></span></th>
-            <th data-sort="acctNumber">Salary Account Number<span class="sort-arrow"></span></th>
-            <th data-sort="rank">Rank<span class="sort-arrow"></span></th>
-            <th data-sort="lastName">Last Name<span class="sort-arrow"></span></th>
-            <th data-sort="firstName">First Name<span class="sort-arrow"></span></th>
-            <th data-sort="middleName">Middle Name<span class="sort-arrow"></span></th>
-            <th class="col-qual" data-sort="qualifier">Qlfr<span class="sort-arrow"></span></th>
-            <th class="col-badge" data-sort="badgeNumber">Badge No.<span class="sort-arrow"></span></th>
-            <th class="col-unit" data-sort="unit">Unit<span class="sort-arrow"></span></th>
-            <th data-sort="subUnit">Sub-Unit<span class="sort-arrow"></span></th>
-            <th class="col-status" data-sort="status">Status<span class="sort-arrow"></span></th>
-            <th>Discrepancy Detail</th>
-            <th class="col-fix"></th>
-          </tr>
-        </thead>
-        <tbody id="rosterBody"><tr><td colspan="14" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
+        <thead><tr id="rosterHead"></tr></thead>
+        <tbody id="rosterBody"><tr><td colspan="20" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
     <div class="pager" id="rosterPager"></div>
   </div>
 
-  <!-- ================= MASTERLIST ================= -->
+  <!-- ================= MASTER FILE ================= -->
   <div class="tab-panel" id="tab-master">
     <div class="filter-bar">
-      <div class="search-wrap"><input type="search" id="masterSearchInput" placeholder="Search name, badge no., unit, sub-unit&hellip;"></div>
-      <button class="ghost" id="downloadMasterBtn">Export MasterList (CSV)</button>
+      <div class="search-wrap"><input type="search" id="masterSearchInput" placeholder="Search any field&hellip;"></div>
+      <button class="ghost" id="downloadMasterBtn">Export Master CSV</button>
       <button class="primary" id="addMasterBtn" style="margin-left:auto;">+ Add Reference Record</button>
     </div>
-    <div class="table-wrap">
+    <div class="table-wrap responsive-table">
       <table>
-        <thead><tr id="masterHead">
-          <th data-sort="acctNumber">Account Number<span class="sort-arrow"></span></th>
-          <th data-sort="rank">Rank<span class="sort-arrow"></span></th>
-          <th data-sort="lastName">Last Name<span class="sort-arrow"></span></th>
-          <th data-sort="firstName">First Name<span class="sort-arrow"></span></th>
-          <th data-sort="middleName">Middle Name<span class="sort-arrow"></span></th>
-          <th class="col-qual" data-sort="qualifier">Qual<span class="sort-arrow"></span></th>
-          <th class="col-badge" data-sort="badgeNumber">Badge Number<span class="sort-arrow"></span></th>
-          <th class="col-unit" data-sort="unit">Unit<span class="sort-arrow"></span></th>
-          <th data-sort="subUnit">Sub-Unit<span class="sort-arrow"></span></th>
-          <th class="col-fix"></th>
-        </tr></thead>
-        <tbody id="masterBody"><tr><td colspan="10" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
+        <thead><tr id="masterHead"></tr></thead>
+        <tbody id="masterBody"><tr><td colspan="20" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
     <div class="pager" id="masterPager"></div>
-    <footer>MasterList is the source of truth used to crosscheck and auto-correct the Roster. Its exact typing &mdash; spacing, capitalization, punctuation &mdash; is what the Roster is corrected to match, field for field.</footer>
+    <footer>The Master File is the source of truth used to crosscheck and auto-correct the Working Data. Its exact typing is what corrected fields are copied from.</footer>
   </div>
 
   <!-- ================= AUDIT LOG ================= -->
   <div class="tab-panel" id="tab-audit">
     <div class="filter-bar">
       <div class="search-wrap"><input type="search" id="auditSearchInput" placeholder="Search action, details&hellip;"></div>
-      <button class="ghost" id="downloadAuditBtn" style="margin-left:auto;">Download Audit Log (CSV)</button>
+      <button class="ghost" id="downloadAuditBtn" style="margin-left:auto;">Download Audit Log</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -394,7 +415,7 @@
       </table>
     </div>
     <div class="pager" id="auditPager"></div>
-    <footer>Every Auto-Correct, Undo, Redo, Settings change, Import, Add, Edit, Delete, Merge, and Promote action is recorded here, with no cap on history length.</footer>
+    <footer>Every correction, undo, redo, settings change, import, add, edit, delete, merge, and promote action is recorded here.</footer>
   </div>
 
   <!-- ================= INSTRUCTIONS ================= -->
@@ -417,13 +438,17 @@
   </div>
 </div>
 
-<!-- ===================== SETTINGS MODAL ===================== -->
+<!-- ===================== SCHEMA & SETTINGS MODAL ===================== -->
 <div class="modal-backdrop" id="settingsBackdrop">
-  <div class="modal">
-    <h2>Crosscheck Settings</h2>
-    <p class="modal-sub">Uncheck a field to exclude it from the crosscheck. Applies immediately to every row.</p>
+  <div class="modal wide">
+    <h2>Schema &amp; Settings</h2>
+    <p class="modal-sub">This session's fields, in order. Rename a field, mark the one Key/ID column used to match records, or exclude a field from the crosscheck. Changes apply to Working Data and Master File alike.</p>
+    <div class="schema-toolbar">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;"><input type="checkbox" id="caseInsensitiveChk"> Case-insensitive comparison</label>
+      <button type="button" class="ghost small" id="addFieldBtn" style="margin:0;">+ Add Field</button>
+    </div>
     <div class="ignore-list" id="ignoreList"></div>
-    <p class="hint-note" style="margin-top:10px;">Badge Number, Nr, and Verification Status are system-managed and always excluded.</p>
+    <p class="hint-note" style="margin-top:10px;">The Key/ID field is used only to match rows between files &mdash; it's never compared or auto-corrected. Deleting a field removes it from every record.</p>
     <div class="modal-actions">
       <button type="button" class="ghost" id="settingsCancelBtn">Close</button>
       <button type="button" class="primary" id="settingsSaveBtn">Save Changes</button>
@@ -452,20 +477,25 @@
 <div class="modal-backdrop" id="csvBackdrop">
   <div class="modal wide">
     <h2>Import CSV</h2>
-    <p class="modal-sub">Headers are matched to fields by name (Badge No., Salary Account Number, Rank, Unit, etc.) &mdash; most HR exports line up automatically. Review the detected mapping below before importing.</p>
+    <p class="modal-sub">Any column headers work. Known fields are auto-matched by name; unrecognized columns are added as new fields. Review the mapping before importing.</p>
     <div class="field-row">
       <label>Import Into</label>
       <select id="csvTargetSelect">
-        <option value="roster">Roster (working data to be checked)</option>
-        <option value="master">MasterList (source-of-truth reference data)</option>
+        <option value="roster">Working Data (records to be checked)</option>
+        <option value="master">Master File (source-of-truth reference data)</option>
       </select>
-      <p class="hint-note" id="csvTargetHint">New Roster rows are appended. A row whose Badge No. already exists in MasterList updates that reference record in place; otherwise it's added as new.</p>
+      <p class="hint-note" id="csvTargetHint"></p>
     </div>
     <input type="file" id="csvFileInput" accept=".csv,text/csv" style="margin-bottom:10px;">
     <div class="field-row"><label>Or paste CSV text</label>
-      <textarea id="csvTextarea" placeholder="Salary Account Number,Rank,Last Name,First Name,Middle Name,Qlfr,Badge No.,Unit,Sub-Unit&#10;001234,PO1,Dela Cruz,Juan,Santos,A,10-1234,Patrol,Alpha Team"></textarea>
+      <textarea id="csvTextarea" placeholder="Employee ID,First Name,Last Name,Department,Job Title&#10;E-1001,Juan,Dela Cruz,Records,Analyst"></textarea>
     </div>
     <div class="hint-note" id="csvPreview"></div>
+    <div class="field-row" id="csvKeyRow" style="margin-top:8px;display:none;">
+      <label>Key / Unique ID Column (required for a first import)</label>
+      <select id="csvKeySelect"></select>
+      <p class="hint-note">Pick the column that uniquely identifies each record (an ID, badge, code, or account number). Every future import matches on this column.</p>
+    </div>
     <div class="field-row" id="csvMappingPreview" style="margin-top:8px;"></div>
     <div class="modal-actions">
       <button type="button" class="ghost" id="csvCancelBtn">Cancel</button>
@@ -477,11 +507,24 @@
 <!-- ===================== MERGE DUPLICATES MODAL ===================== -->
 <div class="modal-backdrop" id="mergeBackdrop">
   <div class="modal wide">
-    <h2>Merge Duplicate Badges</h2>
-    <p class="modal-sub" id="mergeModalSub">Pick which row to keep for each duplicated Badge Number; the others are deleted.</p>
+    <h2>Merge Duplicate Keys</h2>
+    <p class="modal-sub" id="mergeModalSub">Pick which row to keep for each duplicated key; the others are deleted.</p>
     <div id="mergeList"></div>
     <div class="modal-actions">
       <button type="button" class="ghost" id="mergeCloseBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ROW COMPARISON MODAL ===================== -->
+<div class="modal-backdrop" id="cmpBackdrop">
+  <div class="modal wide">
+    <h2>Row Comparison</h2>
+    <p class="modal-sub" id="cmpModalSub">Every field, aligned side-by-side, with character-level differences highlighted.</p>
+    <div id="cmpBody"></div>
+    <div class="modal-actions">
+      <button type="button" class="ghost" id="cmpCloseBtn">Close</button>
+      <button type="button" class="primary" id="cmpFixAllBtn">Auto-Correct This Row</button>
     </div>
   </div>
 </div>
@@ -493,36 +536,100 @@
 "use strict";
 
 // =================================================================
-// FIELD SCHEMA
-// MasterList sequence:  Account Number, Rank, Last Name, First Name,
-//                        Middle Name, Qual, Badge Number, Unit, Sub-Unit
-// Roster sequence:      Nr, Salary Account Number, Rank, Last Name,
-//                        First Name, Middle Name, Qlfr, Badge No.,
-//                        Unit, Sub-Unit
-// FORM_SCHEMA below carries that exact field order (Nr is system-managed
-// and not part of the form). Each entry has a neutral "label" (used in
-// settings, mismatch details, CSV exports and audit text) plus a
-// "rosterLabel" / "masterLabel" used wherever the sheet's own header
-// wording matters (forms, table headers, CSV import aliasing).
+// DYNAMIC SCHEMA — built from whatever CSV columns the user imports.
+// state.schema: [{key,label}, ...]   state.keyField: schema key used to match rows
 // =================================================================
-var FORM_SCHEMA = [
-  {key:"acctNumber",  label:"Account Number", rosterLabel:"Salary Account Number", masterLabel:"Account Number"},
-  {key:"rank",         label:"Rank",           rosterLabel:"Rank",                  masterLabel:"Rank"},
-  {key:"lastName",     label:"Last Name",      rosterLabel:"Last Name",             masterLabel:"Last Name"},
-  {key:"firstName",    label:"First Name",     rosterLabel:"First Name",            masterLabel:"First Name"},
-  {key:"middleName",   label:"Middle Name",    rosterLabel:"Middle Name",           masterLabel:"Middle Name"},
-  {key:"qualifier",    label:"Qualifier",      rosterLabel:"Qlfr",                  masterLabel:"Qual"},
-  {key:"badgeNumber",  label:"Badge Number",   rosterLabel:"Badge No.",             masterLabel:"Badge Number"},
-  {key:"unit",         label:"Unit",           rosterLabel:"Unit",                  masterLabel:"Unit"},
-  {key:"subUnit",      label:"Sub-Unit",       rosterLabel:"Sub-Unit",              masterLabel:"Sub-Unit"}
-];
-var CHECK_FIELDS = FORM_SCHEMA.filter(function(f){ return f.key !== "badgeNumber"; });
-function fieldByKey(key){ return FORM_SCHEMA.find(function(f){ return f.key===key; }); }
-function labelFor(f, target){ return target==="roster" ? f.rosterLabel : f.masterLabel; }
+function normVal(v){
+  if (v===null||v===undefined) return "";
+  return String(v).replace(/\s+/g," ").trim();
+}
+function normCmp(v, ci){
+  var s = normVal(v);
+  return ci ? s.toLowerCase() : s;
+}
+function esc(v){
+  if (v===null||v===undefined) return "";
+  return String(v).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; });
+}
+function slugify(label, existing){
+  var s = String(label||"").trim().toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+  if (!s) s = "field";
+  var parts = s.split(" ");
+  var key = parts[0] + parts.slice(1).map(function(p){ return p.charAt(0).toUpperCase()+p.slice(1); }).join("");
+  if (!key) key = "field";
+  var base = key, i = 1;
+  existing = existing || [];
+  while (existing.indexOf(key) !== -1){ key = base + (++i); }
+  return key;
+}
+function normalizeHeader(h){
+  return String(h||"").toLowerCase().replace(/[.:]/g,"").replace(/[-_]/g," ").replace(/\s+/g," ").trim();
+}
 
-// =================================================================
-// ENGINE: deterministic sample-data generator + reconciliation logic
-// =================================================================
+// Levenshtein distance + similarity (used for the match-confidence score)
+function levenshtein(a,b){
+  a=a||""; b=b||"";
+  var m=a.length,n=b.length;
+  if (!m) return n; if (!n) return m;
+  var dp = new Array(n+1);
+  for (var j=0;j<=n;j++) dp[j]=j;
+  for (var i=1;i<=m;i++){
+    var prev = dp[0]; dp[0]=i;
+    for (var j2=1;j2<=n;j2++){
+      var tmp = dp[j2];
+      dp[j2] = Math.min(dp[j2]+1, dp[j2-1]+1, prev + (a[i-1]===b[j2-1]?0:1));
+      prev = tmp;
+    }
+  }
+  return dp[n];
+}
+function similarity(a,b){
+  a=normVal(a); b=normVal(b);
+  var maxLen = Math.max(a.length,b.length);
+  if (!maxLen) return 1;
+  return 1 - (levenshtein(a,b)/maxLen);
+}
+
+// Character-level diff (simple LCS backtrace, fine for typical field lengths)
+function diffChars(a,b){
+  a = a===null||a===undefined ? "" : String(a);
+  b = b===null||b===undefined ? "" : String(b);
+  var m=a.length,n=b.length;
+  if (m>350 || n>350) return [{t:"del",s:a},{t:"ins",s:b}];
+  var dp=[]; for (var i=0;i<=m;i++) dp.push(new Array(n+1).fill(0));
+  for (i=1;i<=m;i++){
+    for (var j=1;j<=n;j++){
+      dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j], dp[i][j-1]);
+    }
+  }
+  var ops=[]; i=m; var j=n;
+  while (i>0 && j>0){
+    if (a[i-1]===b[j-1]){ ops.push({t:"eq",c:a[i-1]}); i--; j--; }
+    else if (dp[i-1][j] >= dp[i][j-1]){ ops.push({t:"del",c:a[i-1]}); i--; }
+    else { ops.push({t:"ins",c:b[j-1]}); j--; }
+  }
+  while (i>0){ ops.push({t:"del",c:a[--i]}); }
+  while (j>0){ ops.push({t:"ins",c:b[--j]}); }
+  ops.reverse();
+  var tokens=[];
+  ops.forEach(function(o){
+    if (tokens.length && tokens[tokens.length-1].t===o.t) tokens[tokens.length-1].s += o.c;
+    else tokens.push({t:o.t, s:o.c});
+  });
+  return tokens;
+}
+function diffHtmlFrom(tokens){
+  return tokens.filter(function(t){return t.t!=="ins";}).map(function(t){
+    return t.t==="del" ? '<span class="dch-del">'+esc(t.s)+'</span>' : esc(t.s);
+  }).join("") || '<i style="color:var(--ink-soft);">(blank)</i>';
+}
+function diffHtmlTo(tokens){
+  return tokens.filter(function(t){return t.t!=="del";}).map(function(t){
+    return t.t==="ins" ? '<span class="dch-ins">'+esc(t.s)+'</span>' : esc(t.s);
+  }).join("") || '<i style="color:var(--ink-soft);">(blank)</i>';
+}
+
+function pick(rng,arr){ return arr[Math.floor(rng()*arr.length)]; }
 function mulberry32(seed){
   return function(){
     seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
@@ -531,138 +638,106 @@ function mulberry32(seed){
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-var LAST_NAMES=["Dela Cruz","Reyes","Santos","Bautista","Garcia","Torres","Ramos","Villanueva","Flores","Mendoza","Diaz","Cruz","Gonzales","Fernandez","Aquino","Rivera","Castillo","Navarro","Salazar","Domingo","Aguilar","Marquez","Pascual","Ocampo","Tolentino","Ignacio","Del Rosario","Manalo","Bernardo","Espiritu"];
-var FIRST_NAMES=["Juan","Maria","Pedro","Ana","Jose","Liza","Carlos","Rosa","Miguel","Sofia","Antonio","Elena","Ramon","Carmen","Luis","Teresa","Manuel","Cristina","Rafael","Angela"];
-var MIDDLE_NAMES=["Santos","Lopez","Garcia","Cruz","Ramos","Diaz","Mendoza","Reyes","Flores","Bautista"];
-var RANKS=["PO1","PO2","PO3","SPO1","SPO2","SPO3","PSSG","PEMS"];
-var QUALIFIERS=["A","B","C","D","E"];
-var UNITS=["Patrol","Records","Investigation","Traffic","Admin"];
-var SUB_UNITS=["Alpha Team","Bravo Team","Charlie Team","Delta Team","Records","HR"];
 
-function normVal(v){
-  if (v===null||v===undefined) return "";
-  return String(v).replace(/\s+/g," ").trim();
-}
-function pick(rng,arr){ return arr[Math.floor(rng()*arr.length)]; }
-function pad6(n){ n=String(n); while(n.length<6) n="0"+n; return n; }
+// =================================================================
+// SAMPLE DATASET — generic HR-style schema, to demonstrate the tool
+// on ANY kind of master/working-file pair, not one fixed domain.
+// =================================================================
+var SAMPLE_SCHEMA = [
+  {key:"employeeId", label:"Employee ID"},
+  {key:"firstName", label:"First Name"},
+  {key:"lastName", label:"Last Name"},
+  {key:"department", label:"Department"},
+  {key:"jobTitle", label:"Job Title"},
+  {key:"location", label:"Location"},
+  {key:"email", label:"Email"}
+];
+var SAMPLE_KEYFIELD = "employeeId";
+var S_FIRST=["Juan","Maria","Pedro","Ana","Jose","Liza","Carlos","Rosa","Miguel","Sofia","Antonio","Elena","Ramon","Carmen","Luis","Teresa","Manuel","Cristina","Rafael","Angela"];
+var S_LAST=["Dela Cruz","Reyes","Santos","Bautista","Garcia","Torres","Ramos","Villanueva","Flores","Mendoza","Diaz","Cruz","Gonzales","Fernandez","Aquino","Rivera","Castillo","Navarro","Salazar","Domingo"];
+var S_DEPT=["Records","Finance","Operations","Human Resources","IT","Logistics","Legal","Customer Care"];
+var S_TITLE=["Analyst","Associate","Coordinator","Supervisor","Officer","Specialist","Manager","Clerk"];
+var S_LOC=["Manila","Cebu","Davao","Quezon City","Baguio","Iloilo"];
 
-function generateDataset(n, seed){
-  var rng = mulberry32(seed || 42);
-  var master = [], roster = [], masterIndex = new Map();
+function generateSampleDataset(n, seed){
+  var rng = mulberry32(seed||42);
+  var master=[], roster=[];
   for (var i=1;i<=n;i++){
-    var last = pick(rng,LAST_NAMES), first = pick(rng,FIRST_NAMES), middle = pick(rng,MIDDLE_NAMES);
-    var badge = "10-"+(1000+i), acct = pad6(100000+i);
-    var rank = pick(rng,RANKS), qual = pick(rng,QUALIFIERS), subUnit = pick(rng,SUB_UNITS), unit = pick(rng,UNITS);
+    var id = "E-"+(1000+i);
+    var first=pick(rng,S_FIRST), last=pick(rng,S_LAST), dept=pick(rng,S_DEPT), title=pick(rng,S_TITLE), loc=pick(rng,S_LOC);
+    var email = (first+"."+last).toLowerCase().replace(/\s+/g,"")+"@example.gov.ph";
     var sr = rng();
     if (sr < 0.06) last = last + " ";
-    else if (sr < 0.11) subUnit = subUnit + "  ";
+    else if (sr < 0.11) dept = dept + "  ";
     else if (sr < 0.14) first = " " + first;
-    else if (sr < 0.16) rank = rank + " ";
-    var mrec = {id:"m"+i, acctNumber:acct, rank:rank, lastName:last, firstName:first, middleName:middle, qualifier:qual, badgeNumber:badge, unit:unit, subUnit:subUnit};
+    var mrec = {id:"m"+i, employeeId:id, firstName:first, lastName:last, department:dept, jobTitle:title, location:loc, email:email};
     master.push(mrec);
-    masterIndex.set(normVal(badge), mrec);
   }
   for (var j=1;j<=n;j++){
     var m = master[j-1];
     var roll = rng();
-    var rrec = {id:"r"+j, nr:j, acctNumber:m.acctNumber, rank:m.rank, lastName:m.lastName, firstName:m.firstName, middleName:m.middleName, qualifier:m.qualifier, badgeNumber:m.badgeNumber, unit:m.unit, subUnit:m.subUnit};
-    if (roll < 0.05){
-      rrec.badgeNumber = "99-"+(9000+j);
-    } else if (roll < 0.20){
-      var field = pick(rng,["rank","lastName","qualifier","subUnit","acctNumber","unit"]);
-      if (field==="rank"){ var opts=RANKS.filter(function(x){return normVal(x)!==normVal(m.rank);}); rrec.rank=pick(rng,opts); }
+    var rrec = {id:"r"+j, nr:j, employeeId:m.employeeId, firstName:m.firstName, lastName:m.lastName, department:m.department, jobTitle:m.jobTitle, location:m.location, email:m.email};
+    if (roll < 0.05){ rrec.employeeId = "E-"+(9000+j); }
+    else if (roll < 0.20){
+      var field = pick(rng,["jobTitle","lastName","department","location","email"]);
+      if (field==="jobTitle"){ var o=S_TITLE.filter(function(x){return normVal(x)!==normVal(m.jobTitle);}); rrec.jobTitle=pick(rng,o); }
       else if (field==="lastName"){ rrec.lastName = normVal(m.lastName).toLowerCase(); }
-      else if (field==="qualifier"){ var qopts=QUALIFIERS.filter(function(x){return x!==m.qualifier;}); rrec.qualifier=pick(rng,qopts); }
-      else if (field==="subUnit"){ var sopts=SUB_UNITS.filter(function(x){return normVal(x)!==normVal(m.subUnit);}); rrec.subUnit=pick(rng,sopts); }
-      else if (field==="acctNumber"){ rrec.acctNumber = pad6(parseInt(m.acctNumber,10)+1); }
-      else if (field==="unit"){ var uopts=UNITS.filter(function(x){return normVal(x)!==normVal(m.unit);}); rrec.unit=pick(rng,uopts); }
+      else if (field==="department"){ var o2=S_DEPT.filter(function(x){return normVal(x)!==normVal(m.department);}); rrec.department=pick(rng,o2); }
+      else if (field==="location"){ var o3=S_LOC.filter(function(x){return normVal(x)!==normVal(m.location);}); rrec.location=pick(rng,o3); }
+      else if (field==="email"){ rrec.email = rrec.email.replace("@example.gov.ph","@example.com"); }
     } else if (roll < 0.30){
-      var noisy = pick(rng,["subUnit","lastName","rank"]);
-      if (noisy==="subUnit") rrec.subUnit = "  " + rrec.subUnit.trim().replace(/ /g,"  ") + "  ";
+      var noisy = pick(rng,["department","lastName","jobTitle"]);
+      if (noisy==="department") rrec.department = "  " + rrec.department.trim() + "  ";
       else if (noisy==="lastName") rrec.lastName = " " + rrec.lastName.trim() + " ";
-      else if (noisy==="rank") rrec.rank = rrec.rank.trim() + " ";
+      else if (noisy==="jobTitle") rrec.jobTitle = rrec.jobTitle.trim() + " ";
     }
     roster.push(rrec);
   }
-  return {master:master, roster:roster, masterIndex:masterIndex};
-}
-
-function buildMasterIndex(master){
-  var idx = new Map();
-  master.forEach(function(m){ idx.set(normVal(m.badgeNumber), m); });
-  return idx;
-}
-
-function computeRow(rrec, masterIndex, ignoredSet){
-  var mrec = masterIndex.get(normVal(rrec.badgeNumber));
-  if (!mrec) return {status:"Badge Not Found in MasterList", mismatches:[], master:null};
-  var mismatches = [];
-  CHECK_FIELDS.forEach(function(f){
-    if (ignoredSet.has(f.key)) return;
-    var cur = rrec[f.key], correct = mrec[f.key];
-    if (normVal(cur) !== normVal(correct)) mismatches.push({key:f.key, label:f.label, current:cur, correct:correct});
-  });
-  return {status: mismatches.length ? "Misaligned" : "Aligned", mismatches: mismatches, master: mrec};
-}
-
-function computeDuplicateBadges(roster){
-  var counts = new Map();
-  roster.forEach(function(r){
-    var b = normVal(r.badgeNumber);
-    if (!b) return;
-    counts.set(b, (counts.get(b)||0)+1);
-  });
-  var dup = new Set();
-  counts.forEach(function(n,b){ if (n>1) dup.add(b); });
-  return dup;
+  return {master:master, roster:roster};
 }
 
 // =================================================================
 // STATE
 // =================================================================
-var DB_NAME = "reconciliationCheckerDB", DB_STORE = "session", DB_KEY = "main";
-var LEGACY_LS_KEY = "reconciliationChecker.session.v1";
-var THEME_KEY = "reconciliationChecker.theme";
+var DB_NAME = "universalDataCheckerDB", DB_STORE = "session", DB_KEY = "main";
+var LEGACY_LS_KEY = "universalDataChecker.session.v1";
+var THEME_KEY = "universalDataChecker.theme";
 
 var state = {
+  schema: [], keyField: null, caseInsensitive: false,
   master: [], roster: [], masterIndex: null,
   ignoredFields: new Set(),
-  results: new Map(),           // rosterId -> computeRow() result, refreshed on recompute()
-  dupBadges: new Set(),
-  undoStack: [],                // [{ label, entries:[{rowId, before:{...}, after:{...}}] }]
-  redoStack: [],
-  auditLog: [],
+  results: new Map(),
+  dupKeys: new Set(),
+  undoStack: [], redoStack: [], auditLog: [],
   selectedRosterIds: new Set(),
-  filters: { status:"all", search:"", subUnit:"all", unit:"all" },
-  masterSearch: "", auditSearch: "",
-  sort: { key:"nr", dir:"asc" },
-  sortMaster: { key:"acctNumber", dir:"asc" },
-  page: { roster:1, master:1, audit:1 }, pageSize: 50,
-  modal: { target:null, mode:null, id:null },
-  storageMode: "unknown"
+  filters: { status:"all", search:"", field:"all", value:"all" },
+  masterSearch:"", auditSearch:"",
+  sort:{key:"nr",dir:"asc"}, sortMaster:{key:null,dir:"asc"},
+  page:{roster:1,master:1,audit:1}, pageSize:50,
+  modal:{target:null,mode:null,id:null},
+  unitChartField: null,
+  storageMode:"unknown"
 };
 
 var els = {};
 ["subtitle","autosaveLine","themeToggleBtn","printBtn","downloadErrorsBtn","downloadRosterBtn","importCsvBtn","backupBtn","restoreBtn","restoreFileInput","loadSampleBtn","settingsBtn","undoBtn","redoBtn","newSessionBtn","autoCorrectAllBtn",
- "statTotal","statAligned","statMisaligned","statNotFound","statDup","barChart","fieldChart","unitChart","dashFooter",
- "searchInput","statusChips","subUnitSelect","unitSelect","pageSizeSelect","downloadFilteredBtn","addRosterBtn","rosterBody","rosterPager","rosterHead",
+ "statTotal","statAligned","statMisaligned","statNotFound","statDup","statConfidence","barChart","fieldChart","unitChart","unitChartLabel","unitChartField","dashFooter",
+ "searchInput","statusChips","filterFieldSelect","filterValueSelect","pageSizeSelect","downloadFilteredBtn","addRosterBtn","rosterBody","rosterPager","rosterHead",
  "masterSearchInput","downloadMasterBtn","addMasterBtn","masterBody","masterPager","masterHead",
  "auditSearchInput","downloadAuditBtn","auditBody","auditPager",
  "tabCountRoster","tabCountMaster","tabCountAudit","instrBody",
  "modalBackdrop","modalTitle","modalSub","modalForm","modalCancelBtn","modalSaveBtn",
- "settingsBackdrop","ignoreList","settingsCancelBtn","settingsSaveBtn",
+ "settingsBackdrop","ignoreList","settingsCancelBtn","settingsSaveBtn","caseInsensitiveChk","addFieldBtn",
  "undoBackdrop","undoModalSub","undoList","redoList","undoCancelBtn","undoConfirmBtn","redoConfirmBtn",
- "csvBackdrop","csvTargetSelect","csvTargetHint","csvFileInput","csvTextarea","csvPreview","csvMappingPreview","csvCancelBtn","csvImportBtn",
+ "csvBackdrop","csvTargetSelect","csvTargetHint","csvFileInput","csvTextarea","csvPreview","csvMappingPreview","csvCancelBtn","csvImportBtn","csvKeyRow","csvKeySelect",
  "mergeBackdrop","mergeModalSub","mergeList","mergeCloseBtn",
+ "cmpBackdrop","cmpModalSub","cmpBody","cmpCloseBtn","cmpFixAllBtn",
  "toast", "bulkBar", "bulkCount", "bulkFixBtn","bulkPromoteBtn","bulkExportBtn","bulkDeleteBtn","bulkSelectAllFilteredBtn","bulkClearBtn",
  "emptyStateWrap","statsGrid","barsStatusDist","barsFieldChart","barsUnitChart","emptyImportBtn","emptySampleBtn",
  "dupBanner","dupBannerText","dupBannerBtn","dupMergeBtn","dupChip"
 ].forEach(function(id){ els[id] = document.getElementById(id); });
 
-function esc(v){
-  if (v===null||v===undefined) return "";
-  return String(v).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; });
-}
 function showToast(msg, isErr){
   els.toast.textContent = msg;
   els.toast.classList.toggle("err", !!isErr);
@@ -676,10 +751,15 @@ function debounce(fn, ms){
 function logAudit(action, details, rowsAffected){
   state.auditLog.unshift({ ts:new Date(), action:action, details:details||"", rows: rowsAffected||0 });
 }
+function fieldByKey(key){ return state.schema.find(function(f){ return f.key===key; }); }
+function fieldLabel(key){ var f=fieldByKey(key); return f ? f.label : key; }
+function checkFields(){
+  return state.schema.filter(function(f){ return f.key!==state.keyField && !state.ignoredFields.has(f.key); });
+}
+function keyLabel(){ return state.keyField ? fieldLabel(state.keyField) : "Key"; }
 
 // =================================================================
-// LOCAL AUTOSAVE — IndexedDB primary (effectively unlimited size),
-// localStorage as an automatic fallback if IndexedDB is unavailable.
+// LOCAL AUTOSAVE — IndexedDB primary, localStorage fallback
 // =================================================================
 var dbPromise = null;
 function getDB(){
@@ -713,7 +793,6 @@ function idbGet(key){
     });
   });
 }
-
 function setAutosaveIndicator(ok, msg){
   if (!els.autosaveLine) return;
   if (ok === null){ els.autosaveLine.innerHTML = "&nbsp;"; return; }
@@ -721,13 +800,10 @@ function setAutosaveIndicator(ok, msg){
     ? '<span class="as-ok">&#10003; Autosaved</span>' + (msg ? " &middot; " + esc(msg) : "")
     : '<span class="as-bad">Autosave unavailable</span>' + (msg ? " &middot; " + esc(msg) : "");
 }
-
 function saveSession(){
   var payload = {
-    v: 3, savedAt: new Date(),
-    master: state.master, roster: state.roster,
-    ignoredFields: Array.from(state.ignoredFields),
-    auditLog: state.auditLog
+    v:4, savedAt:new Date(), schema:state.schema, keyField:state.keyField, caseInsensitive:state.caseInsensitive,
+    master: state.master, roster: state.roster, ignoredFields: Array.from(state.ignoredFields), auditLog: state.auditLog
   };
   idbPut(DB_KEY, payload).then(function(){
     state.storageMode = "indexeddb";
@@ -735,9 +811,8 @@ function saveSession(){
   }).catch(function(){
     try{
       var lsPayload = {
-        v: 3, savedAt: payload.savedAt.toISOString(),
-        master: state.master, roster: state.roster,
-        ignoredFields: Array.from(state.ignoredFields),
+        v:4, savedAt:payload.savedAt.toISOString(), schema:state.schema, keyField:state.keyField, caseInsensitive:state.caseInsensitive,
+        master: state.master, roster: state.roster, ignoredFields: Array.from(state.ignoredFields),
         auditLog: state.auditLog.map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; })
       };
       localStorage.setItem(LEGACY_LS_KEY, JSON.stringify(lsPayload));
@@ -750,7 +825,6 @@ function saveSession(){
   });
 }
 var saveSessionDebounced = debounce(saveSession, 450);
-
 function loadFromLocalStorage(){
   try{
     var raw = localStorage.getItem(LEGACY_LS_KEY);
@@ -764,14 +838,9 @@ function loadFromLocalStorage(){
 }
 function loadSession(){
   return idbGet(DB_KEY).then(function(data){
-    if (data && Array.isArray(data.master) && Array.isArray(data.roster)){
-      state.storageMode = "indexeddb";
-      return data;
-    }
+    if (data && Array.isArray(data.master) && Array.isArray(data.roster)){ state.storageMode = "indexeddb"; return data; }
     return loadFromLocalStorage();
-  }).catch(function(){
-    return loadFromLocalStorage();
-  });
+  }).catch(function(){ return loadFromLocalStorage(); });
 }
 function clearSession(){
   try{ localStorage.removeItem(LEGACY_LS_KEY); }catch(e){}
@@ -787,35 +856,68 @@ function setTheme(t){
   try{ localStorage.setItem(THEME_KEY, t); }catch(e){}
 }
 function applyStoredTheme(){
-  var t = "light";
-  try{ t = localStorage.getItem(THEME_KEY) || "light"; }catch(e){}
+  var t = "light"; try{ t = localStorage.getItem(THEME_KEY) || "light"; }catch(e){}
   setTheme(t);
 }
 
 // =================================================================
-// RECOMPUTE (fast full pass; called after any data or settings change)
+// RECOMPUTE
 // =================================================================
-function recompute(){
-  state.masterIndex = buildMasterIndex(state.master);
-  var results = new Map();
-  var counts = {Aligned:0, Misaligned:0, "Badge Not Found in MasterList":0};
-  var fieldCounts = {}, unitCounts = {};
+function buildMasterIndex(){
+  var idx = new Map();
+  if (!state.keyField) return idx;
+  state.master.forEach(function(m){ idx.set(normCmp(m[state.keyField], state.caseInsensitive), m); });
+  return idx;
+}
+function computeRow(rrec, masterIndex){
+  if (!state.keyField) return {status:"Key Not Found in Master", mismatches:[], master:null, confidence:0};
+  var mrec = masterIndex.get(normCmp(rrec[state.keyField], state.caseInsensitive));
+  if (!mrec) return {status:"Key Not Found in Master", mismatches:[], master:null, confidence:0};
+  var mismatches = [], simSum = 0, cf = checkFields();
+  cf.forEach(function(f){
+    var cur = rrec[f.key], correct = mrec[f.key];
+    var eq = normCmp(cur,state.caseInsensitive) === normCmp(correct,state.caseInsensitive);
+    if (!eq) mismatches.push({key:f.key, label:f.label, current:cur, correct:correct});
+    simSum += similarity(cur, correct);
+  });
+  var confidence = cf.length ? simSum/cf.length : 1;
+  return {status: mismatches.length ? "Misaligned" : "Aligned", mismatches: mismatches, master: mrec, confidence: confidence};
+}
+function computeDuplicateKeys(){
+  var counts = new Map();
+  if (!state.keyField) return new Set();
   state.roster.forEach(function(r){
-    var res = computeRow(r, state.masterIndex, state.ignoredFields);
+    var k = normCmp(r[state.keyField], state.caseInsensitive);
+    if (!k) return;
+    counts.set(k, (counts.get(k)||0)+1);
+  });
+  var dup = new Set();
+  counts.forEach(function(n,k){ if (n>1) dup.add(k); });
+  return dup;
+}
+function recompute(){
+  state.masterIndex = buildMasterIndex();
+  var results = new Map();
+  var counts = {Aligned:0, Misaligned:0, "Key Not Found in Master":0};
+  var fieldCounts = {}, confSum = 0, confN = 0;
+  state.roster.forEach(function(r){
+    var res = computeRow(r, state.masterIndex);
     results.set(r.id, res);
     counts[res.status]++;
     res.mismatches.forEach(function(m){ fieldCounts[m.label] = (fieldCounts[m.label]||0)+1; });
-    var u = normVal(r.unit) || "(No Unit)";
-    unitCounts[u] = (unitCounts[u]||0)+1;
+    if (res.status !== "Key Not Found in Master"){ confSum += res.confidence; confN++; }
   });
   state.results = results;
   state.counts = counts;
   state.fieldCounts = fieldCounts;
-  state.unitCounts = unitCounts;
-  state.dupBadges = computeDuplicateBadges(state.roster);
-  // prune selections that no longer exist
+  state.avgConfidence = confN ? confSum/confN : null;
+  state.dupKeys = computeDuplicateKeys();
   var liveIds = new Set(state.roster.map(function(r){ return r.id; }));
   state.selectedRosterIds.forEach(function(id){ if (!liveIds.has(id)) state.selectedRosterIds.delete(id); });
+  if (!state.unitChartField || !fieldByKey(state.unitChartField)){
+    var firstNonKey = state.schema.find(function(f){ return f.key!==state.keyField; });
+    state.unitChartField = firstNonKey ? firstNonKey.key : null;
+  }
 }
 
 // =================================================================
@@ -863,23 +965,21 @@ function redoLast(){
 // AUTO-CORRECT
 // =================================================================
 function applyAutoCorrectAll(){
-  var entries = [];
-  var correctedFields = 0;
+  var entries = [], correctedFields = 0;
   state.roster.forEach(function(r){
     var res = state.results.get(r.id);
     if (!res || !res.mismatches.length) return;
     var before = {};
-    res.mismatches.forEach(function(m){ before[m.key] = r[m.key]; r[m.key] = m.correct; correctedFields++; });
+    res.mismatches.forEach(function(m){ before[m.key]=r[m.key]; r[m.key]=m.correct; correctedFields++; });
     entries.push({ rowId:r.id, before:before });
   });
   if (!entries.length){ showToast("No misaligned rows to correct."); return; }
   pushUndo("Auto-Correct All ("+entries.length+" row(s), "+correctedFields+" field(s))", entries);
   recompute();
-  logAudit("Auto-Correct All", entries.length+" row(s) corrected, "+correctedFields+" field(s) matched to MasterList's exact formatting", entries.length);
+  logAudit("Auto-Correct All", entries.length+" row(s) corrected, "+correctedFields+" field(s) matched to the Master File's exact formatting", entries.length);
   showToast("Auto-corrected "+entries.length+" row(s), "+correctedFields+" field(s).");
   renderAll();
 }
-
 function applyAutoCorrectRow(rowId){
   var r = state.roster.find(function(x){ return x.id===rowId; });
   if (!r) return;
@@ -887,13 +987,12 @@ function applyAutoCorrectRow(rowId){
   if (!res || !res.mismatches.length){ showToast("Nothing to correct on this row."); return; }
   var before = {};
   res.mismatches.forEach(function(m){ before[m.key]=r[m.key]; r[m.key]=m.correct; });
-  pushUndo("Auto-Correct Row "+r.nr, [{rowId:rowId, before:before}]);
+  pushUndo("Auto-Correct Row "+(r.nr!==undefined?r.nr:r.id), [{rowId:rowId, before:before}]);
   recompute();
-  logAudit("Auto-Correct Row", "Row "+r.nr+" \u00b7 "+res.mismatches.length+" field(s) matched to MasterList's exact formatting", 1);
-  showToast("Row "+r.nr+" fixed ("+res.mismatches.length+" field(s)).");
+  logAudit("Auto-Correct Row", "Row "+r.nr+" \u00b7 "+res.mismatches.length+" field(s) matched to the Master File's exact formatting", 1);
+  showToast("Row fixed ("+res.mismatches.length+" field(s)).");
   renderAll();
 }
-
 function applyAutoCorrectField(rowId, fieldKey){
   var r = state.roster.find(function(x){ return x.id===rowId; });
   if (!r) return;
@@ -904,11 +1003,10 @@ function applyAutoCorrectField(rowId, fieldKey){
   r[fieldKey] = m.correct;
   pushUndo("Auto-Correct Field ("+m.label+") \u00b7 Row "+r.nr, [{rowId:rowId, before:before}]);
   recompute();
-  logAudit("Auto-Correct Field", "Row "+r.nr+" \u00b7 "+m.label+" matched to MasterList's exact formatting", 1);
-  showToast('Fixed "'+m.label+'" on row '+r.nr+".");
+  logAudit("Auto-Correct Field", "Row "+r.nr+" \u00b7 "+m.label+" matched to the Master File's exact formatting", 1);
+  showToast('Fixed "'+m.label+'".');
   renderAll();
 }
-
 function applyAutoCorrectSelected(){
   var ids = Array.from(state.selectedRosterIds);
   var entries = [], correctedFields = 0;
@@ -927,38 +1025,34 @@ function applyAutoCorrectSelected(){
   showToast("Corrected "+entries.length+" selected row(s).");
   renderAll();
 }
-
 function promoteRow(rowId, silent){
   var r = state.roster.find(function(x){ return x.id===rowId; });
-  if (!r) return false;
+  if (!r || !state.keyField) return false;
   var res = state.results.get(rowId);
-  if (res.status !== "Badge Not Found in MasterList"){ if (!silent) showToast("This row already matches a MasterList record.", true); return false; }
-  if (state.masterIndex.has(normVal(r.badgeNumber))){ if (!silent) showToast("A MasterList record with this badge already exists.", true); return false; }
-  var mrec = { id:"m_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
-    acctNumber:r.acctNumber, rank:r.rank, lastName:r.lastName, firstName:r.firstName,
-    middleName:r.middleName, qualifier:r.qualifier, badgeNumber:r.badgeNumber, unit:r.unit, subUnit:r.subUnit };
+  if (res.status !== "Key Not Found in Master"){ if (!silent) showToast("This row already matches a Master File record.", true); return false; }
+  if (state.masterIndex.has(normCmp(r[state.keyField], state.caseInsensitive))){ if (!silent) showToast("A Master File record with this key already exists.", true); return false; }
+  var mrec = { id:"m_"+Date.now()+"_"+Math.random().toString(36).slice(2,7) };
+  state.schema.forEach(function(f){ mrec[f.key] = r[f.key]; });
   state.master.push(mrec);
-  state.masterIndex.set(normVal(mrec.badgeNumber), mrec);
+  state.masterIndex.set(normCmp(mrec[state.keyField], state.caseInsensitive), mrec);
   if (!silent){
     recompute();
-    logAudit("Promote to MasterList", "Roster row "+r.nr+" \u00b7 Badge "+r.badgeNumber+" added as a new reference record", 1);
-    showToast("Badge "+r.badgeNumber+" added to MasterList.");
+    logAudit("Promote to Master File", "Working row "+r.nr+" \u00b7 "+keyLabel()+" "+r[state.keyField]+" added as a new reference record", 1);
+    showToast(keyLabel()+" "+r[state.keyField]+" added to Master File.");
     renderAll();
   }
   return true;
 }
-
 function promoteSelected(){
   var ids = Array.from(state.selectedRosterIds);
   var count = 0;
   ids.forEach(function(id){ if (promoteRow(id, true)) count++; });
   if (!count){ showToast("None of the selected rows are eligible to promote.", true); return; }
   recompute();
-  logAudit("Promote Selected", count+" row(s) added to MasterList via bulk selection", count);
-  showToast("Promoted "+count+" row(s) to MasterList.");
+  logAudit("Promote Selected", count+" row(s) added to Master File via bulk selection", count);
+  showToast("Promoted "+count+" row(s) to Master File.");
   renderAll();
 }
-
 function deleteSelected(){
   var ids = state.selectedRosterIds;
   if (!ids.size){ showToast("No rows selected.", true); return; }
@@ -967,35 +1061,36 @@ function deleteSelected(){
   var n = ids.size;
   state.selectedRosterIds = new Set();
   recompute();
-  logAudit("Delete Selected", n+" roster row(s) deleted via bulk selection", n);
+  logAudit("Delete Selected", n+" working row(s) deleted via bulk selection", n);
   showToast("Deleted "+n+" row(s).");
   renderAll();
 }
 
 // =================================================================
-// MERGE DUPLICATE BADGES
+// MERGE DUPLICATE KEYS
 // =================================================================
 function duplicateGroups(){
   var groups = new Map();
+  if (!state.keyField) return groups;
   state.roster.forEach(function(r){
-    var b = normVal(r.badgeNumber);
-    if (!b || !state.dupBadges.has(b)) return;
-    if (!groups.has(b)) groups.set(b, []);
-    groups.get(b).push(r);
+    var k = normCmp(r[state.keyField], state.caseInsensitive);
+    if (!k || !state.dupKeys.has(k)) return;
+    if (!groups.has(k)) groups.set(k, []);
+    groups.get(k).push(r);
   });
   return groups;
 }
-function mergeGroup(badge, keepId){
-  var toDelete = state.roster.filter(function(r){ return normVal(r.badgeNumber)===badge && r.id!==keepId; }).map(function(r){ return r.id; });
+function mergeGroup(keyVal, keepId){
+  var toDelete = state.roster.filter(function(r){ return normCmp(r[state.keyField],state.caseInsensitive)===keyVal && r.id!==keepId; }).map(function(r){ return r.id; });
   if (!toDelete.length) return 0;
   state.roster = state.roster.filter(function(r){ return toDelete.indexOf(r.id)===-1; });
   recompute();
-  logAudit("Merge Duplicates", "Badge "+badge+" \u00b7 kept 1 row, removed "+toDelete.length+" duplicate row(s)", toDelete.length);
+  logAudit("Merge Duplicates", keyLabel()+" "+keyVal+" \u00b7 kept 1 row, removed "+toDelete.length+" duplicate row(s)", toDelete.length);
   return toDelete.length;
 }
 
 // =================================================================
-// CSV (import into Roster OR MasterList; export helpers)
+// CSV IMPORT / EXPORT — fully schema-driven
 // =================================================================
 function csvEscape(v){
   v = v===null||v===undefined ? "" : String(v);
@@ -1012,19 +1107,23 @@ function downloadCsv(filename, rows){
   URL.revokeObjectURL(url);
 }
 function rosterExportRows(list){
-  var rows = [["Nr","Salary Account Number","Rank","Last Name","First Name","Middle Name","Qlfr","Badge No.","Unit","Sub-Unit","Verification Status"]];
+  var head = ["Nr"].concat(state.schema.map(function(f){ return f.label; })).concat(["Verification Status","Match Confidence"]);
+  var rows = [head];
   list.forEach(function(r){
     var res = state.results.get(r.id);
-    rows.push([r.nr, r.acctNumber, r.rank, r.lastName, r.firstName, r.middleName, r.qualifier, r.badgeNumber, r.unit, r.subUnit, res ? res.status : ""]);
+    var row = [r.nr].concat(state.schema.map(function(f){ return r[f.key]; }));
+    row.push(res ? res.status : "");
+    row.push(res && res.status!=="Key Not Found in Master" ? Math.round(res.confidence*100)+"%" : "");
+    rows.push(row);
   });
   return rows;
 }
 function masterExportRows(list){
-  var rows = [["Account Number","Rank","Last Name","First Name","Middle Name","Qual","Badge Number","Unit","Sub-Unit"]];
-  list.forEach(function(m){ rows.push([m.acctNumber, m.rank, m.lastName, m.firstName, m.middleName, m.qualifier, m.badgeNumber, m.unit, m.subUnit]); });
+  var head = state.schema.map(function(f){ return f.label; });
+  var rows = [head];
+  list.forEach(function(m){ rows.push(state.schema.map(function(f){ return m[f.key]; })); });
   return rows;
 }
-
 function parseCsv(text){
   var rows=[], row=[], field="", inQuotes=false;
   for (var i=0;i<text.length;i++){
@@ -1043,85 +1142,122 @@ function parseCsv(text){
   if (field.length || row.length) { row.push(field); rows.push(row); }
   return rows;
 }
-
-function normalizeHeader(h){
-  return String(h||"").toLowerCase().replace(/[.:]/g,"").replace(/[-_]/g," ").replace(/\s+/g," ").trim();
-}
-
-// Alias table built from FORM_SCHEMA (generic + roster + master header
-// wording) plus a handful of common HR-export variants, so CSVs whose
-// column order or exact header text differs from the sequence above
-// still map to the right field automatically.
-var CSV_ALIASES = {};
-(function buildAliases(){
-  function add(str, key){ if (str) CSV_ALIASES[normalizeHeader(str)] = key; }
-  FORM_SCHEMA.forEach(function(f){ add(f.label,f.key); add(f.rosterLabel,f.key); add(f.masterLabel,f.key); });
-  add("Nr","nr"); add("No","nr"); add("Number","nr"); add("Row","nr");
-  add("Badge No","badgeNumber"); add("BadgeNo","badgeNumber"); add("Badge","badgeNumber");
-  add("Acct No","acctNumber"); add("Account No","acctNumber"); add("Salary Acct No","acctNumber"); add("Salary Account No","acctNumber");
-  add("Qlfr","qualifier"); add("Qual","qualifier"); add("Qualification","qualifier");
-  add("Sub Unit","subUnit"); add("SubUnit","subUnit"); add("Sub-Unit","subUnit");
-})();
+// Resolve each CSV column to a schema key: exact label match first, else null (=> new field)
 function computeAutoMapping(headerRow){
-  return headerRow.map(function(h){ return CSV_ALIASES[normalizeHeader(h)] || ""; });
+  return headerRow.map(function(h){
+    var norm = normalizeHeader(h);
+    var match = state.schema.find(function(f){ return normalizeHeader(f.label) === norm; });
+    return match ? match.key : null;
+  });
 }
-function buildMapSelect(idx, selectedKey){
-  var all = [{key:"",label:"(ignore column)"},{key:"nr",label:"Nr"}].concat(
-    FORM_SCHEMA.map(function(f){ return {key:f.key, label:f.label}; })
-  );
-  var opts = all.map(function(o){ return '<option value="'+o.key+'"'+(o.key===selectedKey?" selected":"")+'>'+esc(o.label)+'</option>'; }).join("");
-  return '<select data-mapcol="'+idx+'" style="width:100%;padding:5px 7px;border:1.5px solid var(--hairline);border-radius:6px;background:var(--surface);color:var(--ink);font-size:11.5px;">'+opts+'</select>';
+var csvColumnOverrides = {}, csvNewFieldLabels = {};
+function buildMapSelect(idx, header, autoKey){
+  var opts = ['<option value="">(ignore column)</option>'];
+  state.schema.forEach(function(f){
+    opts.push('<option value="'+esc(f.key)+'"'+(autoKey===f.key?" selected":"")+'>'+esc(f.label)+(f.key===state.keyField?" (Key)":"")+'</option>');
+  });
+  opts.push('<option value="__new__"'+(autoKey===null?" selected":"")+'>+ Add as new field ("'+esc(header)+'")</option>');
+  return '<select data-mapcol="'+idx+'">'+opts.join("")+'</select>';
 }
-var csvColumnOverrides = {};
 function renderCsvMappingPreview(){
   var text = (els.csvTextarea.value||"").trim();
-  csvColumnOverrides = {};
-  if (!text){ els.csvMappingPreview.innerHTML = ""; return; }
+  csvColumnOverrides = {}; csvNewFieldLabels = {};
+  if (!text){ els.csvMappingPreview.innerHTML = ""; els.csvKeyRow.style.display="none"; return; }
   var lines = parseCsv(text);
-  if (!lines.length || !lines[0].length){ els.csvMappingPreview.innerHTML = ""; return; }
+  if (!lines.length || !lines[0].length){ els.csvMappingPreview.innerHTML = ""; els.csvKeyRow.style.display="none"; return; }
   var header = lines[0];
   var auto = computeAutoMapping(header);
   var rowsHtml = header.map(function(h,i){
-    return '<tr><td class="mono" style="font-size:11px;">'+esc(h||"(blank)")+'</td><td>'+buildMapSelect(i, auto[i])+'</td></tr>';
+    return '<tr><td class="mono" style="font-size:11px;">'+esc(h||"(blank)")+'</td><td>'+buildMapSelect(i,h,auto[i])+'</td></tr>';
   }).join("");
   els.csvMappingPreview.innerHTML =
     '<label style="margin-bottom:6px;">Detected Column Mapping</label>'+
-    '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="text-align:left;padding:4px 6px;font-size:10.5px;color:var(--ink-soft);">CSV Column</th><th style="text-align:left;padding:4px 6px;font-size:10.5px;color:var(--ink-soft);">Maps To</th></tr></thead><tbody>'+rowsHtml+'</tbody></table>'+
-    '<p class="hint-note">Auto-detected from the header text; override any column before importing if a header doesn\u2019t match its usual name.</p>';
+    '<table><thead><tr><th style="text-align:left;padding:4px 6px;font-size:10.5px;color:var(--ink-soft);">CSV Column</th><th style="text-align:left;padding:4px 6px;font-size:10.5px;color:var(--ink-soft);">Maps To</th></tr></thead><tbody>'+rowsHtml+'</tbody></table>'+
+    '<p class="hint-note">Unrecognized columns default to becoming new fields automatically. Override any column before importing.</p>';
   els.csvMappingPreview.querySelectorAll("[data-mapcol]").forEach(function(sel){
-    sel.addEventListener("change", function(){ csvColumnOverrides[sel.getAttribute("data-mapcol")] = sel.value; });
+    sel.addEventListener("change", function(){ csvColumnOverrides[sel.getAttribute("data-mapcol")] = sel.value; refreshCsvKeySelect(header); });
   });
+  refreshCsvKeySelect(header);
+}
+function refreshCsvKeySelect(header){
+  if (state.keyField){ els.csvKeyRow.style.display="none"; return; }
+  els.csvKeyRow.style.display = "block";
+  var opts = header.map(function(h,i){ return '<option value="'+i+'">'+esc(h||"Column "+(i+1))+'</option>'; });
+  var guessIdx = header.findIndex(function(h){ return /\b(id|code|no\.?|number|key|badge|account)\b/i.test(h||""); });
+  els.csvKeySelect.innerHTML = opts.join("");
+  if (guessIdx>=0) els.csvKeySelect.value = String(guessIdx);
 }
 function resolveKeyForCol(header){
   var auto = computeAutoMapping(header);
   return header.map(function(h,i){
-    if (csvColumnOverrides.hasOwnProperty(String(i))) return csvColumnOverrides[i] || null;
-    return auto[i] || null;
+    if (csvColumnOverrides.hasOwnProperty(String(i))) {
+      var v = csvColumnOverrides[i];
+      return v === "" ? null : v; // "__new__" stays literal, resolved later
+    }
+    return auto[i];
   });
 }
-
-// Imports CSV text into either "roster" or "master". For MasterList, a row
-// whose Badge No. already exists updates that reference record in place
-// (so re-importing a refreshed original MasterList export is safe); a new
-// badge is added as a new reference record. Rows with no usable Badge No.
-// are skipped and counted, never silently dropped without a report.
 function importCsvInto(target, text){
   var parsed = parseCsv(text);
   if (parsed.length < 2) throw new Error("CSV needs a header row plus at least one data row.");
   var header = parsed[0];
   var keyForCol = resolveKeyForCol(header);
-  if (keyForCol.indexOf("badgeNumber") === -1) throw new Error("No column is mapped to Badge Number. Adjust the column mapping and try again.");
+
+  // First-ever import defines the schema's key field
+  var freshSchema = state.schema.length === 0;
+  if (freshSchema && !state.keyField){
+    var keyIdx = parseInt(els.csvKeySelect.value, 10);
+    if (isNaN(keyIdx)) throw new Error("Choose a Key / Unique ID column first.");
+    if (keyForCol[keyIdx] === "__new__" || keyForCol[keyIdx] === null){
+      // Force the key column to be treated as a real field even if marked new/ignored
+      keyForCol[keyIdx] = "__new__";
+    }
+  }
+
+  // Resolve "__new__" columns into real schema keys, extending the schema
+  var existingKeys = state.schema.map(function(f){ return f.key; });
+  var addedFieldsThisImport = [];
+  keyForCol = keyForCol.map(function(k, idx){
+    if (k === "__new__"){
+      var newKey = slugify(header[idx], existingKeys);
+      existingKeys.push(newKey);
+      state.schema.push({key:newKey, label: header[idx] || newKey});
+      addedFieldsThisImport.push(newKey);
+      return newKey;
+    }
+    return k;
+  });
+  // Backfill blank values for any newly added fields across pre-existing records
+  if (addedFieldsThisImport.length){
+    state.master.forEach(function(m){ addedFieldsThisImport.forEach(function(k){ if (!(k in m)) m[k] = ""; }); });
+    state.roster.forEach(function(r){ addedFieldsThisImport.forEach(function(k){ if (!(k in r)) r[k] = ""; }); });
+  }
+
+  if (freshSchema && !state.keyField){
+    var keyIdx2 = parseInt(els.csvKeySelect.value, 10);
+    state.keyField = keyForCol[keyIdx2];
+  }
+  if (!state.keyField) throw new Error("No Key / Unique ID column is set yet. Set one in Schema & Settings or on a fresh import.");
+  if (keyForCol.indexOf(state.keyField) === -1 && target === "master" && !state.master.length && !state.roster.length){
+    // nothing to key against yet; acceptable, records just won't resolve until a key column is mapped
+  }
 
   var added = 0, updated = 0, skipped = 0;
+  function blankRec(prefix, extra){
+    var rec = {id: prefix+"_"+Date.now()+"_"+Math.random().toString(36).slice(2,7)};
+    state.schema.forEach(function(f){ rec[f.key] = ""; });
+    if (extra) Object.assign(rec, extra);
+    return rec;
+  }
 
   if (target === "roster"){
     var nextNr = state.roster.length ? Math.max.apply(null, state.roster.map(function(r){return r.nr;})) + 1 : 1;
     for (var i=1;i<parsed.length;i++){
       var csvRow = parsed[i];
       if (!csvRow.length || csvRow.every(function(c){ return String(c).trim()===""; })) continue;
-      var rec = { id:"r_"+Date.now()+"_"+i+"_"+Math.random().toString(36).slice(2,6), nr:nextNr++, acctNumber:"", rank:"", lastName:"", firstName:"", middleName:"", qualifier:"", badgeNumber:"", unit:"", subUnit:"" };
-      keyForCol.forEach(function(key, idx){ if (key && key!=="nr" && csvRow[idx]!==undefined) rec[key] = csvRow[idx]; });
-      if (!rec.badgeNumber){ skipped++; continue; }
+      var rec = blankRec("r", {nr:nextNr++});
+      keyForCol.forEach(function(key, idx){ if (key && csvRow[idx]!==undefined) rec[key] = csvRow[idx]; });
+      if (!normVal(rec[state.keyField])){ skipped++; nextNr--; continue; }
       state.roster.push(rec);
       added++;
     }
@@ -1129,11 +1265,11 @@ function importCsvInto(target, text){
     for (var j=1;j<parsed.length;j++){
       var row2 = parsed[j];
       if (!row2.length || row2.every(function(c){ return String(c).trim()===""; })) continue;
-      var mrec = { id:"m_"+Date.now()+"_"+j+"_"+Math.random().toString(36).slice(2,6), acctNumber:"", rank:"", lastName:"", firstName:"", middleName:"", qualifier:"", badgeNumber:"", unit:"", subUnit:"" };
-      keyForCol.forEach(function(key, idx){ if (key && key!=="nr" && row2[idx]!==undefined) mrec[key] = row2[idx]; });
-      if (!mrec.badgeNumber){ skipped++; continue; }
-      var badgeNorm = normVal(mrec.badgeNumber);
-      var existingIdx = state.master.findIndex(function(m){ return normVal(m.badgeNumber) === badgeNorm; });
+      var mrec = blankRec("m");
+      keyForCol.forEach(function(key, idx){ if (key && row2[idx]!==undefined) mrec[key] = row2[idx]; });
+      if (!normVal(mrec[state.keyField])){ skipped++; continue; }
+      var keyNorm = normCmp(mrec[state.keyField], state.caseInsensitive);
+      var existingIdx = state.master.findIndex(function(m){ return normCmp(m[state.keyField],state.caseInsensitive) === keyNorm; });
       if (existingIdx !== -1){
         var keepId = state.master[existingIdx].id;
         state.master[existingIdx] = Object.assign({}, state.master[existingIdx], mrec, {id: keepId});
@@ -1145,161 +1281,150 @@ function importCsvInto(target, text){
     }
   }
 
-  if (!added && !updated) throw new Error("No valid data rows found in the CSV (rows need a Badge Number).");
+  if (!added && !updated) throw new Error("No valid data rows found (rows need a value in the "+keyLabel()+" column).");
   recompute();
-  var detail = target==="roster"
-    ? added+" row(s) added to Roster"+(skipped?", "+skipped+" row(s) skipped (missing Badge No.)":"")
-    : added+" new reference record(s) added, "+updated+" existing MasterList record(s) updated to match the imported original"+(skipped?", "+skipped+" row(s) skipped (missing Badge No.)":"");
+  var schemaNote = addedFieldsThisImport.length ? " New field(s) added to schema: "+addedFieldsThisImport.map(fieldLabel).join(", ")+"." : "";
+  var detail = (target==="roster"
+    ? added+" row(s) added to Working Data"+(skipped?", "+skipped+" row(s) skipped (missing "+keyLabel()+")":"")
+    : added+" new reference record(s) added, "+updated+" existing Master File record(s) updated"+(skipped?", "+skipped+" row(s) skipped (missing "+keyLabel()+")":"")) + schemaNote;
   logAudit("Import CSV", detail, added+updated);
   return { added:added, updated:updated, skipped:skipped };
 }
 
 // =================================================================
-// CRUD (Add / Edit) with a live, real-time crosscheck against MasterList
+// CRUD (Add / Edit) with a live, real-time crosscheck against Master
 // =================================================================
 function currentFormValues(){
   var vals = {};
-  FORM_SCHEMA.forEach(function(f){ var inp = document.getElementById("f_"+f.key); vals[f.key] = inp ? inp.value : ""; });
+  state.schema.forEach(function(f){ var inp = document.getElementById("f_"+f.key); vals[f.key] = inp ? inp.value : ""; });
   return vals;
 }
-
-// Live-compares the Roster form's in-progress values against the matching
-// MasterList ("original") record as the user types, before Save is pressed.
 function computeLiveRosterCheck(){
   var box = document.getElementById("liveCheckBox");
   if (!box) return;
   var fields = currentFormValues();
-  var badge = normVal(fields.badgeNumber);
-  if (!badge){
+  var keyVal = normVal(fields[state.keyField]);
+  if (!keyVal){
     box.className = "live-check";
-    box.innerHTML = '<div class="live-check-head">Live Check vs. MasterList</div><p class="hint-note">Enter a Badge Number to compare this entry against the original reference record as you type.</p>';
+    box.innerHTML = '<div class="live-check-head">Live Check vs. Master File</div><p class="hint-note">Enter a '+esc(keyLabel())+' to compare this entry against the matching reference record as you type.</p>';
     return;
   }
-  var mrec = state.masterIndex.get(badge);
+  var mrec = state.masterIndex.get(normCmp(keyVal, state.caseInsensitive));
   if (!mrec){
     box.className = "live-check warn";
-    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp notfound">Not Found</span></div><p class="hint-note">No MasterList record uses this Badge Number yet. You can still save this row (it will show as "Badge Not Found" until MasterList has a matching record, or you Promote it afterward).</p>';
+    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp notfound">Not Found</span></div><p class="hint-note">No Master File record uses this '+esc(keyLabel())+' yet. You can still save this row (it will show as "Not Found" until Master File has a matching record, or you Promote it afterward).</p>';
     return;
   }
   var mismatches = [];
-  CHECK_FIELDS.forEach(function(f){
-    if (state.ignoredFields.has(f.key)) return;
-    if (normVal(fields[f.key]) !== normVal(mrec[f.key])) mismatches.push({key:f.key, label:f.label, current:fields[f.key], correct:mrec[f.key]});
+  checkFields().forEach(function(f){
+    if (normCmp(fields[f.key],state.caseInsensitive) !== normCmp(mrec[f.key],state.caseInsensitive)) mismatches.push({key:f.key, label:f.label, current:fields[f.key], correct:mrec[f.key]});
   });
   if (!mismatches.length){
     box.className = "live-check ok";
-    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp aligned">Aligned</span></div><p class="hint-note">Matches the MasterList original exactly (spacing-tolerant).</p>';
+    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp aligned">Aligned</span></div><p class="hint-note">Matches the Master File original exactly (spacing-tolerant).</p>';
   } else {
     box.className = "live-check bad";
     box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp misaligned">Misaligned</span></div>' +
       '<div class="diff-list">' + mismatches.map(function(m){
-        return '<div class="diff-row"><span class="field">'+esc(m.label)+':</span> <span class="from">'+esc(m.current||"(blank)")+'</span> &rarr; <span class="to">'+esc(m.correct)+'</span></div>';
+        var tok = diffChars(normVal(m.current), normVal(m.correct));
+        return '<div class="diff-row"><span class="field">'+esc(m.label)+':</span> <span class="difftxt from">'+diffHtmlFrom(tok)+'</span> &rarr; <span class="difftxt to">'+diffHtmlTo(tok)+'</span></div>';
       }).join("") + '</div>';
   }
 }
-
-// Live-checks a MasterList form entry for a duplicate Badge Number against
-// the rest of MasterList, since Badge Number must stay unique there.
 function computeLiveMasterCheck(excludeId){
   var box = document.getElementById("liveCheckBox");
   if (!box) return;
   var fields = currentFormValues();
-  var badge = normVal(fields.badgeNumber);
-  if (!badge){
+  var keyVal = normVal(fields[state.keyField]);
+  if (!keyVal){
     box.className = "live-check";
-    box.innerHTML = '<div class="live-check-head">Live Check</div><p class="hint-note">Enter a Badge Number unique to this reference record.</p>';
+    box.innerHTML = '<div class="live-check-head">Live Check</div><p class="hint-note">Enter a '+esc(keyLabel())+' unique to this reference record.</p>';
     return;
   }
-  var dupe = state.master.find(function(m){ return m.id !== excludeId && normVal(m.badgeNumber) === badge; });
+  var dupe = state.master.find(function(m){ return m.id !== excludeId && normCmp(m[state.keyField],state.caseInsensitive) === normCmp(keyVal,state.caseInsensitive); });
   if (dupe){
-    var dupeName = [dupe.lastName, dupe.firstName].filter(Boolean).join(", ") || "an existing record";
+    var nameFields = state.schema.filter(function(f){return f.key!==state.keyField;}).slice(0,2).map(function(f){return dupe[f.key];}).filter(Boolean).join(", ");
     box.className = "live-check bad";
-    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp misaligned">Duplicate Badge</span></div><p class="hint-note">Badge '+esc(fields.badgeNumber)+' already exists in MasterList ('+esc(dupeName)+'). Edit that record instead, or use a different Badge Number.</p>';
+    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp misaligned">Duplicate Key</span></div><p class="hint-note">'+esc(keyLabel())+' '+esc(fields[state.keyField])+' already exists in Master File ('+esc(nameFields||"an existing record")+'). Edit that record instead, or use a different value.</p>';
   } else {
     box.className = "live-check ok";
-    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp aligned">Available</span></div><p class="hint-note">No existing MasterList record uses this Badge Number.</p>';
+    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp aligned">Available</span></div><p class="hint-note">No existing Master File record uses this '+esc(keyLabel())+'.</p>';
   }
 }
-
 function wireLiveCheck(target, excludeId){
   var box = document.createElement("div");
   box.id = "liveCheckBox";
   box.className = "live-check";
   els.modalForm.appendChild(box);
   var update = debounce(function(){
-    if (target === "roster") computeLiveRosterCheck();
-    else computeLiveMasterCheck(excludeId);
+    if (target === "roster") computeLiveRosterCheck(); else computeLiveMasterCheck(excludeId);
   }, 150);
-  FORM_SCHEMA.forEach(function(f){
+  state.schema.forEach(function(f){
     var inp = document.getElementById("f_"+f.key);
     if (inp) inp.addEventListener("input", update);
   });
   update();
 }
-
 function openModal(target, mode, id){
+  if (!state.schema.length){ showToast("Import a CSV first to define the fields for this session.", true); return; }
   state.modal = { target:target, mode:mode, id:id };
   var values = {};
   if (mode === "edit"){
     var arr = target==="roster" ? state.roster : state.master;
     var rec = arr.find(function(x){ return x.id===id; });
-    FORM_SCHEMA.forEach(function(f){ values[f.key] = rec ? (rec[f.key]||"") : ""; });
+    state.schema.forEach(function(f){ values[f.key] = rec ? (rec[f.key]||"") : ""; });
   } else {
-    FORM_SCHEMA.forEach(function(f){ values[f.key] = ""; });
+    state.schema.forEach(function(f){ values[f.key] = ""; });
   }
-  els.modalTitle.textContent = (mode==="add"?"Add ":"Edit ") + (target==="roster"?"Roster Record":"Reference Record");
-  els.modalSub.textContent = (target==="roster" ? "Roster" : "MasterList") + " \u00b7 field order matches the original sheet";
-  els.modalForm.innerHTML = FORM_SCHEMA.map(function(f){
-    return '<div class="field-row"><label>'+esc(labelFor(f,target))+(f.key==="badgeNumber"?" *":"")+'</label><input id="f_'+f.key+'" value="'+esc(values[f.key])+'"></div>';
-  }).join("") + '<p class="hint-note">Leading/trailing spaces are trimmed automatically when comparing, so extra spacing here won\u2019t cause a false mismatch. Exact spacing you type on MasterList IS what gets copied into Roster on correction. * Badge Number is required.</p>';
+  els.modalTitle.textContent = (mode==="add"?"Add ":"Edit ") + (target==="roster"?"Working Record":"Reference Record");
+  els.modalSub.textContent = (target==="roster" ? "Working Data" : "Master File") + " \u00b7 "+state.schema.length+" field(s) in this session's schema";
+  els.modalForm.innerHTML = state.schema.map(function(f){
+    return '<div class="field-row"><label>'+esc(f.label)+(f.key===state.keyField?" *":"")+'</label><input id="f_'+f.key+'" value="'+esc(values[f.key])+'"></div>';
+  }).join("") + '<p class="hint-note">Leading/trailing spaces are trimmed automatically when comparing. Exact spacing you type on the Master File IS what gets copied over on correction. * '+esc(keyLabel())+' is required.</p>';
   els.modalBackdrop.classList.add("show");
   wireLiveCheck(target, target==="master" && mode==="edit" ? id : null);
   var first = els.modalForm.querySelector("input");
   if (first) setTimeout(function(){ first.focus(); }, 30);
 }
 function closeModal(){ els.modalBackdrop.classList.remove("show"); }
-
 function saveModal(){
   var fields = currentFormValues();
-  var badgeInput = document.getElementById("f_badgeNumber");
-  if (!fields.badgeNumber.trim()){
-    if (badgeInput) badgeInput.classList.add("field-error");
-    showToast("Badge Number is required.", true);
+  var keyInput = document.getElementById("f_"+state.keyField);
+  if (!normVal(fields[state.keyField])){
+    if (keyInput) keyInput.classList.add("field-error");
+    showToast(keyLabel()+" is required.", true);
     return;
   }
-  if (badgeInput) badgeInput.classList.remove("field-error");
+  if (keyInput) keyInput.classList.remove("field-error");
   var m = state.modal;
-
   if (m.target === "master"){
-    var badgeNorm = normVal(fields.badgeNumber);
-    var dupe = state.master.find(function(x){ return x.id !== m.id && normVal(x.badgeNumber) === badgeNorm; });
-    if (dupe){ if (badgeInput) badgeInput.classList.add("field-error"); showToast("A MasterList record with Badge "+fields.badgeNumber+" already exists. Edit that record instead.", true); return; }
+    var keyNorm = normCmp(fields[state.keyField], state.caseInsensitive);
+    var dupe = state.master.find(function(x){ return x.id !== m.id && normCmp(x[state.keyField],state.caseInsensitive) === keyNorm; });
+    if (dupe){ if (keyInput) keyInput.classList.add("field-error"); showToast("A Master File record with "+keyLabel()+" "+fields[state.keyField]+" already exists.", true); return; }
   }
-
   if (m.mode === "add"){
     var nextNr = state.roster.length ? Math.max.apply(null, state.roster.map(function(r){return r.nr;})) + 1 : 1;
     var rec = Object.assign({id: (m.target==="roster"?"r_":"m_")+Date.now()+"_"+Math.random().toString(36).slice(2,7)}, fields);
     if (m.target === "roster") { rec.nr = nextNr; state.roster.push(rec); }
     else { state.master.push(rec); }
-    logAudit("Create Record", (m.target==="roster"?"Roster":"MasterList")+" \u00b7 Badge "+fields.badgeNumber, 1);
+    logAudit("Create Record", (m.target==="roster"?"Working":"Master")+" \u00b7 "+keyLabel()+" "+fields[state.keyField], 1);
   } else {
     var arr = m.target==="roster" ? state.roster : state.master;
     var rec2 = arr.find(function(x){ return x.id===m.id; });
     if (rec2) Object.assign(rec2, fields);
-    logAudit("Update Record", (m.target==="roster"?"Roster":"MasterList")+" \u00b7 Badge "+fields.badgeNumber, 1);
+    logAudit("Update Record", (m.target==="roster"?"Working":"Master")+" \u00b7 "+keyLabel()+" "+fields[state.keyField], 1);
   }
   recompute();
   closeModal();
   showToast(m.mode==="add" ? "Record added." : "Record updated.");
   renderAll();
 }
-
 function deleteRecord(target, id){
   if (!confirm("Delete this record? This cannot be undone.")) return;
   if (target === "roster") state.roster = state.roster.filter(function(x){ return x.id!==id; });
   else state.master = state.master.filter(function(x){ return x.id!==id; });
   recompute();
-  logAudit("Delete Record", target==="roster"?"Roster row deleted":"MasterList row deleted", 1);
+  logAudit("Delete Record", target==="roster"?"Working row deleted":"Master row deleted", 1);
   showToast("Record deleted.");
   renderAll();
 }
@@ -1308,12 +1433,21 @@ function deleteRecord(target, id){
 // SAMPLE DATA / BACKUP / RESTORE
 // =================================================================
 function addSampleData(n){
+  if (!state.schema.length){
+    state.schema = SAMPLE_SCHEMA.map(function(f){ return {key:f.key,label:f.label}; });
+    state.keyField = SAMPLE_KEYFIELD;
+  }
   var seed = Math.floor(Math.random()*100000) + 1;
-  var ds = generateDataset(n, seed);
+  var ds = generateSampleDataset(n, seed);
   var nextNr = state.roster.length ? Math.max.apply(null, state.roster.map(function(r){return r.nr;})) + 1 : 1;
   var idSuffix = "_s"+Date.now()+"_"+Math.floor(Math.random()*1000);
   ds.master.forEach(function(m){ m.id = m.id + idSuffix; });
   ds.roster.forEach(function(r,i){ r.id = r.id + idSuffix; r.nr = nextNr + i; });
+  // if schema differs from sample schema (user already had custom fields), just skip sample generation
+  if (state.keyField !== SAMPLE_KEYFIELD || !fieldByKey(SAMPLE_KEYFIELD)){
+    showToast("Sample data uses a generic HR-style schema; import your own CSV or Clear All first to load it cleanly.", true);
+    return;
+  }
   state.master = state.master.concat(ds.master);
   state.roster = state.roster.concat(ds.roster);
   recompute();
@@ -1321,31 +1455,31 @@ function addSampleData(n){
   showToast("Added "+n.toLocaleString()+" sample record(s).");
   renderAll();
 }
-
 function exportBackup(){
   var payload = {
-    v: 3, exportedAt: new Date().toISOString(),
-    master: state.master, roster: state.roster,
-    ignoredFields: Array.from(state.ignoredFields),
+    v:4, exportedAt: new Date().toISOString(), schema: state.schema, keyField: state.keyField, caseInsensitive: state.caseInsensitive,
+    master: state.master, roster: state.roster, ignoredFields: Array.from(state.ignoredFields),
     auditLog: state.auditLog.map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; })
   };
   var blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
   var url = URL.createObjectURL(blob);
   var a = document.createElement("a");
-  a.href = url; a.download = "reconciliation-backup-"+new Date().toISOString().slice(0,10)+".json";
+  a.href = url; a.download = "data-checker-backup-"+new Date().toISOString().slice(0,10)+".json";
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  logAudit("Export Backup", "Full JSON backup downloaded ("+state.master.length.toLocaleString()+" MasterList, "+state.roster.length.toLocaleString()+" Roster)", state.master.length+state.roster.length);
+  logAudit("Export Backup", "Full JSON backup downloaded ("+state.master.length.toLocaleString()+" Master, "+state.roster.length.toLocaleString()+" Working)", state.master.length+state.roster.length);
   showToast("Backup downloaded.");
 }
-
 function restoreFromFile(file){
   var reader = new FileReader();
   reader.onload = function(){
     try{
       var data = JSON.parse(String(reader.result||""));
       if (!data || !Array.isArray(data.master) || !Array.isArray(data.roster)) throw new Error("File doesn't look like a valid backup.");
-      if (!confirm("Restore from this backup? This replaces all current Roster and MasterList data, the audit log, and undo/redo history in this browser.")) return;
+      if (!confirm("Restore from this backup? This replaces all current data, schema, the audit log, and undo/redo history in this browser.")) return;
+      state.schema = Array.isArray(data.schema) ? data.schema : [];
+      state.keyField = data.keyField || null;
+      state.caseInsensitive = !!data.caseInsensitive;
       state.master = data.master;
       state.roster = data.roster;
       state.ignoredFields = new Set(data.ignoredFields || []);
@@ -1353,7 +1487,7 @@ function restoreFromFile(file){
       state.undoStack = []; state.redoStack = []; state.selectedRosterIds = new Set();
       state.page = { roster:1, master:1, audit:1 };
       recompute();
-      logAudit("Restore Backup", "Session restored from uploaded JSON backup ("+state.roster.length.toLocaleString()+" roster record(s))", state.roster.length);
+      logAudit("Restore Backup", "Session restored from uploaded JSON backup ("+state.roster.length.toLocaleString()+" working record(s))", state.roster.length);
       showToast("Backup restored.");
       renderAll();
     } catch(e){ showToast("Restore failed: "+e.message, true); }
@@ -1365,9 +1499,9 @@ function restoreFromFile(file){
 // FILTER / SORT / PAGINATE
 // =================================================================
 function effectivePageSize(){ return state.pageSize; }
-
 function genericSort(rows, sortState, resultsMap){
   var key = sortState.key, dir = sortState.dir;
+  if (!key) return rows;
   rows.sort(function(a,b){
     var va, vb;
     if (key==="status" && resultsMap){ va=resultsMap.get(a.id).status; vb=resultsMap.get(b.id).status; }
@@ -1379,27 +1513,25 @@ function genericSort(rows, sortState, resultsMap){
   });
   return rows;
 }
-
 function filteredRoster(){
   var f = state.filters, q = f.search.trim().toLowerCase();
   var rows = state.roster.filter(function(r){
     var res = state.results.get(r.id);
     if (f.status !== "all"){
-      if (f.status === "dup"){
-        if (!state.dupBadges.has(normVal(r.badgeNumber))) return false;
-      } else if (res.status !== f.status) return false;
+      if (f.status === "dup"){ if (!state.dupKeys.has(normCmp(r[state.keyField],state.caseInsensitive))) return false; }
+      else if (res.status !== f.status) return false;
     }
-    if (f.subUnit !== "all" && (normVal(r.subUnit)||"(No Sub-Unit)") !== f.subUnit) return false;
-    if (f.unit !== "all" && (normVal(r.unit)||"(No Unit)") !== f.unit) return false;
+    if (f.field !== "all" && f.value !== "all"){
+      if (normVal(r[f.field]) !== f.value) return false;
+    }
     if (q){
-      var hay = [r.badgeNumber, r.lastName, r.firstName, r.middleName, r.rank, r.unit, r.subUnit, r.acctNumber, r.qualifier].join(" ").toLowerCase();
+      var hay = state.schema.map(function(sf){ return r[sf.key]; }).join(" ").toLowerCase();
       if (hay.indexOf(q) === -1) return false;
     }
     return true;
   });
   return genericSort(rows, state.sort, state.results);
 }
-
 function currentRosterPage(){
   var all = filteredRoster();
   var pageSize = effectivePageSize();
@@ -1419,23 +1551,23 @@ function renderDashboard(){
   els.barsStatusDist.style.display = hasData ? "block" : "none";
   els.barsFieldChart.style.display = hasData ? "block" : "none";
   els.barsUnitChart.style.display = hasData ? "block" : "none";
-
   if (!hasData){ els.dashFooter.textContent = "No data loaded yet."; renderDupBanner(); return; }
 
   var c = state.counts, total = state.roster.length;
   els.statTotal.textContent = total.toLocaleString();
   els.statAligned.textContent = c.Aligned.toLocaleString();
   els.statMisaligned.textContent = c.Misaligned.toLocaleString();
-  els.statNotFound.textContent = c["Badge Not Found in MasterList"].toLocaleString();
-  els.statDup.textContent = state.dupBadges.size.toLocaleString();
-  document.querySelectorAll(".stat-card").forEach(function(card){
+  els.statNotFound.textContent = c["Key Not Found in Master"].toLocaleString();
+  els.statDup.textContent = state.dupKeys.size.toLocaleString();
+  els.statConfidence.textContent = state.avgConfidence===null ? "\u2014" : Math.round(state.avgConfidence*100)+"%";
+  document.querySelectorAll(".stat-card[data-statfilter]").forEach(function(card){
     card.classList.toggle("filter-active", card.getAttribute("data-statfilter") === state.filters.status);
   });
 
   var statusRows = [
     {label:"Aligned", val:c.Aligned, color:"var(--ok)"},
     {label:"Misaligned", val:c.Misaligned, color:"var(--bad)"},
-    {label:"Not Found", val:c["Badge Not Found in MasterList"], color:"var(--warn)"}
+    {label:"Not Found", val:c["Key Not Found in Master"], color:"var(--warn)"}
   ];
   var maxVal = Math.max(1, total);
   els.barChart.innerHTML = statusRows.map(function(s){
@@ -1458,10 +1590,16 @@ function renderDashboard(){
     }).join("");
   }
 
-  var unitEntries = Object.keys(state.unitCounts).map(function(k){ return {label:k, val:state.unitCounts[k]}; })
-    .sort(function(a,b){ return b.val-a.val; }).slice(0,8);
+  var nonKeyFields = state.schema.filter(function(f){ return f.key!==state.keyField; });
+  els.unitChartField.innerHTML = nonKeyFields.map(function(f){ return '<option value="'+esc(f.key)+'"'+(f.key===state.unitChartField?" selected":"")+'>'+esc(f.label)+'</option>'; }).join("");
+  els.unitChartLabel.textContent = state.unitChartField ? fieldLabel(state.unitChartField) : "Field";
+  var unitCounts = {};
+  if (state.unitChartField){
+    state.roster.forEach(function(r){ var v = normVal(r[state.unitChartField]) || "(blank)"; unitCounts[v] = (unitCounts[v]||0)+1; });
+  }
+  var unitEntries = Object.keys(unitCounts).map(function(k){ return {label:k, val:unitCounts[k]}; }).sort(function(a,b){ return b.val-a.val; }).slice(0,8);
   if (!unitEntries.length){
-    els.unitChart.innerHTML = '<p style="color:var(--ink-soft);font-size:12px;">No Unit data.</p>';
+    els.unitChart.innerHTML = '<p style="color:var(--ink-soft);font-size:12px;">No data for this field.</p>';
   } else {
     var umax = unitEntries[0].val;
     els.unitChart.innerHTML = unitEntries.map(function(u){
@@ -1471,44 +1609,54 @@ function renderDashboard(){
     }).join("");
   }
 
-  els.dashFooter.textContent = "MasterList: " + state.master.length.toLocaleString() + " reference record(s) \u00b7 Roster: " + total.toLocaleString() + " record(s) \u00b7 Checked fields: " +
-    CHECK_FIELDS.filter(function(f){ return !state.ignoredFields.has(f.key); }).map(function(f){ return f.label; }).join(", ");
+  els.dashFooter.textContent = "Master File: " + state.master.length.toLocaleString() + " reference record(s) \u00b7 Working Data: " + total.toLocaleString() + " record(s) \u00b7 Checked fields: " +
+    (checkFields().map(function(f){ return f.label; }).join(", ") || "none");
   renderDupBanner();
 }
-
 function renderDupBanner(){
-  var n = state.dupBadges.size;
+  var n = state.dupKeys.size;
   if (!n){ els.dupBanner.style.display="none"; els.dupChip.style.display="none"; return; }
   els.dupBanner.style.display="flex";
   els.dupChip.style.display="inline-block";
-  els.dupBannerText.textContent = n.toLocaleString() + " duplicate badge number" + (n===1?"":"s") + " found within Roster \u2014 duplicate rows can cause ambiguous corrections. Review and merge or delete the extras.";
+  els.dupBannerText.textContent = n.toLocaleString() + " duplicate " + keyLabel().toLowerCase() + " value" + (n===1?"":"s") + " found within Working Data \u2014 duplicates can cause ambiguous corrections. Review and merge or delete the extras.";
 }
 
 // =================================================================
-// RENDER: Roster table
+// RENDER: dynamic table headers
 // =================================================================
 function stampClass(status){
   if (status==="Aligned") return "aligned";
   if (status==="Misaligned") return "misaligned";
   return "notfound";
 }
-
-function populateFilterSelect(selectEl, values, currentValue){
-  var set = new Set(values);
-  var current = selectEl.value || currentValue || "all";
-  var placeholder = selectEl.querySelector('option[value="all"]');
-  var opts = [placeholder ? placeholder.outerHTML : '<option value="all">All</option>'];
-  Array.from(set).sort().forEach(function(v){ opts.push('<option value="'+esc(v)+'">'+esc(v)+'</option>'); });
-  selectEl.innerHTML = opts.join("");
-  selectEl.value = Array.from(selectEl.options).some(function(o){ return o.value===current; }) ? current : "all";
+function buildRosterHead(){
+  var cols = ['<th class="col-chk"><input type="checkbox" id="chkAllRoster" title="Select all rows on this page"></th>','<th class="col-nr" data-sort="nr">Nr<span class="sort-arrow"></span></th>'];
+  state.schema.forEach(function(f){ cols.push('<th data-sort="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?' <span class="keypill">Key</span>':'')+'<span class="sort-arrow"></span></th>'); });
+  cols.push('<th class="col-status" data-sort="status">Status<span class="sort-arrow"></span></th>');
+  cols.push('<th class="col-conf">Match</th>');
+  cols.push('<th>Discrepancy Detail</th>');
+  cols.push('<th class="col-fix"></th>');
+  els.rosterHead.innerHTML = cols.join("");
 }
-function populateSubUnitSelect(){
-  populateFilterSelect(els.subUnitSelect, state.roster.map(function(r){ return normVal(r.subUnit) || "(No Sub-Unit)"; }));
+function buildMasterHead(){
+  var cols = [];
+  state.schema.forEach(function(f){ cols.push('<th data-sort="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?' <span class="keypill">Key</span>':'')+'<span class="sort-arrow"></span></th>'); });
+  cols.push('<th class="col-fix"></th>');
+  els.masterHead.innerHTML = cols.join("");
 }
-function populateUnitSelect(){
-  populateFilterSelect(els.unitSelect, state.roster.map(function(r){ return normVal(r.unit) || "(No Unit)"; }));
+function populateFilterFieldSelect(){
+  var opts = ['<option value="all">All (choose a field to filter by)</option>'];
+  state.schema.forEach(function(f){ opts.push('<option value="'+esc(f.key)+'"'+(state.filters.field===f.key?" selected":"")+'>'+esc(f.label)+'</option>'); });
+  els.filterFieldSelect.innerHTML = opts.join("");
+  populateFilterValueSelect();
 }
-
+function populateFilterValueSelect(){
+  if (state.filters.field==="all"){ els.filterValueSelect.innerHTML='<option value="all">Any value</option>'; els.filterValueSelect.disabled=true; return; }
+  els.filterValueSelect.disabled = false;
+  var set = new Set(state.roster.map(function(r){ return normVal(r[state.filters.field]) || "(blank)"; }));
+  var opts = ['<option value="all">Any value</option>'].concat(Array.from(set).sort().map(function(v){ return '<option value="'+esc(v)+'"'+(state.filters.value===v?" selected":"")+'>'+esc(v)+'</option>'; }));
+  els.filterValueSelect.innerHTML = opts.join("");
+}
 function updateSortArrows(containerId, sortKey, dir){
   document.querySelectorAll("#"+containerId+" [data-sort]").forEach(function(th){
     var arrow = th.querySelector(".sort-arrow");
@@ -1516,7 +1664,6 @@ function updateSortArrows(containerId, sortKey, dir){
     arrow.textContent = th.getAttribute("data-sort")===sortKey ? (dir==="asc"?" \u25B2":" \u25BC") : "";
   });
 }
-
 function syncSelectAllCheckbox(pageRows){
   var box = document.getElementById("chkAllRoster");
   if (!box) return;
@@ -1524,58 +1671,68 @@ function syncSelectAllCheckbox(pageRows){
   var selectedCount = pageRows.filter(function(r){ return state.selectedRosterIds.has(r.id); }).length;
   box.checked = selectedCount === pageRows.length;
   box.indeterminate = selectedCount > 0 && selectedCount < pageRows.length;
+  box.addEventListener("change", function(){
+    var checked = this.checked;
+    pageRows.forEach(function(r){ if (checked) state.selectedRosterIds.add(r.id); else state.selectedRosterIds.delete(r.id); });
+    renderRosterTable();
+  });
 }
-
 function updateBulkBar(){
   var n = state.selectedRosterIds.size;
   els.bulkBar.classList.toggle("show", n>0);
   els.bulkCount.textContent = n.toLocaleString() + " selected";
 }
+function confidenceColor(pct){
+  if (pct>=90) return "var(--ok)";
+  if (pct>=60) return "var(--warn)";
+  return "var(--bad)";
+}
 
 function renderRosterTable(){
+  buildRosterHead();
   var pageInfo = currentRosterPage();
   var all = pageInfo.all, pageRows = pageInfo.pageRows, totalPages = pageInfo.totalPages;
 
-  if (!pageRows.length){
-    els.rosterBody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:var(--ink-soft);">No records match the current filters.</td></tr>';
+  if (!state.schema.length){
+    els.rosterBody.innerHTML = '<tr><td style="text-align:center;padding:30px;color:var(--ink-soft);">Import a CSV to define this session\'s fields.</td></tr>';
+  } else if (!pageRows.length){
+    els.rosterBody.innerHTML = '<tr><td colspan="'+(state.schema.length+5)+'" style="text-align:center;padding:30px;color:var(--ink-soft);">No records match the current filters.</td></tr>';
   } else {
     els.rosterBody.innerHTML = pageRows.map(function(r){
       var res = state.results.get(r.id);
-      var isDup = state.dupBadges.has(normVal(r.badgeNumber));
+      var isDup = state.dupKeys.has(normCmp(r[state.keyField], state.caseInsensitive));
       var mismatchKeys = {};
       res.mismatches.forEach(function(m){ mismatchKeys[m.key]=true; });
-      function cell(key){ return '<td class="'+(mismatchKeys[key]?"cell-diff":"")+'">'+esc(r[key])+'</td>'; }
+      var fieldCells = state.schema.map(function(f){
+        return '<td data-label="'+esc(f.label)+'" class="'+(f.key===state.keyField?"mono":"")+' '+(mismatchKeys[f.key]?"cell-diff":"")+'">'+esc(r[f.key])+'</td>';
+      }).join("");
       var diffHtml;
       if (res.status === "Misaligned"){
         diffHtml = '<div class="diff-list">' + res.mismatches.map(function(m){
-          return '<div class="diff-row"><span class="field">'+esc(m.label)+':</span> <span class="from">'+esc(m.current)+'</span> &rarr; <span class="to">'+esc(m.correct)+'</span>'+
-            '<button type="button" class="fieldfix" data-fixfield="'+r.id+'|'+esc(m.key)+'" title="Fix just this field, using MasterList\u2019s exact formatting">Fix field</button></div>';
+          var tok = diffChars(normVal(m.current), normVal(m.correct));
+          return '<div class="diff-row"><span class="field">'+esc(m.label)+':</span> <span class="difftxt from">'+diffHtmlFrom(tok)+'</span> &rarr; <span class="difftxt to">'+diffHtmlTo(tok)+'</span>'+
+            '<button type="button" class="fieldfix" data-fixfield="'+r.id+'|'+esc(m.key)+'" title="Fix just this field, using the Master File\u2019s exact formatting">Fix field</button></div>';
         }).join("") + "</div>";
-      } else if (res.status === "Badge Not Found in MasterList"){
-        diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">No matching Badge No. in MasterList</span>';
+      } else if (res.status === "Key Not Found in Master"){
+        diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">No matching '+esc(keyLabel())+' in Master File</span>';
       } else {
-        diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">Matches MasterList</span>';
+        diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">Matches Master File</span>';
       }
-      if (isDup) diffHtml += '<div style="margin-top:4px;"><span class="stamp dup">Duplicate Badge</span></div>';
+      if (isDup) diffHtml += '<div style="margin-top:4px;"><span class="stamp dup">Duplicate Key</span></div>';
+      var confPct = res.status==="Key Not Found in Master" ? null : Math.round(res.confidence*100);
       var actions = (res.status==="Misaligned" ? '<button type="button" class="small ghost" data-fixrow="'+r.id+'">Fix</button>' : "") +
-        (res.status==="Badge Not Found in MasterList" ? '<button type="button" class="small ghost" data-promote="'+r.id+'">Promote</button>' : "") +
+        (res.status==="Key Not Found in Master" ? '<button type="button" class="small ghost" data-promote="'+r.id+'">Promote</button>' : "") +
+        '<button type="button" class="small ghost" data-compare="'+r.id+'">Compare</button>' +
         '<button type="button" class="small ghost" data-editroster="'+r.id+'">Edit</button>' +
         '<button type="button" class="small danger" data-delroster="'+r.id+'">Delete</button>';
       return '<tr class="'+(state.selectedRosterIds.has(r.id)?"is-selected ":"")+(isDup?"is-dup":"")+'">'+
-        '<td class="col-chk"><input type="checkbox" class="row-chk" data-rowchk="'+r.id+'"'+(state.selectedRosterIds.has(r.id)?" checked":"")+'></td>'+
-        '<td class="mono">'+esc(r.nr)+'</td>'+
-        '<td class="mono '+(mismatchKeys.acctNumber?"cell-diff":"")+'">'+esc(r.acctNumber)+'</td>'+
-        cell("rank")+
-        cell("lastName")+
-        cell("firstName")+
-        cell("middleName")+
-        '<td class="'+(mismatchKeys.qualifier?"cell-diff":"")+'">'+esc(r.qualifier)+'</td>'+
-        '<td class="mono">'+esc(r.badgeNumber)+'</td>'+
-        cell("unit")+
-        cell("subUnit")+
-        '<td><span class="stamp '+stampClass(res.status)+'">'+esc(res.status==="Badge Not Found in MasterList"?"Not Found":res.status)+'</span></td>'+
-        '<td>'+diffHtml+'</td>'+
-        '<td class="fix-cell">'+actions+'</td>'+
+        '<td class="col-chk" data-label=""><input type="checkbox" class="row-chk" data-rowchk="'+r.id+'"'+(state.selectedRosterIds.has(r.id)?" checked":"")+'></td>'+
+        '<td class="mono" data-label="Nr">'+esc(r.nr)+'</td>'+
+        fieldCells+
+        '<td data-label="Status"><span class="stamp '+stampClass(res.status)+'">'+esc(res.status==="Key Not Found in Master"?"Not Found":res.status)+'</span></td>'+
+        '<td data-label="Match">'+(confPct===null?'<span style="color:var(--ink-soft);">&mdash;</span>':'<span class="conf-badge" style="color:'+confidenceColor(confPct)+';">'+confPct+'%</span>')+'</td>'+
+        '<td data-label="Discrepancy">'+diffHtml+'</td>'+
+        '<td class="fix-cell" data-label="Actions">'+actions+'</td>'+
       '</tr>';
     }).join("");
   }
@@ -1583,8 +1740,9 @@ function renderRosterTable(){
   els.rosterBody.querySelectorAll("[data-fixrow]").forEach(function(btn){ btn.addEventListener("click", function(){ applyAutoCorrectRow(btn.getAttribute("data-fixrow")); }); });
   els.rosterBody.querySelectorAll("[data-fixfield]").forEach(function(btn){ btn.addEventListener("click", function(){ var p=btn.getAttribute("data-fixfield").split("|"); applyAutoCorrectField(p[0], p[1]); }); });
   els.rosterBody.querySelectorAll("[data-promote]").forEach(function(btn){ btn.addEventListener("click", function(){
-    if (confirm("Add this person to MasterList as a new reference record? Use this only when the person is real and simply missing from the reference sheet.")) promoteRow(btn.getAttribute("data-promote"));
+    if (confirm("Add this record to the Master File as a new reference record? Use this only when it's genuinely missing from the reference file.")) promoteRow(btn.getAttribute("data-promote"));
   }); });
+  els.rosterBody.querySelectorAll("[data-compare]").forEach(function(btn){ btn.addEventListener("click", function(){ openCompareModal(btn.getAttribute("data-compare")); }); });
   els.rosterBody.querySelectorAll("[data-editroster]").forEach(function(btn){ btn.addEventListener("click", function(){ openModal("roster","edit",btn.getAttribute("data-editroster")); }); });
   els.rosterBody.querySelectorAll("[data-delroster]").forEach(function(btn){ btn.addEventListener("click", function(){ deleteRecord("roster", btn.getAttribute("data-delroster")); }); });
   els.rosterBody.querySelectorAll("[data-rowchk]").forEach(function(cb){
@@ -1600,16 +1758,26 @@ function renderRosterTable(){
   syncSelectAllCheckbox(pageRows);
   updateBulkBar();
   updateSortArrows("rosterHead", state.sort.key, state.sort.dir);
+  wireSortHeaders("rosterHead", state.sort, renderRosterTable);
 
   renderPager("rosterPager", state.page.roster, totalPages, all.length, function(p){ state.page.roster = p; renderRosterTable(); });
   els.tabCountRoster.textContent = "(" + state.roster.length.toLocaleString() + ")";
 
-  var subtitleParts = [state.roster.length.toLocaleString()+" roster record(s)", state.master.length.toLocaleString()+" MasterList record(s)"];
+  var subtitleParts = [state.roster.length.toLocaleString()+" working record(s)", state.master.length.toLocaleString()+" Master File record(s)"];
   els.subtitle.innerHTML = subtitleParts.join(" &middot; ") + ' &middot; <span class="tag ok">spacing-safe</span>' +
-    (state.dupBadges.size ? ' &middot; <span class="tag warn">'+state.dupBadges.size+' duplicate badge(s)</span>' : "") +
-    (state.ignoredFields.size ? ' &middot; <span class="tag info">ignoring '+esc(Array.from(state.ignoredFields).map(function(k){var f=fieldByKey(k);return f?f.label:k;}).join(", "))+'</span>' : "");
+    (state.keyField ? ' &middot; <span class="tag info">key: '+esc(keyLabel())+'</span>' : ' &middot; <span class="tag warn">no key field set</span>') +
+    (state.dupKeys.size ? ' &middot; <span class="tag warn">'+state.dupKeys.size+' duplicate key(s)</span>' : "") +
+    (state.ignoredFields.size ? ' &middot; <span class="tag info">ignoring '+esc(Array.from(state.ignoredFields).map(fieldLabel).join(", "))+'</span>' : "");
 }
-
+function wireSortHeaders(containerId, sortState, renderFn){
+  document.querySelectorAll("#"+containerId+" th[data-sort]").forEach(function(th){
+    th.onclick = function(){
+      var key = th.getAttribute("data-sort");
+      if (sortState.key===key) sortState.dir = sortState.dir==="asc"?"desc":"asc"; else { sortState.key=key; sortState.dir="asc"; }
+      renderFn();
+    };
+  });
+}
 function renderPager(elId, page, totalPages, totalRows, onGo){
   var el = document.getElementById(elId);
   el.innerHTML =
@@ -1633,12 +1801,10 @@ function renderPager(elId, page, totalPages, totalRows, onGo){
   if (jumpInput){
     jumpInput.addEventListener("keydown", function(e){
       if (e.key !== "Enter") return;
-      var p = Math.min(totalPages, Math.max(1, parseInt(jumpInput.value,10) || 1));
-      onGo(p);
+      onGo(Math.min(totalPages, Math.max(1, parseInt(jumpInput.value,10) || 1)));
     });
     jumpInput.addEventListener("change", function(){
-      var p = Math.min(totalPages, Math.max(1, parseInt(jumpInput.value,10) || 1));
-      onGo(p);
+      onGo(Math.min(totalPages, Math.max(1, parseInt(jumpInput.value,10) || 1)));
     });
   }
   el.querySelector('[data-pg="first"]').disabled = page<=1;
@@ -1648,48 +1814,44 @@ function renderPager(elId, page, totalPages, totalRows, onGo){
 }
 
 // =================================================================
-// RENDER: MasterList table
+// RENDER: Master table
 // =================================================================
 function filteredMaster(){
   var q = state.masterSearch.trim().toLowerCase();
   var rows = state.master.filter(function(m){
     if (!q) return true;
-    var hay = [m.badgeNumber, m.lastName, m.firstName, m.middleName, m.rank, m.unit, m.subUnit, m.acctNumber, m.qualifier].join(" ").toLowerCase();
+    var hay = state.schema.map(function(f){ return m[f.key]; }).join(" ").toLowerCase();
     return hay.indexOf(q) !== -1;
   });
   return genericSort(rows, state.sortMaster, null);
 }
 function renderMasterTable(){
+  buildMasterHead();
   var all = filteredMaster();
   var pageSize = effectivePageSize();
   var totalPages = Math.max(1, Math.ceil(all.length/pageSize));
   if (state.page.master > totalPages) state.page.master = totalPages;
   var startIdx = (state.page.master-1)*pageSize;
   var pageRows = all.slice(startIdx, startIdx+pageSize);
-  if (!pageRows.length){
-    els.masterBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--ink-soft);">No reference records match.</td></tr>';
+  if (!state.schema.length){
+    els.masterBody.innerHTML = '<tr><td style="text-align:center;padding:30px;color:var(--ink-soft);">Import a CSV to define this session\'s fields.</td></tr>';
+  } else if (!pageRows.length){
+    els.masterBody.innerHTML = '<tr><td colspan="'+(state.schema.length+1)+'" style="text-align:center;padding:30px;color:var(--ink-soft);">No reference records match.</td></tr>';
   } else {
     els.masterBody.innerHTML = pageRows.map(function(m){
-      var isDup = state.master.filter(function(x){ return normVal(x.badgeNumber)===normVal(m.badgeNumber); }).length > 1;
+      var isDup = state.keyField ? state.master.filter(function(x){ return normCmp(x[state.keyField],state.caseInsensitive)===normCmp(m[state.keyField],state.caseInsensitive); }).length > 1 : false;
+      var cells = state.schema.map(function(f){
+        return '<td data-label="'+esc(f.label)+'" class="'+(f.key===state.keyField?"mono":"")+'">'+esc(m[f.key])+(f.key===state.keyField&&isDup?' <span class="stamp dup">Dup</span>':'')+'</td>';
+      }).join("");
       var actions = '<button type="button" class="small ghost" data-editmaster="'+m.id+'">Edit</button>'+
         '<button type="button" class="small danger" data-delmaster="'+m.id+'">Delete</button>';
-      return '<tr class="'+(isDup?"is-dup":"")+'">'+
-        '<td class="mono">'+esc(m.acctNumber)+'</td>'+
-        '<td>'+esc(m.rank||"")+'</td>'+
-        '<td>'+esc(m.lastName||"")+'</td>'+
-        '<td>'+esc(m.firstName||"")+'</td>'+
-        '<td>'+esc(m.middleName||"")+'</td>'+
-        '<td>'+esc(m.qualifier||"")+'</td>'+
-        '<td class="mono">'+esc(m.badgeNumber)+(isDup?' <span class="stamp dup">Dup</span>':'')+'</td>'+
-        '<td>'+esc(m.unit||"")+'</td>'+
-        '<td>'+esc(m.subUnit||"")+'</td>'+
-        '<td class="fix-cell">'+actions+'</td>'+
-      '</tr>';
+      return '<tr class="'+(isDup?"is-dup":"")+'">'+cells+'<td class="fix-cell" data-label="Actions">'+actions+'</td></tr>';
     }).join("");
   }
   els.masterBody.querySelectorAll("[data-editmaster]").forEach(function(btn){ btn.addEventListener("click", function(){ openModal("master","edit",btn.getAttribute("data-editmaster")); }); });
   els.masterBody.querySelectorAll("[data-delmaster]").forEach(function(btn){ btn.addEventListener("click", function(){ deleteRecord("master", btn.getAttribute("data-delmaster")); }); });
   updateSortArrows("masterHead", state.sortMaster.key, state.sortMaster.dir);
+  wireSortHeaders("masterHead", state.sortMaster, renderMasterTable);
   renderPager("masterPager", state.page.master, totalPages, all.length, function(p){ state.page.master=p; renderMasterTable(); });
   els.tabCountMaster.textContent = "(" + state.master.length.toLocaleString() + ")";
 }
@@ -1710,7 +1872,7 @@ function renderAudit(){
   var startIdx = (state.page.audit-1)*pageSize;
   var pageRows = rows.slice(startIdx, startIdx+pageSize);
   if (!pageRows.length){
-    els.auditBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--ink-soft);">No actions logged yet.</td></tr>';
+    els.auditBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;">No actions logged yet.</td></tr>';
   } else {
     els.auditBody.innerHTML = pageRows.map(function(a){
       return '<tr><td class="mono" style="font-size:11px;">'+esc(a.ts.toLocaleString())+'</td>'+
@@ -1723,25 +1885,60 @@ function renderAudit(){
 }
 
 // =================================================================
-// RENDER: Settings + Undo/Redo + Merge modals
+// RENDER: Schema & Settings modal
 // =================================================================
 function renderSettingsModal(){
-  els.ignoreList.innerHTML = CHECK_FIELDS.map(function(f){
+  els.caseInsensitiveChk.checked = state.caseInsensitive;
+  if (!state.schema.length){
+    els.ignoreList.innerHTML = '<p class="hint-note" style="padding:8px;">No fields yet &mdash; import a CSV first.</p>';
+    return;
+  }
+  els.ignoreList.innerHTML = state.schema.map(function(f){
+    var isKey = f.key === state.keyField;
     var checked = !state.ignoredFields.has(f.key);
-    return '<label class="ignore-row"><input type="checkbox" data-ignorekey="'+f.key+'"'+(checked?" checked":"")+'>'+
-      '<span class="ir-label">'+esc(f.label)+'</span><span class="ir-sub">'+(checked?"checked":"ignored")+'</span></label>';
+    return '<div class="ignore-row" data-fieldkey="'+esc(f.key)+'">'+
+      '<input type="radio" name="keyfield" value="'+esc(f.key)+'" data-keyradio'+(isKey?" checked":"")+' title="Use as the Key / ID field">'+
+      '<span class="ir-label"><input type="text" data-labelinput value="'+esc(f.label)+'"></span>'+
+      '<label class="ir-sub" style="display:flex;align-items:center;gap:4px;"><input type="checkbox" data-ignorekey '+(isKey?"disabled":"")+(checked?" checked":"")+'> checked</label>'+
+      (isKey?'<span class="keypill">Key</span>':'<button type="button" class="small danger" data-delfield="'+esc(f.key)+'" style="margin:0;">Delete</button>')+
+    '</div>';
   }).join("");
-  els.ignoreList.querySelectorAll("[data-ignorekey]").forEach(function(cb){
-    cb.addEventListener("change", function(){ cb.closest(".ignore-row").querySelector(".ir-sub").textContent = cb.checked?"checked":"ignored"; });
+  els.ignoreList.querySelectorAll("[data-delfield]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.getAttribute("data-delfield");
+      if (!confirm('Delete field "'+fieldLabel(key)+'"? This removes it from every record.')) return;
+      state.schema = state.schema.filter(function(f){ return f.key!==key; });
+      state.ignoredFields.delete(key);
+      state.master.forEach(function(m){ delete m[key]; });
+      state.roster.forEach(function(r){ delete r[key]; });
+      recompute();
+      logAudit("Delete Field", 'Field "'+key+'" removed from schema', 0);
+      renderSettingsModal();
+      renderAll();
+    });
   });
 }
+els.addFieldBtn && els.addFieldBtn.addEventListener("click", function(){
+  var label = prompt("New field name:");
+  if (!label || !label.trim()) return;
+  var key = slugify(label, state.schema.map(function(f){return f.key;}));
+  state.schema.push({key:key, label:label.trim()});
+  state.master.forEach(function(m){ m[key] = ""; });
+  state.roster.forEach(function(r){ r[key] = ""; });
+  recompute();
+  logAudit("Add Field", 'Field "'+label.trim()+'" added to schema', 0);
+  renderSettingsModal();
+});
+
+// =================================================================
+// RENDER: Undo/Redo + Merge + Compare modals
+// =================================================================
 function renderUndoButton(){
   var n = state.undoStack.length;
   els.undoBtn.disabled = n===0;
   var badge = els.undoBtn.querySelector(".btn-badge");
   if (badge) badge.remove();
   if (n>0){ var b=document.createElement("span"); b.className="btn-badge"; b.textContent=n; els.undoBtn.appendChild(b); }
-
   var rn = state.redoStack.length;
   els.redoBtn.disabled = rn===0;
   var rbadge = els.redoBtn.querySelector(".btn-badge");
@@ -1751,15 +1948,12 @@ function renderUndoButton(){
 function renderUndoList(){
   var history = state.undoStack.slice().reverse();
   var redoHistory = state.redoStack.slice().reverse();
-  els.undoModalSub.textContent = history.length
-    ? "Up to "+history.length+" recent action(s) can be undone, most recent first."
-    : "Nothing to undo yet.";
+  els.undoModalSub.textContent = history.length ? "Up to "+history.length+" recent action(s) can be undone, most recent first." : "Nothing to undo yet.";
   els.undoConfirmBtn.disabled = !history.length;
   els.undoList.innerHTML = history.length ? history.map(function(h,i){
     return '<div class="undo-item'+(i===0?" latest":"")+'"><div><b>'+esc(h.label)+'</b>'+(i===0?" \u2014 next to revert":"")+'</div>'+
       '<div class="ui-meta">'+h.entries.length+' row(s) affected</div></div>';
-  }).join("") : '<p class="hint-note">No auto-correct actions to undo yet.</p>';
-
+  }).join("") : '<p class="hint-note">No correction actions to undo yet.</p>';
   els.redoConfirmBtn.disabled = !redoHistory.length;
   els.redoList.innerHTML = redoHistory.length ? redoHistory.map(function(h,i){
     return '<div class="undo-item'+(i===0?" latest":"")+'"><div><b>'+esc(h.label)+'</b>'+(i===0?" \u2014 next to reapply":"")+'</div>'+
@@ -1769,39 +1963,64 @@ function renderUndoList(){
 function renderMergeModal(){
   var groups = duplicateGroups();
   if (!groups.size){
-    els.mergeModalSub.textContent = "No duplicate badges remain.";
-    els.mergeList.innerHTML = '<p class="hint-note">Every Badge Number in Roster is now unique.</p>';
+    els.mergeModalSub.textContent = "No duplicate keys remain.";
+    els.mergeList.innerHTML = '<p class="hint-note">Every '+esc(keyLabel())+' value in Working Data is now unique.</p>';
     return;
   }
-  els.mergeModalSub.textContent = groups.size + " duplicate badge group(s) found. Pick which row to keep in each; the rest are deleted.";
+  els.mergeModalSub.textContent = groups.size + " duplicate key group(s) found. Pick which row to keep in each; the rest are deleted.";
   var html = "";
-  groups.forEach(function(rows, badge){
+  var previewFields = state.schema.filter(function(f){return f.key!==state.keyField;}).slice(0,3);
+  groups.forEach(function(rows, keyVal){
     html += '<div class="undo-item" style="margin-bottom:14px;">' +
-      '<div style="font-weight:800;margin-bottom:8px;">Badge '+esc(badge)+' &middot; '+rows.length+' row(s)</div>' +
+      '<div style="font-weight:800;margin-bottom:8px;">'+esc(keyLabel())+' '+esc(keyVal)+' &middot; '+rows.length+' row(s)</div>' +
       rows.map(function(r,i){
-        var name=[r.lastName,r.firstName].filter(Boolean).join(", ");
-        return '<label class="ignore-row"><input type="radio" name="mg_'+esc(badge)+'" value="'+r.id+'"'+(i===0?" checked":"")+'>'+
-          '<span class="ir-label">Row Nr '+esc(r.nr)+' \u2014 '+esc(name||"(no name)")+'</span>'+
-          '<span class="ir-sub">'+esc(r.rank||"")+' \u00b7 '+esc(r.unit||"")+' \u00b7 '+esc(r.subUnit||"")+'</span></label>';
+        var preview = previewFields.map(function(f){ return r[f.key]; }).filter(Boolean).join(" \u00b7 ");
+        return '<label class="ignore-row"><input type="radio" name="mg_'+esc(keyVal)+'" value="'+r.id+'"'+(i===0?" checked":"")+'>'+
+          '<span class="ir-label">Row Nr '+esc(r.nr)+' \u2014 '+esc(preview||"(no data)")+'</span></label>';
       }).join("") +
-      '<div style="margin-top:8px;"><button type="button" class="small primary" data-mergegroup="'+esc(badge)+'">Keep Selected, Delete Others</button></div>' +
+      '<div style="margin-top:8px;"><button type="button" class="small primary" data-mergegroup="'+esc(keyVal)+'">Keep Selected, Delete Others</button></div>' +
     '</div>';
   });
   els.mergeList.innerHTML = html;
   els.mergeList.querySelectorAll("[data-mergegroup]").forEach(function(btn){
     btn.addEventListener("click", function(){
-      var badge = btn.getAttribute("data-mergegroup");
-      var checked = els.mergeList.querySelector('input[name="mg_'+badge.replace(/"/g,'\\"')+'"]:checked');
+      var keyVal = btn.getAttribute("data-mergegroup");
+      var checked = els.mergeList.querySelector('input[name="mg_'+keyVal.replace(/"/g,'\\"')+'"]:checked');
       if (!checked){ showToast("Select a row to keep first.", true); return; }
-      var removed = mergeGroup(badge, checked.value);
-      if (removed){
-        showToast("Merged badge "+badge+" \u2014 removed "+removed+" duplicate row(s).");
-        renderAll();
-        renderMergeModal();
-      }
+      var removed = mergeGroup(keyVal, checked.value);
+      if (removed){ showToast("Merged \u2014 removed "+removed+" duplicate row(s)."); renderAll(); renderMergeModal(); }
     });
   });
 }
+var cmpRowId = null;
+function openCompareModal(rowId){
+  cmpRowId = rowId;
+  var r = state.roster.find(function(x){ return x.id===rowId; });
+  var res = state.results.get(rowId);
+  if (!r || !res) return;
+  els.cmpModalSub.textContent = "Row Nr "+r.nr+" \u00b7 status: "+(res.status==="Key Not Found in Master"?"Not Found":res.status)+(res.status!=="Key Not Found in Master"?" \u00b7 "+Math.round(res.confidence*100)+"% match":"");
+  var mrec = res.master;
+  var rowsHtml = state.schema.map(function(f){
+    var isKey = f.key === state.keyField;
+    var rv = r[f.key], mv = mrec ? mrec[f.key] : null;
+    var mismatch = !isKey && mrec && (normCmp(rv,state.caseInsensitive) !== normCmp(mv,state.caseInsensitive));
+    var tok = mrec ? diffChars(normVal(rv), normVal(mv)) : null;
+    return '<tr class="'+(isKey?"cmp-key":"")+(mismatch?" cmp-mismatch":"")+'">'+
+      '<td>'+esc(f.label)+(isKey?' <span class="keypill">Key</span>':'')+'</td>'+
+      '<td>'+(tok&&!isKey?diffHtmlFrom(tok):esc(rv)||'<i style="color:var(--ink-soft);">(blank)</i>')+'</td>'+
+      '<td>'+(mrec ? (tok&&!isKey?diffHtmlTo(tok):esc(mv)||'<i style="color:var(--ink-soft);">(blank)</i>') : '<i style="color:var(--ink-soft);">no matching record</i>')+'</td>'+
+      '<td style="text-align:center;">'+(isKey?'&mdash;':mrec?(mismatch?'<span class="stamp misaligned">&ne;</span>':'<span class="stamp aligned">&#10003;</span>'):'&mdash;')+'</td>'+
+    '</tr>';
+  }).join("");
+  els.cmpBody.innerHTML = '<table class="cmp-table"><thead><tr><th>Field</th><th>Working Data</th><th>Master File</th><th style="width:40px;">&nbsp;</th></tr></thead><tbody>'+rowsHtml+'</tbody></table>';
+  els.cmpFixAllBtn.style.display = (res.status==="Misaligned") ? "inline-block" : "none";
+  els.cmpBackdrop.classList.add("show");
+}
+els.cmpCloseBtn.addEventListener("click", function(){ els.cmpBackdrop.classList.remove("show"); });
+els.cmpBackdrop.addEventListener("click", function(e){ if (e.target===els.cmpBackdrop) els.cmpBackdrop.classList.remove("show"); });
+els.cmpFixAllBtn.addEventListener("click", function(){
+  if (cmpRowId){ applyAutoCorrectRow(cmpRowId); els.cmpBackdrop.classList.remove("show"); }
+});
 
 // =================================================================
 // RENDER: Instructions
@@ -1809,65 +2028,50 @@ function renderMergeModal(){
 function renderInstructions(){
   els.instrBody.innerHTML =
     '<h2>What this tool does</h2>'+
-    '<p>It cross-checks a working <b>Roster</b> against a <b>MasterList</b> reference sheet (the "original" source-of-truth data), keyed on Badge Number, and flags every row as <b>Aligned</b>, <b>Misaligned</b>, or <b>Badge Not Found in MasterList</b>. It runs entirely in your browser &mdash; nothing is uploaded to any server.</p>'+
+    '<p>It cross-checks a <b>Working Data</b> file against a <b>Master File</b> reference (the source-of-truth), matched on a single Key/ID field you choose, and flags every row as <b>Aligned</b>, <b>Misaligned</b>, or <b>Key Not Found in Master</b>. It runs entirely in your browser &mdash; nothing is uploaded anywhere.</p>'+
 
-    '<h2>Field order, matched to your original sheets</h2>'+
-    '<p>Every form, table and CSV export in this tool follows the same field sequence as the source sheets:</p>'+
-    '<table><tr><th>MasterList</th><td>Account Number &rarr; Rank &rarr; Last Name &rarr; First Name &rarr; Middle Name &rarr; Qual &rarr; Badge Number &rarr; Unit &rarr; Sub-Unit</td></tr>'+
-    '<tr><th>Roster</th><td>Nr &rarr; Salary Account Number &rarr; Rank &rarr; Last Name &rarr; First Name &rarr; Middle Name &rarr; Qlfr &rarr; Badge No. &rarr; Unit &rarr; Sub-Unit</td></tr></table>'+
-    '<p><b>Unit</b> is now a fully tracked field, just like Sub-Unit: it appears in both tables, both Add/Edit forms, CSV import/export, and is included in the crosscheck (toggle it off in Settings if you don\u2019t want it checked yet).</p>'+
+    '<h2>Any file, any columns</h2>'+
+    '<p>Unlike a fixed template, this tool has no hardcoded columns. The very first CSV you import defines the schema for the session: every column header becomes a field, and you choose which one is the unique Key/ID. Later imports auto-match columns to existing fields by header name, and any brand-new column is added to the schema automatically (backfilled as blank on existing records) rather than dropped.</p>'+
 
-    '<h2>How matching works</h2>'+
-    '<p>Badge Number is the key field. It is looked up, never compared or corrected. If a Roster row\u2019s badge doesn\u2019t exist in MasterList, it\u2019s flagged <b>Badge Not Found</b> &mdash; add that badge to MasterList, or fix a typo, to resolve it. If the same badge appears more than once in Roster, it\u2019s flagged as a <b>Duplicate Badge</b> in a banner on the Dashboard and with a marker on each affected row, since duplicates can make a correction ambiguous.</p>'+
+    '<h2>Character-aligned differences</h2>'+
+    '<p>Every mismatch is shown with character-level highlighting: the Working Data value with the differing characters struck out, and the Master File value with the differing characters highlighted &mdash; so you can see exactly what changed, not just that something did. Click <b>Compare</b> on any row for a full side-by-side table of every field, aligned column for column, key field included for reference.</p>'+
+
+    '<h2>Match Confidence</h2>'+
+    '<p>Each row gets a similarity score (0&ndash;100%) across its checked fields, even when Aligned or Misaligned, using a character-edit-distance comparison. Use it to spot near-misses (likely typos) versus wildly different values (likely a wrong record) at a glance. The Dashboard shows an overall average.</p>'+
 
     '<h2>Spacing-tolerant comparison, exact-format correction</h2>'+
-    '<p>Detecting a mismatch trims leading/trailing spaces and collapses doubled internal spaces before comparing, so stray spacing alone never flags a false Misaligned row &mdash; in either sheet.</p>'+
-    '<p><b>But when a field IS corrected</b> (via any Fix button, Auto-Correct Selected, or Auto-Correct All), the Roster receives MasterList\u2019s value <b>exactly as typed there</b>: same spacing, capitalization, and punctuation, for every field, with no exceptions. MasterList\u2019s own typing is always the standard, never the other way around.</p>'+
+    '<p>Detecting a mismatch trims leading/trailing spaces and collapses doubled internal spaces before comparing, so stray spacing alone never flags a false Misaligned row. Turn on <b>Case-insensitive comparison</b> in Schema &amp; Settings if capitalization shouldn\u2019t count either.</p>'+
+    '<p><b>But when a field IS corrected</b> (via any Fix button, Auto-Correct Selected, or Auto-Correct All), Working Data receives the Master File\u2019s value <b>exactly as typed there</b> &mdash; same spacing, capitalization, and punctuation.</p>'+
 
-    '<h2>Live Check &mdash; validating data entry against the originals in real time</h2>'+
-    '<p>When you click <b>+ Add Record</b> or <b>Edit</b> on a Roster row, a <b>Live Check</b> panel appears below the form and updates as you type (after a brief pause), comparing your in-progress entry against the matching MasterList record:</p>'+
-    '<ul>'+
-      '<li><b>Aligned</b> &mdash; every checked field already matches the original.</li>'+
-      '<li><b>Misaligned</b> &mdash; shows exactly which fields differ from the original and what the correct value is, before you even save.</li>'+
-      '<li><b>Not Found</b> &mdash; no MasterList record uses that Badge Number yet.</li>'+
-    '</ul>'+
-    '<p>On a <b>MasterList</b> Add/Edit form, the same panel instead checks the Badge Number for duplicates, since MasterList must have exactly one record per badge. Badge Number is a required field; leaving it blank highlights the input in red and blocks Save.</p>'+
+    '<h2>Schema &amp; Settings</h2>'+
+    '<p>Rename any field, change which field is the Key, exclude a field from the crosscheck, delete a field entirely, or add a new blank field by hand. The Key field is never compared or corrected &mdash; it\u2019s only used to match rows between the two files.</p>'+
 
-    '<h2>Bulk actions on the Roster</h2>'+
-    '<p>Tick the checkbox on any row (or the header checkbox to select the whole page) to open a bulk action bar: <b>Auto-Correct Selected</b>, <b>Promote Selected</b> (for eligible Not Found rows), <b>Export Selected (CSV)</b>, and <b>Delete Selected</b>. Use <b>Select all matching filter</b> to extend the selection beyond the current page to every row matching your current search/status/Unit/Sub-Unit filters.</p>'+
+    '<h2>Live Check &mdash; validating data entry in real time</h2>'+
+    '<p>Adding or editing a Working Data record shows a Live Check panel that updates as you type, comparing your in-progress entry against the matching Master File record. Editing a Master File record instead checks the Key for duplicates, since the Master File must have exactly one record per key.</p>'+
 
-    '<h2>Merge Duplicates</h2>'+
-    '<p>When the same Badge Number appears more than once in Roster, the Dashboard shows a warning banner. <b>Merge Duplicates&hellip;</b> opens a dedicated view, grouped by badge, where you pick which single row to keep for each group (by Nr, name, rank, Unit, Sub-Unit) and the rest are deleted in one click. <b>View Duplicates</b> instead just filters the Roster table down to the affected rows if you\u2019d rather edit them individually.</p>'+
+    '<h2>Bulk actions</h2>'+
+    '<p>Tick rows (or the header checkbox) to open a bulk bar: <b>Auto-Correct Selected</b>, <b>Promote Selected</b> (for eligible Not Found rows), <b>Export Selected</b>, and <b>Delete Selected</b>. <b>Select all matching filter</b> extends the selection to every row matching your current filters, even off-page.</p>'+
 
-    '<h2>Import CSV &mdash; column mapping preview</h2>'+
-    '<p>Paste or choose a CSV for either Roster or MasterList and the tool detects each column\u2019s field from its header text (matching the sequences above and common export variants like "Salary Acct No" or "Badge No"). Before importing, a preview table lists every detected CSV column next to the field it will map to, with a dropdown to correct any column the auto-detection got wrong or that has no obvious match. Rows without a Badge Number are skipped and reported, not silently dropped. Re-importing a refreshed original MasterList export updates existing reference records in place by Badge Number rather than duplicating them.</p>'+
+    '<h2>Merge Duplicate Keys</h2>'+
+    '<p>When the same Key value appears more than once in Working Data, a Dashboard banner appears. <b>Merge Duplicates&hellip;</b> lets you pick which single row to keep per group; the rest are deleted in one click.</p>'+
 
     '<h2>Buttons &amp; automation</h2>'+
     '<ul>'+
-      '<li><b>Auto-Correct All</b> &mdash; fixes every Misaligned row across the entire Roster in one action, using MasterList\u2019s exact values. Undo-safe.</li>'+
-      '<li><b>Fix</b> (per row) / <b>Fix field</b> (per mismatched field) &mdash; same correction, scoped to one row or one field. Mismatched cells are highlighted directly in the Roster table.</li>'+
-      '<li><b>Undo / Redo</b> &mdash; step backward and forward through every correction action, with no history-length cap. Keyboard: <span class="kbd">Ctrl/Cmd+Z</span> to undo, <span class="kbd">Ctrl/Cmd+Shift+Z</span> to redo.</li>'+
-      '<li><b>Download Errors (CSV)</b> &mdash; exports every Misaligned / Not Found row with its mismatch detail. <b>Export Filtered (CSV)</b> exports only what the current Roster filters show. <b>Export MasterList (CSV)</b> exports the reference sheet in its native column order.</li>'+
-      '<li><b>Download Roster (CSV)</b> &mdash; exports the full Roster, in its native column order, with its live Verification Status.</li>'+
-      '<li><b>Import CSV</b> &mdash; bulk-adds or updates rows in either the <b>Roster</b> or the <b>MasterList</b> from pasted or uploaded CSV text, with the column mapping preview described above.</li>'+
-      '<li><b>Export Backup / Restore Backup</b> &mdash; download a full JSON snapshot of every record, the ignored-fields setting, and the audit log, and load it back later or on another device.</li>'+
-      '<li><b>Settings</b> &mdash; choose which fields are included in the crosscheck.</li>'+
-      '<li><b>Promote</b> (on a Not Found row) &mdash; inserts that person into MasterList as a new reference record, for when they\u2019re simply missing from it, carrying over Unit and Sub-Unit too.</li>'+
-      '<li><b>Load Sample Data</b> &mdash; adds 11,000 generated sample records on top of whatever is already loaded, to demo every feature without disturbing real data.</li>'+
-      '<li><b>Clear All Data</b> &mdash; permanently wipes the autosaved data in this browser (Roster, MasterList, audit log, undo/redo history) and returns to an empty state.</li>'+
+      '<li><b>Auto-Correct All</b> &mdash; fixes every Misaligned row in one action, using the Master File\u2019s exact values. Undo-safe.</li>'+
+      '<li><b>Undo / Redo</b> &mdash; unlimited history. <span class="kbd">Ctrl/Cmd+Z</span> / <span class="kbd">Ctrl/Cmd+Shift+Z</span>.</li>'+
+      '<li><b>Errors CSV / Working CSV / Export Filtered / Export Master CSV</b> &mdash; export at whichever scope you need, including Match Confidence and status.</li>'+
+      '<li><b>Import CSV</b> &mdash; bulk-add or update either file, with the column mapping preview described above.</li>'+
+      '<li><b>Export Backup / Restore Backup</b> &mdash; a full JSON snapshot including the schema, key field, and settings &mdash; portable across browsers/devices.</li>'+
+      '<li><b>Promote</b> &mdash; inserts a Not Found row into the Master File as a new reference record.</li>'+
+      '<li><b>Sample Data</b> &mdash; loads a generic generated dataset so every feature is demoable immediately.</li>'+
+      '<li><b>Clear All</b> &mdash; wipes everything, including the schema, so you can start a completely fresh session with a different kind of file.</li>'+
     '</ul>'+
 
-    '<h2>Paging, sorting, filtering, and search</h2>'+
-    '<p>Choose how many rows show per page (25 up to 1,000, or "Show all" to disable paging) from the page-size selector on the Roster tab &mdash; it applies to Roster, MasterList, and the Audit Log alike. Every pager also has a <b>Go to</b> page-number box for jumping straight to a page on large datasets. Click any column header with an arrow to sort by it (every column in both tables is sortable); click again to reverse the direction. Filter the Roster by status, Unit, or Sub-Unit, or press <span class="kbd">/</span> anywhere on the Roster tab to jump to the search box.</p>'+
+    '<h2>Works on any device</h2>'+
+    '<p>The layout adapts down to phone width: tables collapse into labeled cards on narrow screens, controls wrap and grow touch targets, and text scales fluidly &mdash; no pinch-zooming needed.</p>'+
 
-    '<h2>Autosave &amp; data privacy</h2>'+
-    '<p>Every change (edits, imports, corrections, settings) is automatically saved to this browser a moment after you make it \u2014 closing or reloading the tab restores your last session. Data is stored in <b>IndexedDB</b> for effectively unlimited local capacity, with an automatic fallback to browser local storage if IndexedDB isn\u2019t available. Nothing is sent to a server; the small line under the page title confirms when a save completes and which storage backend is active. Because the data lives only in this browser, it will not appear on another device or browser profile, and clearing your browser data will remove it. Use <b>Export Backup</b> to keep a durable, portable copy you can restore anywhere, and <b>Clear All Data</b> to deliberately reset.</p>'+
-
-    '<h2>Settings &mdash; choosing which fields to check</h2>'+
-    '<p>Badge Number, Nr, and Verification Status are always system-managed and excluded. Every other field (Account Number, Rank, Last Name, First Name, Middle Name, Qualifier, Unit, Sub-Unit) can be turned off if you don\u2019t want it checked yet.</p>'+
-
-    '<h2>Getting your real data in</h2>'+
-    '<p>Use <b>Import CSV</b> to load your actual MasterList and Roster exports (choose the target sheet in the dialog and review the column mapping preview), or add/edit records directly in the Roster and MasterList tabs. The tool loads with 11,000 generated sample records on first run purely so every feature is demonstrated immediately; import your real data (or use <b>Clear All Data</b> first) to replace it.</p>';
+    '<h2>Autosave &amp; privacy</h2>'+
+    '<p>Every change autosaves to this browser\u2019s IndexedDB a moment after you make it (falling back to local storage if unavailable). Nothing is sent to a server. Because the data lives only in this browser, use <b>Export Backup</b> for a durable, portable copy.</p>';
 }
 
 // =================================================================
@@ -1875,8 +2079,7 @@ function renderInstructions(){
 // =================================================================
 function renderAll(){
   renderDashboard();
-  populateSubUnitSelect();
-  populateUnitSelect();
+  populateFilterFieldSelect();
   renderRosterTable();
   renderMasterTable();
   renderAudit();
@@ -1897,7 +2100,7 @@ document.querySelectorAll(".tab-btn").forEach(function(btn){
 });
 
 document.addEventListener("click", function(e){
-  var card = e.target.closest(".stat-card");
+  var card = e.target.closest(".stat-card[data-statfilter]");
   if (!card) return;
   state.filters.status = card.getAttribute("data-statfilter");
   els.statusChips.querySelectorAll(".chip").forEach(function(c){ c.classList.toggle("active", c.getAttribute("data-status")===state.filters.status); });
@@ -1914,31 +2117,17 @@ els.statusChips.addEventListener("click", function(e){
   state.page.roster = 1;
   renderRosterTable(); renderDashboard();
 });
-els.subUnitSelect.addEventListener("change", function(){ state.filters.subUnit = this.value; state.page.roster=1; renderRosterTable(); });
-els.unitSelect.addEventListener("change", function(){ state.filters.unit = this.value; state.page.roster=1; renderRosterTable(); });
+els.filterFieldSelect.addEventListener("change", function(){ state.filters.field=this.value; state.filters.value="all"; state.page.roster=1; populateFilterValueSelect(); renderRosterTable(); });
+els.filterValueSelect.addEventListener("change", function(){ state.filters.value=this.value; state.page.roster=1; renderRosterTable(); });
 els.searchInput.addEventListener("input", debounce(function(){ state.filters.search = this.value; state.page.roster=1; renderRosterTable(); }, 200));
 els.masterSearchInput.addEventListener("input", debounce(function(){ state.masterSearch = this.value; state.page.master=1; renderMasterTable(); }, 200));
 els.auditSearchInput.addEventListener("input", debounce(function(){ state.auditSearch = this.value; state.page.audit=1; renderAudit(); }, 200));
+els.unitChartField.addEventListener("change", function(){ state.unitChartField=this.value; renderDashboard(); });
 
 els.pageSizeSelect.addEventListener("change", function(){
   state.pageSize = this.value === "all" ? Infinity : parseInt(this.value, 10);
   state.page = { roster:1, master:1, audit:1 };
   renderRosterTable(); renderMasterTable(); renderAudit();
-});
-
-document.querySelectorAll("#rosterHead th[data-sort]").forEach(function(th){
-  th.addEventListener("click", function(){
-    var key = th.getAttribute("data-sort");
-    if (state.sort.key===key) state.sort.dir = state.sort.dir==="asc"?"desc":"asc"; else { state.sort.key=key; state.sort.dir="asc"; }
-    renderRosterTable();
-  });
-});
-document.querySelectorAll("#masterHead th[data-sort]").forEach(function(th){
-  th.addEventListener("click", function(){
-    var key = th.getAttribute("data-sort");
-    if (state.sortMaster.key===key) state.sortMaster.dir = state.sortMaster.dir==="asc"?"desc":"asc"; else { state.sortMaster.key=key; state.sortMaster.dir="asc"; }
-    renderMasterTable();
-  });
 });
 
 els.addRosterBtn.addEventListener("click", function(){ openModal("roster","add",null); });
@@ -1949,15 +2138,13 @@ els.modalBackdrop.addEventListener("click", function(e){ if (e.target===els.moda
 els.modalForm.addEventListener("submit", function(e){ e.preventDefault(); });
 
 els.autoCorrectAllBtn.addEventListener("click", function(){
-  var n = state.counts.Misaligned;
+  var n = state.counts ? state.counts.Misaligned : 0;
   if (!n){ showToast("No misaligned rows to correct."); return; }
-  if (!confirm("Auto-correct "+n.toLocaleString()+" misaligned row(s) using MasterList as the source of truth? You can Undo this afterward.")) return;
+  if (!confirm("Auto-correct "+n.toLocaleString()+" misaligned row(s) using the Master File as the source of truth? You can Undo this afterward.")) return;
   applyAutoCorrectAll();
 });
 
-els.themeToggleBtn.addEventListener("click", function(){
-  setTheme(document.body.classList.contains("dark") ? "light" : "dark");
-});
+els.themeToggleBtn.addEventListener("click", function(){ setTheme(document.body.classList.contains("dark") ? "light" : "dark"); });
 
 els.undoBtn.addEventListener("click", function(){ els.undoBackdrop.classList.add("show"); renderUndoList(); });
 els.redoBtn.addEventListener("click", function(){ redoLast(); });
@@ -1967,70 +2154,80 @@ els.undoConfirmBtn.addEventListener("click", function(){
   var top = state.undoStack[state.undoStack.length-1];
   if (!top) return;
   if (!confirm('Revert "'+top.label+'"? Affected row(s) will be restored to their pre-correction values.')) return;
-  undoLast();
-  renderUndoList();
+  undoLast(); renderUndoList();
 });
 els.redoConfirmBtn.addEventListener("click", function(){
   var top = state.redoStack[state.redoStack.length-1];
   if (!top){ showToast("Nothing to redo.", true); return; }
-  redoLast();
-  renderUndoList();
+  redoLast(); renderUndoList();
 });
 
 els.settingsBtn.addEventListener("click", function(){ els.settingsBackdrop.classList.add("show"); renderSettingsModal(); });
 els.settingsCancelBtn.addEventListener("click", function(){ els.settingsBackdrop.classList.remove("show"); });
 els.settingsBackdrop.addEventListener("click", function(e){ if (e.target===els.settingsBackdrop) els.settingsBackdrop.classList.remove("show"); });
 els.settingsSaveBtn.addEventListener("click", function(){
+  if (!state.schema.length){ els.settingsBackdrop.classList.remove("show"); return; }
   var ignored = [];
-  els.ignoreList.querySelectorAll("[data-ignorekey]").forEach(function(cb){ if (!cb.checked) ignored.push(cb.getAttribute("data-ignorekey")); });
+  var newKey = state.keyField;
+  els.ignoreList.querySelectorAll(".ignore-row").forEach(function(row){
+    var key = row.getAttribute("data-fieldkey");
+    var labelInput = row.querySelector("[data-labelinput]");
+    if (labelInput && labelInput.value.trim()) fieldByKey(key).label = labelInput.value.trim();
+    var radio = row.querySelector("[data-keyradio]");
+    if (radio && radio.checked) newKey = key;
+    var ignChk = row.querySelector("[data-ignorekey]");
+    if (ignChk && !ignChk.disabled && !ignChk.checked) ignored.push(key);
+  });
+  var keyChanged = newKey !== state.keyField;
+  state.keyField = newKey;
   state.ignoredFields = new Set(ignored);
+  state.caseInsensitive = els.caseInsensitiveChk.checked;
   recompute();
   els.settingsBackdrop.classList.remove("show");
-  var labels = ignored.map(function(k){ var f=fieldByKey(k); return f?f.label:k; });
-  logAudit("Update Settings", labels.length ? "Ignored fields set to: "+labels.join(", ") : "All fields are now checked", 0);
-  showToast(labels.length ? "Now ignoring: "+labels.join(", ") : "All fields are now checked.");
+  var labels = ignored.map(fieldLabel);
+  logAudit("Update Settings", (keyChanged?"Key field changed to "+fieldLabel(state.keyField)+". ":"")+(labels.length ? "Ignored fields: "+labels.join(", ") : "All fields are checked")+(state.caseInsensitive?" \u00b7 case-insensitive":""), 0);
+  showToast("Settings saved.");
   renderAll();
 });
 
 els.printBtn.addEventListener("click", function(){ window.print(); });
 
 els.downloadErrorsBtn.addEventListener("click", function(){
-  var rows = [["Nr","Salary Account Number","Rank","Last Name","First Name","Middle Name","Qlfr","Badge No.","Unit","Sub-Unit","Status","Mismatch Detail"]];
+  var head = ["Nr"].concat(state.schema.map(function(f){return f.label;})).concat(["Status","Match Confidence","Mismatch Detail"]);
+  var rows = [head];
   state.roster.forEach(function(r){
     var res = state.results.get(r.id);
     if (res.status === "Aligned") return;
     var detail = res.mismatches.map(function(m){ return m.label+": "+m.current+" -> "+m.correct; }).join(" | ");
-    rows.push([r.nr, r.acctNumber, r.rank, r.lastName, r.firstName, r.middleName, r.qualifier, r.badgeNumber, r.unit, r.subUnit, res.status, detail]);
+    var row = [r.nr].concat(state.schema.map(function(f){return r[f.key];}));
+    row.push(res.status, res.status==="Key Not Found in Master"?"":Math.round(res.confidence*100)+"%", detail);
+    rows.push(row);
   });
   if (rows.length === 1){ showToast("No errors to download \u2014 everything is Aligned."); return; }
-  downloadCsv("reconciliation-errors-"+new Date().toISOString().slice(0,10)+".csv", rows);
+  downloadCsv("data-checker-errors-"+new Date().toISOString().slice(0,10)+".csv", rows);
   logAudit("Download Errors CSV", (rows.length-1)+" row(s) exported for manual review", rows.length-1);
-  showToast("Downloaded "+(rows.length-1).toLocaleString()+" error row(s) for manual review.");
+  showToast("Downloaded "+(rows.length-1).toLocaleString()+" error row(s).");
 });
-
 els.downloadRosterBtn.addEventListener("click", function(){
   var rows = rosterExportRows(state.roster);
-  downloadCsv("roster-full-"+new Date().toISOString().slice(0,10)+".csv", rows);
-  logAudit("Download Roster CSV", rows.length-1+" row(s) exported", rows.length-1);
-  showToast("Downloaded full roster.");
+  downloadCsv("working-data-full-"+new Date().toISOString().slice(0,10)+".csv", rows);
+  logAudit("Download Working CSV", rows.length-1+" row(s) exported", rows.length-1);
+  showToast("Downloaded full working data.");
 });
-
 els.downloadFilteredBtn.addEventListener("click", function(){
   var rows = rosterExportRows(filteredRoster());
   if (rows.length===1){ showToast("No rows match the current filters.", true); return; }
-  downloadCsv("roster-filtered-"+new Date().toISOString().slice(0,10)+".csv", rows);
+  downloadCsv("working-data-filtered-"+new Date().toISOString().slice(0,10)+".csv", rows);
   logAudit("Export Filtered CSV", (rows.length-1)+" filtered row(s) exported", rows.length-1);
   showToast("Downloaded "+(rows.length-1).toLocaleString()+" filtered row(s).");
 });
-
 els.downloadMasterBtn.addEventListener("click", function(){
   var rows = masterExportRows(filteredMaster());
-  if (rows.length===1){ showToast("No MasterList records to export.", true); return; }
-  downloadCsv("masterlist-"+new Date().toISOString().slice(0,10)+".csv", rows);
-  logAudit("Download MasterList CSV", (rows.length-1)+" row(s) exported", rows.length-1);
-  showToast("Downloaded MasterList.");
+  if (rows.length===1){ showToast("No Master File records to export.", true); return; }
+  downloadCsv("master-file-"+new Date().toISOString().slice(0,10)+".csv", rows);
+  logAudit("Download Master CSV", (rows.length-1)+" row(s) exported", rows.length-1);
+  showToast("Downloaded Master File.");
 });
-
 els.downloadAuditBtn.addEventListener("click", function(){
   var rows = [["Timestamp","Action","Details","Rows Affected"]];
   state.auditLog.forEach(function(a){ rows.push([a.ts.toISOString(), a.action, a.details, a.rows]); });
@@ -2042,14 +2239,14 @@ els.downloadAuditBtn.addEventListener("click", function(){
 els.importCsvBtn.addEventListener("click", function(){
   els.csvBackdrop.classList.add("show");
   els.csvTargetSelect.value = "roster";
-  els.csvTextarea.value=""; els.csvPreview.textContent=""; els.csvMappingPreview.innerHTML="";
+  els.csvTextarea.value=""; els.csvPreview.textContent=""; els.csvMappingPreview.innerHTML=""; els.csvKeyRow.style.display="none";
   updateCsvTargetHint();
 });
 els.csvTargetSelect.addEventListener("change", updateCsvTargetHint);
 function updateCsvTargetHint(){
   els.csvTargetHint.textContent = els.csvTargetSelect.value === "roster"
-    ? "New Roster rows are appended (each gets the next sequential Nr)."
-    : "A row whose Badge No. already exists in MasterList updates that reference record in place with the imported values; otherwise it's added as a new reference record.";
+    ? "New Working Data rows are appended (each gets the next sequential Nr)."
+    : "A row whose key already exists in the Master File updates that reference record in place; otherwise it's added as new.";
 }
 els.csvCancelBtn.addEventListener("click", function(){ els.csvBackdrop.classList.remove("show"); });
 els.csvBackdrop.addEventListener("click", function(e){ if (e.target===els.csvBackdrop) els.csvBackdrop.classList.remove("show"); });
@@ -2072,8 +2269,8 @@ els.csvImportBtn.addEventListener("click", function(){
     var result = importCsvInto(target, text);
     els.csvBackdrop.classList.remove("show");
     var msg = target==="roster"
-      ? "Imported "+result.added.toLocaleString()+" row(s) into Roster."+(result.skipped?" Skipped "+result.skipped+" (no Badge No.).":"")
-      : "MasterList: "+result.added.toLocaleString()+" added, "+result.updated.toLocaleString()+" updated."+(result.skipped?" Skipped "+result.skipped+" (no Badge No.).":"");
+      ? "Imported "+result.added.toLocaleString()+" row(s) into Working Data."+(result.skipped?" Skipped "+result.skipped+".":"")
+      : "Master File: "+result.added.toLocaleString()+" added, "+result.updated.toLocaleString()+" updated."+(result.skipped?" Skipped "+result.skipped+".":"");
     showToast(msg);
     renderAll();
   } catch(e){ showToast("Error: "+e.message, true); }
@@ -2088,8 +2285,8 @@ els.restoreFileInput.addEventListener("change", function(){
 });
 
 els.loadSampleBtn.addEventListener("click", function(){
-  if (!confirm("Add 11,000 generated sample records to your current data, purely to demo every feature? This does not remove any existing records.")) return;
-  addSampleData(11000);
+  if (!confirm("Add 6,000 generated sample records to your current data, purely to demo every feature? This does not remove any existing records.")) return;
+  addSampleData(6000);
 });
 els.emptyImportBtn.addEventListener("click", function(){ els.importCsvBtn.click(); });
 els.emptySampleBtn.addEventListener("click", function(){ els.loadSampleBtn.click(); });
@@ -2105,23 +2302,16 @@ els.dupMergeBtn.addEventListener("click", function(){ els.mergeBackdrop.classLis
 els.mergeCloseBtn.addEventListener("click", function(){ els.mergeBackdrop.classList.remove("show"); });
 els.mergeBackdrop.addEventListener("click", function(e){ if (e.target===els.mergeBackdrop) els.mergeBackdrop.classList.remove("show"); });
 
-// ---- Bulk selection wiring ----
-document.getElementById("chkAllRoster").addEventListener("change", function(){
-  var checked = this.checked;
-  var pageRows = currentRosterPage().pageRows;
-  pageRows.forEach(function(r){ if (checked) state.selectedRosterIds.add(r.id); else state.selectedRosterIds.delete(r.id); });
-  renderRosterTable();
-});
 els.bulkFixBtn.addEventListener("click", applyAutoCorrectSelected);
 els.bulkPromoteBtn.addEventListener("click", function(){
-  if (!confirm("Promote all eligible selected rows (status: Badge Not Found) into MasterList as new reference records?")) return;
+  if (!confirm("Promote all eligible selected rows (status: Not Found) into the Master File as new reference records?")) return;
   promoteSelected();
 });
 els.bulkExportBtn.addEventListener("click", function(){
   var ids = state.selectedRosterIds;
   var list = state.roster.filter(function(r){ return ids.has(r.id); });
   if (!list.length){ showToast("No rows selected.", true); return; }
-  downloadCsv("roster-selected-"+new Date().toISOString().slice(0,10)+".csv", rosterExportRows(list));
+  downloadCsv("working-data-selected-"+new Date().toISOString().slice(0,10)+".csv", rosterExportRows(list));
   logAudit("Export Selected CSV", list.length+" selected row(s) exported", list.length);
   showToast("Downloaded "+list.length.toLocaleString()+" selected row(s).");
 });
@@ -2132,24 +2322,22 @@ els.bulkSelectAllFilteredBtn.addEventListener("click", function(){
   showToast("Selected "+all.length.toLocaleString()+" row(s) matching the current filters.");
   renderRosterTable();
 });
-els.bulkClearBtn.addEventListener("click", function(){
-  state.selectedRosterIds = new Set();
-  renderRosterTable();
-});
+els.bulkClearBtn.addEventListener("click", function(){ state.selectedRosterIds = new Set(); renderRosterTable(); });
 
 els.newSessionBtn.addEventListener("click", function(){
-  if (!confirm("Clear all data? This permanently deletes every Roster and MasterList record, the audit log, and undo/redo history saved in this browser. This cannot be undone.")) return;
+  if (!confirm("Clear all data? This permanently deletes every record, the schema, the audit log, and undo/redo history saved in this browser. This cannot be undone.")) return;
   clearSession();
   state.undoStack = []; state.redoStack = [];
   state.auditLog = [];
   state.selectedRosterIds = new Set();
   state.master = []; state.roster = []; state.ignoredFields = new Set();
-  state.filters = { status:"all", search:"", subUnit:"all", unit:"all" };
+  state.schema = []; state.keyField = null; state.caseInsensitive = false;
+  state.filters = { status:"all", search:"", field:"all", value:"all" };
   state.masterSearch = ""; state.auditSearch = "";
   state.page = { roster:1, master:1, audit:1 };
   els.searchInput.value = ""; els.masterSearchInput.value = ""; els.auditSearchInput.value = "";
   recompute();
-  logAudit("Clear All Data", "All data wiped; session reset to empty", 0);
+  logAudit("Clear All Data", "All data and schema wiped; session reset to empty", 0);
   showToast("All data cleared.");
   renderAll();
 });
@@ -2163,11 +2351,7 @@ document.addEventListener("keydown", function(e){
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase()==="z" && !typing){ e.preventDefault(); undoLast(); }
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase()==="z" && !typing){ e.preventDefault(); redoLast(); }
   if (e.key === "Escape"){
-    els.modalBackdrop.classList.remove("show");
-    els.settingsBackdrop.classList.remove("show");
-    els.undoBackdrop.classList.remove("show");
-    els.csvBackdrop.classList.remove("show");
-    els.mergeBackdrop.classList.remove("show");
+    [els.modalBackdrop, els.settingsBackdrop, els.undoBackdrop, els.csvBackdrop, els.mergeBackdrop, els.cmpBackdrop].forEach(function(m){ m.classList.remove("show"); });
   }
 });
 
@@ -2180,15 +2364,20 @@ function boot(){
   els.subtitle.textContent = "Loading\u2026";
   loadSession().then(function(saved){
     if (saved){
+      state.schema = Array.isArray(saved.schema) ? saved.schema : [];
+      state.keyField = saved.keyField || null;
+      state.caseInsensitive = !!saved.caseInsensitive;
       state.master = saved.master;
       state.roster = saved.roster;
       state.ignoredFields = new Set(saved.ignoredFields || []);
       state.auditLog = saved.auditLog || [];
       recompute();
       renderAll();
-      showToast("Restored your last saved session ("+state.roster.length.toLocaleString()+" roster record(s)).");
+      showToast("Restored your last saved session ("+state.roster.length.toLocaleString()+" record(s)).");
     } else {
-      var ds = generateDataset(11000, 42);
+      state.schema = SAMPLE_SCHEMA.map(function(f){ return {key:f.key,label:f.label}; });
+      state.keyField = SAMPLE_KEYFIELD;
+      var ds = generateSampleDataset(6000, 42);
       state.master = ds.master;
       state.roster = ds.roster;
       recompute();
