@@ -24,7 +24,7 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;transition:background .15s ease,color .15s ease;}
-  .wrap{max-width:1280px;margin:0 auto;padding:0 24px 56px;}
+  .wrap{max-width:1320px;margin:0 auto;padding:0 24px 56px;}
 
   header{
     display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
@@ -35,7 +35,7 @@
   h1{font-weight:800;font-size:26px;letter-spacing:-.01em;margin:0;}
   .subtitle{color:var(--ink-soft);font-size:12.5px;margin-top:4px;font-family:'Courier New',monospace;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
   .subtitle .tag{font-weight:700;}
-  .subtitle .tag.ok{color:var(--ok);} .subtitle .tag.info{color:var(--info);}
+  .subtitle .tag.ok{color:var(--ok);} .subtitle .tag.info{color:var(--info);} .subtitle .tag.warn{color:var(--warn);}
   .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 
   button{font-family:Arial,sans-serif;font-weight:700;font-size:12.5px;border-radius:8px;border:1.5px solid var(--ink);padding:8px 14px;cursor:pointer;background:var(--surface);color:var(--ink);transition:transform .1s ease, box-shadow .1s ease;}
@@ -61,7 +61,7 @@
   .banner.warn{background:var(--warn-soft);border-color:var(--warn);color:var(--warn);}
   .banner b{font-weight:800;}
 
-  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:16px;}
   .stat-card{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:14px 16px;cursor:pointer;}
   .stat-card:hover{box-shadow:var(--shadow);}
   .stat-card.filter-active{border-color:var(--ink);border-width:2px;}
@@ -71,6 +71,8 @@
   .stat-card.aligned .num{color:var(--ok);}
   .stat-card.misaligned .num{color:var(--bad);}
   .stat-card.notfound .num{color:var(--warn);}
+  .stat-card.dupcard .num{color:var(--warn);}
+  .stat-card.dupcard{border-color:var(--warn);}
 
   .bars{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;}
   .bars h3{margin:0 0 12px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);}
@@ -78,7 +80,7 @@
   .bar-row .bar-label{width:120px;flex-shrink:0;font-weight:700;}
   .bar-row .bar-track{flex:1;background:var(--thead-bg);border-radius:6px;height:16px;overflow:hidden;border:1px solid var(--hairline);}
   .bar-row .bar-fill{height:100%;border-radius:6px 0 0 6px;}
-  .bar-row .bar-num{width:70px;text-align:right;font-family:'Courier New',monospace;font-weight:700;}
+  .bar-row .bar-num{width:90px;text-align:right;font-family:'Courier New',monospace;font-weight:700;}
 
   .filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
   .search-wrap{position:relative;flex:1;min-width:180px;}
@@ -87,14 +89,19 @@
   .chip-row{display:flex;gap:6px;flex-wrap:wrap;}
   .chip{font-family:'Courier New',monospace;font-size:11px;font-weight:700;padding:6px 11px;border-radius:20px;border:1.5px solid var(--hairline);cursor:pointer;background:var(--surface);color:var(--ink-soft);white-space:nowrap;}
   .chip.active{border-color:var(--ink);color:var(--ink);background:var(--accent-soft);}
+  .chip.warnchip{border-color:var(--warn);color:var(--warn);}
 
   .table-wrap{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);overflow:auto;max-height:600px;}
   table{width:100%;border-collapse:collapse;table-layout:fixed;}
   thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;padding:9px 11px;border-bottom:1.5px solid var(--hairline);background:var(--thead-bg);position:sticky;top:0;z-index:5;}
   thead th[data-sort]{cursor:pointer;user-select:none;}
+  thead th[data-sort]:hover{color:var(--ink);}
+  .sort-arrow{font-size:9px;}
   th.col-nr{width:50px;} th.col-badge{width:100px;} th.col-status{width:110px;} th.col-fix{width:190px;}
   tbody td{padding:8px 11px;border-bottom:1px solid var(--hairline);vertical-align:top;font-size:12.5px;}
   tbody tr:hover{background:var(--row-hover);}
+  tbody tr.is-selected{background:var(--accent-soft);}
+  tbody tr.is-dup td:first-child{box-shadow:inset 3px 0 0 var(--warn);}
   .mono{font-family:'Courier New',monospace;}
   .name-cell .full{font-weight:700;}
   .name-cell .unit{color:var(--ink-soft);font-size:11px;margin-top:2px;}
@@ -110,6 +117,7 @@
   .stamp.aligned{color:var(--ok);background:var(--ok-soft);}
   .stamp.misaligned{color:var(--bad);background:var(--bad-soft);}
   .stamp.notfound{color:var(--warn);background:var(--warn-soft);}
+  .stamp.dup{color:var(--warn);background:var(--warn-soft);}
 
   .fix-cell{text-align:right;white-space:nowrap;}
   .fix-cell button{margin:2px 0 2px 5px;}
@@ -165,12 +173,15 @@
   .undo-item{border:1.5px solid var(--hairline);border-radius:8px;padding:9px 11px;font-size:12px;}
   .undo-item.latest{border-color:var(--accent);background:var(--accent-soft);}
   .undo-item .ui-meta{color:var(--ink-soft);font-family:'Courier New',monospace;font-size:10.5px;margin-top:2px;}
+  .undo-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:14px 0 8px;}
+  .undo-section-title:first-child{margin-top:0;}
 
   .instr-body{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:22px 26px;}
   .instr-body h2{font-size:15px;color:var(--accent);margin:20px 0 8px;}
   .instr-body h2:first-child{margin-top:0;}
   .instr-body p, .instr-body li{font-size:13px;line-height:1.6;color:var(--ink);}
   .instr-body code{background:var(--thead-bg);border:1px solid var(--hairline);border-radius:4px;padding:1px 5px;font-family:'Courier New',monospace;font-size:12px;}
+  .kbd{display:inline-block;font-family:'Courier New',monospace;font-size:11px;border:1px solid var(--hairline);border-bottom-width:2px;border-radius:4px;padding:1px 6px;background:var(--thead-bg);}
 
   .live-check{border:1.5px solid var(--hairline);border-radius:8px;padding:10px 12px;margin-top:14px;background:var(--thead-bg);}
   .live-check.ok{border-color:var(--ok);background:var(--ok-soft);}
@@ -182,9 +193,9 @@
   #autosaveLine .as-ok{color:var(--ok);font-weight:700;}
   #autosaveLine .as-bad{color:var(--bad);font-weight:700;}
 
-  @media (max-width:920px){ .stats{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:640px){ header{align-items:flex-start;flex-direction:column;} .actions{width:100%;} }
   @media print{
-    header .actions, .tabs, .filter-bar, .pager, .checkbox-col, .fix-cell { display:none !important; }
+    header .actions, .tabs, .filter-bar, .pager, .col-chk, .fix-cell, .bulk-bar { display:none !important; }
     body{background:#fff;color:#000;}
     .table-wrap{max-height:none;overflow:visible;border:none;}
     thead th{position:static;}
@@ -210,9 +221,10 @@
       <button class="ghost" id="backupBtn" title="Download a full JSON backup of every record, the audit log, and settings">Export Backup</button>
       <button class="ghost" id="restoreBtn" title="Restore all data from a previously exported JSON backup (replaces current data)">Restore Backup</button>
       <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none;">
-      <button class="ghost" id="loadSampleBtn" title="Add 11,000 generated sample records, purely to demo every feature">Load Sample Data</button>
+      <button class="ghost" id="loadSampleBtn" title="Add 11,000 generated sample records on top of your current data, purely to demo every feature">Load Sample Data</button>
       <button class="ghost" id="settingsBtn">&#9881; Settings</button>
-      <button class="ghost has-badge" id="undoBtn" disabled>&#8630; Undo</button>
+      <button class="ghost has-badge" id="undoBtn" disabled title="Undo (Ctrl/Cmd+Z)">&#8630; Undo</button>
+      <button class="ghost has-badge" id="redoBtn" disabled title="Redo (Ctrl/Cmd+Shift+Z)">&#8631; Redo</button>
       <button class="ghost danger" id="newSessionBtn" title="Permanently delete every Roster and MasterList record, the audit log, and undo history from this browser">Clear All Data</button>
       <button class="accent" id="autoCorrectAllBtn">Auto-Correct All</button>
     </div>
@@ -232,7 +244,7 @@
       <span>&#10003;&nbsp;<b>Spacing-safe comparison is on.</b> Extra or doubled spaces in either sheet never by themselves cause a Misaligned flag. When a field IS corrected, it is written back as MasterList's exact literal cell &mdash; same spacing, casing and punctuation, for every field &mdash; so Roster ends up byte-for-byte identical to the reference record, even where MasterList's own cell happens to carry a stray space.</span>
     </div>
     <div class="banner warn">
-      <span>&#128190;&nbsp;<b>Your work autosaves to this browser's local database</b> (nothing leaves your machine), with no built-in row limit. Use <b>Export Backup</b> for a portable copy, or <b>Clear All Data</b> in the header to permanently wipe everything and start from empty.</span>
+      <span>&#128190;&nbsp;<b>Your work autosaves to this browser's local database</b> (nothing leaves your machine). Records are stored in IndexedDB with no practical row limit, so large rosters won't hit a storage ceiling the way plain browser storage would. Use <b>Export Backup</b> for a portable copy, or <b>Clear All Data</b> in the header to permanently wipe everything and start from empty.</span>
     </div>
     <div class="dup-banner" id="dupBanner" style="display:none;">
       <span id="dupBannerText"></span>
@@ -253,12 +265,13 @@
       <div class="stat-card aligned" data-statfilter="Aligned"><div class="num" id="statAligned">&mdash;</div><div class="lbl">Aligned</div></div>
       <div class="stat-card misaligned" data-statfilter="Misaligned"><div class="num" id="statMisaligned">&mdash;</div><div class="lbl">Misaligned</div></div>
       <div class="stat-card notfound" data-statfilter="Badge Not Found in MasterList"><div class="num" id="statNotFound">&mdash;</div><div class="lbl">Badge Not Found</div></div>
+      <div class="stat-card dupcard" data-statfilter="dup"><div class="num" id="statDup">&mdash;</div><div class="lbl">Duplicate Badges</div></div>
     </section>
-    <div class="bars">
+    <div class="bars" id="barsStatusDist">
       <h3>Status Distribution</h3>
       <div id="barChart"></div>
     </div>
-    <div class="bars">
+    <div class="bars" id="barsFieldChart">
       <h3>Top Mismatched Fields</h3>
       <div id="fieldChart"></div>
     </div>
@@ -268,29 +281,50 @@
   <!-- ================= ROSTER ================= -->
   <div class="tab-panel" id="tab-roster">
     <div class="filter-bar">
-      <div class="search-wrap"><input type="search" id="searchInput" placeholder="Search name, badge no., sub-unit&hellip;"></div>
+      <div class="search-wrap"><input type="search" id="searchInput" placeholder="Search name, badge no., sub-unit&hellip; (press / to focus)"></div>
       <div class="chip-row" id="statusChips">
         <span class="chip active" data-status="all">All</span>
         <span class="chip" data-status="Misaligned">Misaligned</span>
         <span class="chip" data-status="Badge Not Found in MasterList">Not Found</span>
         <span class="chip" data-status="Aligned">Aligned</span>
+        <span class="chip warnchip" data-status="dup" id="dupChip" style="display:none;">Duplicates</span>
       </div>
       <select id="subUnitSelect"><option value="all">All Sub-Units</option></select>
-      <button class="primary" id="addRosterBtn" style="margin-left:auto;">+ Add Record</button>
+      <select id="pageSizeSelect" title="Rows per page">
+        <option value="25">25 / page</option>
+        <option value="50" selected>50 / page</option>
+        <option value="100">100 / page</option>
+        <option value="250">250 / page</option>
+        <option value="1000">1000 / page</option>
+        <option value="all">Show all (no paging)</option>
+      </select>
+      <button class="ghost" id="downloadFilteredBtn" title="Download only the rows matching the current search / status / sub-unit filters">Export Filtered (CSV)</button>
+      <button class="primary" id="addRosterBtn">+ Add Record</button>
+    </div>
+    <div class="bulk-bar" id="bulkBar">
+      <span id="bulkCount">0 selected</span>
+      <button type="button" id="bulkFixBtn">Auto-Correct Selected</button>
+      <button type="button" id="bulkPromoteBtn">Promote Selected</button>
+      <button type="button" id="bulkExportBtn">Export Selected (CSV)</button>
+      <button type="button" id="bulkDeleteBtn">Delete Selected</button>
+      <span class="bulk-spacer"></span>
+      <button type="button" id="bulkSelectAllFilteredBtn">Select all matching filter</button>
+      <button type="button" id="bulkClearBtn">Clear Selection</button>
     </div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr id="rosterHead">
-            <th class="col-nr" data-sort="nr">Nr</th>
-            <th class="col-badge" data-sort="badge">Badge No.</th>
-            <th data-sort="name">Name / Sub-Unit</th>
-            <th class="col-status" data-sort="status">Status</th>
+            <th class="col-chk"><input type="checkbox" id="chkAllRoster" title="Select all rows on this page"></th>
+            <th class="col-nr" data-sort="nr">Nr<span class="sort-arrow"></span></th>
+            <th class="col-badge" data-sort="badge">Badge No.<span class="sort-arrow"></span></th>
+            <th data-sort="name">Name / Sub-Unit<span class="sort-arrow"></span></th>
+            <th class="col-status" data-sort="status">Status<span class="sort-arrow"></span></th>
             <th>Discrepancy Detail</th>
             <th class="col-fix"></th>
           </tr>
         </thead>
-        <tbody id="rosterBody"><tr><td colspan="6" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
+        <tbody id="rosterBody"><tr><td colspan="7" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
     <div class="pager" id="rosterPager"></div>
@@ -300,11 +334,19 @@
   <div class="tab-panel" id="tab-master">
     <div class="filter-bar">
       <div class="search-wrap"><input type="search" id="masterSearchInput" placeholder="Search name, badge no., sub-unit&hellip;"></div>
+      <button class="ghost" id="downloadMasterBtn">Export MasterList (CSV)</button>
       <button class="primary" id="addMasterBtn" style="margin-left:auto;">+ Add Reference Record</button>
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th class="col-badge">Badge No.</th><th>Name</th><th>Rank</th><th>Account No.</th><th>Sub-Unit</th><th class="col-fix"></th></tr></thead>
+        <thead><tr id="masterHead">
+          <th class="col-badge" data-sort="badge">Badge No.<span class="sort-arrow"></span></th>
+          <th data-sort="name">Name<span class="sort-arrow"></span></th>
+          <th data-sort="rank">Rank<span class="sort-arrow"></span></th>
+          <th data-sort="acct">Account No.<span class="sort-arrow"></span></th>
+          <th data-sort="subunit">Sub-Unit<span class="sort-arrow"></span></th>
+          <th class="col-fix"></th>
+        </tr></thead>
         <tbody id="masterBody"><tr><td colspan="6" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
@@ -324,7 +366,8 @@
         <tbody id="auditBody"><tr><td colspan="4" style="text-align:center;padding:30px;">No actions logged yet.</td></tr></tbody>
       </table>
     </div>
-    <footer>Every Auto-Correct, Undo, Settings change, Import, Add, Edit, Delete, and Promote action is recorded here for the current session.</footer>
+    <div class="pager" id="auditPager"></div>
+    <footer>Every Auto-Correct, Undo, Redo, Settings change, Import, Add, Edit, Delete, and Promote action is recorded here, with no cap on history length.</footer>
   </div>
 
   <!-- ================= INSTRUCTIONS ================= -->
@@ -361,14 +404,18 @@
   </div>
 </div>
 
-<!-- ===================== UNDO MODAL ===================== -->
+<!-- ===================== UNDO / REDO MODAL ===================== -->
 <div class="modal-backdrop" id="undoBackdrop">
   <div class="modal">
-    <h2>Undo History</h2>
-    <p class="modal-sub" id="undoModalSub">Reverting always steps back through your most recent Auto-Correct action first.</p>
+    <h2>Undo / Redo History</h2>
+    <p class="modal-sub" id="undoModalSub">Reverting always steps back through your most recent action first.</p>
+    <div class="undo-section-title">Can Undo (most recent first)</div>
     <div class="undo-list" id="undoList"></div>
+    <div class="undo-section-title">Can Redo (most recent first)</div>
+    <div class="undo-list" id="redoList"></div>
     <div class="modal-actions">
       <button type="button" class="ghost" id="undoCancelBtn">Close</button>
+      <button type="button" class="ghost" id="redoConfirmBtn">Redo Next</button>
       <button type="button" class="danger" id="undoConfirmBtn">Undo Most Recent</button>
     </div>
   </div>
@@ -499,36 +546,57 @@ function computeRow(rrec, masterIndex, ignoredSet){
   return {status: mismatches.length ? "Misaligned" : "Aligned", mismatches: mismatches, master: mrec};
 }
 
+function computeDuplicateBadges(roster){
+  var counts = new Map();
+  roster.forEach(function(r){
+    var b = normVal(r.badgeNumber);
+    if (!b) return;
+    counts.set(b, (counts.get(b)||0)+1);
+  });
+  var dup = new Set();
+  counts.forEach(function(n,b){ if (n>1) dup.add(b); });
+  return dup;
+}
+
 // =================================================================
 // STATE
 // =================================================================
-var STORAGE_KEY = "reconciliationChecker.session.v1";
+var DB_NAME = "reconciliationCheckerDB", DB_STORE = "session", DB_KEY = "main";
+var LEGACY_LS_KEY = "reconciliationChecker.session.v1";
+var THEME_KEY = "reconciliationChecker.theme";
 
 var state = {
   master: [], roster: [], masterIndex: null,
   ignoredFields: new Set(),
   results: new Map(),           // rosterId -> computeRow() result, refreshed on recompute()
-  undoStack: [],                // [{ label, entries:[{rowId, before:{...}}] }]
+  dupBadges: new Set(),
+  undoStack: [],                // [{ label, entries:[{rowId, before:{...}, after:{...}}] }]
+  redoStack: [],
   auditLog: [],
+  selectedRosterIds: new Set(),
   filters: { status:"all", search:"", subUnit:"all" },
   masterSearch: "", auditSearch: "",
   sort: { key:"nr", dir:"asc" },
-  page: { roster:1, master:1 }, pageSize: 50,
-  modal: { target:null, mode:null, id:null }
+  sortMaster: { key:"badge", dir:"asc" },
+  page: { roster:1, master:1, audit:1 }, pageSize: 50,
+  modal: { target:null, mode:null, id:null },
+  storageMode: "unknown"
 };
 
 var els = {};
-["subtitle","autosaveLine","printBtn","downloadErrorsBtn","downloadRosterBtn","importCsvBtn","settingsBtn","undoBtn","newSessionBtn","autoCorrectAllBtn",
- "statTotal","statAligned","statMisaligned","statNotFound","barChart","fieldChart","dashFooter",
- "searchInput","statusChips","subUnitSelect","addRosterBtn","rosterBody","rosterPager","rosterHead",
- "masterSearchInput","addMasterBtn","masterBody","masterPager",
- "auditSearchInput","downloadAuditBtn","auditBody",
+["subtitle","autosaveLine","themeToggleBtn","printBtn","downloadErrorsBtn","downloadRosterBtn","importCsvBtn","backupBtn","restoreBtn","restoreFileInput","loadSampleBtn","settingsBtn","undoBtn","redoBtn","newSessionBtn","autoCorrectAllBtn",
+ "statTotal","statAligned","statMisaligned","statNotFound","statDup","barChart","fieldChart","dashFooter",
+ "searchInput","statusChips","subUnitSelect","pageSizeSelect","downloadFilteredBtn","addRosterBtn","rosterBody","rosterPager","rosterHead",
+ "masterSearchInput","downloadMasterBtn","addMasterBtn","masterBody","masterPager","masterHead",
+ "auditSearchInput","downloadAuditBtn","auditBody","auditPager",
  "tabCountRoster","tabCountMaster","tabCountAudit","instrBody",
  "modalBackdrop","modalTitle","modalSub","modalForm","modalCancelBtn","modalSaveBtn",
  "settingsBackdrop","ignoreList","settingsCancelBtn","settingsSaveBtn",
- "undoBackdrop","undoModalSub","undoList","undoCancelBtn","undoConfirmBtn",
+ "undoBackdrop","undoModalSub","undoList","redoList","undoCancelBtn","undoConfirmBtn","redoConfirmBtn",
  "csvBackdrop","csvTargetSelect","csvTargetHint","csvFileInput","csvTextarea","csvPreview","csvCancelBtn","csvImportBtn",
- "toast"
+ "toast", "bulkBar", "bulkCount", "bulkFixBtn","bulkPromoteBtn","bulkExportBtn","bulkDeleteBtn","bulkSelectAllFilteredBtn","bulkClearBtn",
+ "emptyStateWrap","statsGrid","barsStatusDist","barsFieldChart","emptyImportBtn","emptySampleBtn",
+ "dupBanner","dupBannerText","dupBannerBtn","dupChip"
 ].forEach(function(id){ els[id] = document.getElementById(id); });
 
 function esc(v){
@@ -547,47 +615,122 @@ function debounce(fn, ms){
 }
 function logAudit(action, details, rowsAffected){
   state.auditLog.unshift({ ts:new Date(), action:action, details:details||"", rows: rowsAffected||0 });
-  if (state.auditLog.length > 2000) state.auditLog.length = 2000;
 }
 
 // =================================================================
-// LOCAL AUTOSAVE (browser-only persistence; nothing leaves the machine)
+// LOCAL AUTOSAVE — IndexedDB primary (effectively unlimited size),
+// localStorage as an automatic fallback if IndexedDB is unavailable.
 // =================================================================
+var dbPromise = null;
+function getDB(){
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise(function(resolve,reject){
+    if (!window.indexedDB){ reject(new Error("IndexedDB unavailable")); return; }
+    var req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = function(e){ if (!e.target.result.objectStoreNames.contains(DB_STORE)) e.target.result.createObjectStore(DB_STORE); };
+    req.onsuccess = function(e){ resolve(e.target.result); };
+    req.onerror = function(){ reject(req.error || new Error("IndexedDB open failed")); };
+  });
+  return dbPromise;
+}
+function idbPut(key, val){
+  return getDB().then(function(db){
+    return new Promise(function(resolve,reject){
+      var tx = db.transaction(DB_STORE, "readwrite");
+      tx.objectStore(DB_STORE).put(val, key);
+      tx.oncomplete = function(){ resolve(true); };
+      tx.onerror = function(){ reject(tx.error); };
+    });
+  });
+}
+function idbGet(key){
+  return getDB().then(function(db){
+    return new Promise(function(resolve,reject){
+      var tx = db.transaction(DB_STORE, "readonly");
+      var req = tx.objectStore(DB_STORE).get(key);
+      req.onsuccess = function(){ resolve(req.result); };
+      req.onerror = function(){ reject(req.error); };
+    });
+  });
+}
+
 function setAutosaveIndicator(ok, msg){
   if (!els.autosaveLine) return;
   if (ok === null){ els.autosaveLine.innerHTML = "&nbsp;"; return; }
   els.autosaveLine.innerHTML = ok
-    ? '<span class="as-ok">&#10003; Autosaved to this browser</span>' + (msg ? " &middot; " + esc(msg) : "")
+    ? '<span class="as-ok">&#10003; Autosaved</span>' + (msg ? " &middot; " + esc(msg) : "")
     : '<span class="as-bad">Autosave unavailable</span>' + (msg ? " &middot; " + esc(msg) : "");
 }
+
 function saveSession(){
-  try{
-    var payload = {
-      v: 1,
-      savedAt: new Date().toISOString(),
-      master: state.master,
-      roster: state.roster,
-      ignoredFields: Array.from(state.ignoredFields),
-      auditLog: state.auditLog.slice(0, 500).map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; })
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    setAutosaveIndicator(true);
-  } catch(e){
-    setAutosaveIndicator(false, "storage may be full or blocked");
-  }
+  var payload = {
+    v: 2, savedAt: new Date(),
+    master: state.master, roster: state.roster,
+    ignoredFields: Array.from(state.ignoredFields),
+    auditLog: state.auditLog
+  };
+  idbPut(DB_KEY, payload).then(function(){
+    state.storageMode = "indexeddb";
+    setAutosaveIndicator(true, "IndexedDB \u00b7 no practical row limit");
+  }).catch(function(){
+    try{
+      var lsPayload = {
+        v: 2, savedAt: payload.savedAt.toISOString(),
+        master: state.master, roster: state.roster,
+        ignoredFields: Array.from(state.ignoredFields),
+        auditLog: state.auditLog.map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; })
+      };
+      localStorage.setItem(LEGACY_LS_KEY, JSON.stringify(lsPayload));
+      state.storageMode = "localstorage";
+      setAutosaveIndicator(true, "browser local storage (limited capacity)");
+    } catch(e){
+      state.storageMode = "none";
+      setAutosaveIndicator(false, "storage may be full or blocked");
+    }
+  });
 }
 var saveSessionDebounced = debounce(saveSession, 450);
 
-function loadSession(){
+function loadFromLocalStorage(){
   try{
-    var raw = localStorage.getItem(STORAGE_KEY);
+    var raw = localStorage.getItem(LEGACY_LS_KEY);
     if (!raw) return null;
     var data = JSON.parse(raw);
     if (!data || !Array.isArray(data.master) || !Array.isArray(data.roster)) return null;
+    data.auditLog = (data.auditLog || []).map(function(a){ return {ts:new Date(a.ts), action:a.action, details:a.details, rows:a.rows}; });
+    state.storageMode = "localstorage";
     return data;
   } catch(e){ return null; }
 }
-function clearSession(){ try{ localStorage.removeItem(STORAGE_KEY); }catch(e){} }
+function loadSession(){
+  return idbGet(DB_KEY).then(function(data){
+    if (data && Array.isArray(data.master) && Array.isArray(data.roster)){
+      state.storageMode = "indexeddb";
+      return data;
+    }
+    return loadFromLocalStorage();
+  }).catch(function(){
+    return loadFromLocalStorage();
+  });
+}
+function clearSession(){
+  try{ localStorage.removeItem(LEGACY_LS_KEY); }catch(e){}
+  idbPut(DB_KEY, null).catch(function(){});
+}
+
+// =================================================================
+// THEME
+// =================================================================
+function setTheme(t){
+  document.body.classList.toggle("dark", t==="dark");
+  els.themeToggleBtn.innerHTML = t==="dark" ? "&#9728;&#65039; Light" : "&#127769; Dark";
+  try{ localStorage.setItem(THEME_KEY, t); }catch(e){}
+}
+function applyStoredTheme(){
+  var t = "light";
+  try{ t = localStorage.getItem(THEME_KEY) || "light"; }catch(e){}
+  setTheme(t);
+}
 
 // =================================================================
 // RECOMPUTE (fast full pass; called after any data or settings change)
@@ -606,17 +749,56 @@ function recompute(){
   state.results = results;
   state.counts = counts;
   state.fieldCounts = fieldCounts;
+  state.dupBadges = computeDuplicateBadges(state.roster);
+  // prune selections that no longer exist
+  var liveIds = new Set(state.roster.map(function(r){ return r.id; }));
+  state.selectedRosterIds.forEach(function(id){ if (!liveIds.has(id)) state.selectedRosterIds.delete(id); });
 }
 
 // =================================================================
-// AUTO-CORRECT / UNDO
+// UNDO / REDO
 // =================================================================
-function fieldsToCorrect(res){
-  var out = {};
-  res.mismatches.forEach(function(m){ out[m.key] = m.correct; });
-  return out;
+function pushUndo(label, entries){
+  if (!entries.length) return;
+  state.undoStack.push({ label:label, entries:entries });
+  state.redoStack = [];
+}
+function undoLast(){
+  var batch = state.undoStack.pop();
+  if (!batch){ showToast("Nothing to undo.", true); return; }
+  var byId = new Map(state.roster.map(function(r){ return [r.id, r]; }));
+  batch.entries.forEach(function(entry){
+    var r = byId.get(entry.rowId);
+    if (!r) return;
+    var after = {};
+    Object.keys(entry.before).forEach(function(k){ after[k]=r[k]; r[k]=entry.before[k]; });
+    entry.after = after;
+  });
+  state.redoStack.push(batch);
+  recompute();
+  logAudit("Undo", "Reverted: "+batch.label, batch.entries.length);
+  showToast("Reverted: "+batch.label);
+  renderAll();
+}
+function redoLast(){
+  var batch = state.redoStack.pop();
+  if (!batch){ showToast("Nothing to redo.", true); return; }
+  var byId = new Map(state.roster.map(function(r){ return [r.id, r]; }));
+  batch.entries.forEach(function(entry){
+    var r = byId.get(entry.rowId);
+    if (!r || !entry.after) return;
+    Object.keys(entry.after).forEach(function(k){ r[k]=entry.after[k]; });
+  });
+  state.undoStack.push(batch);
+  recompute();
+  logAudit("Redo", "Reapplied: "+batch.label, batch.entries.length);
+  showToast("Reapplied: "+batch.label);
+  renderAll();
 }
 
+// =================================================================
+// AUTO-CORRECT
+// =================================================================
 function applyAutoCorrectAll(){
   var entries = [];
   var correctedFields = 0;
@@ -628,8 +810,7 @@ function applyAutoCorrectAll(){
     entries.push({ rowId:r.id, before:before });
   });
   if (!entries.length){ showToast("No misaligned rows to correct."); return; }
-  state.undoStack.push({ label:"Auto-Correct All ("+entries.length+" row(s), "+correctedFields+" field(s))", entries:entries });
-  if (state.undoStack.length > 25) state.undoStack.shift();
+  pushUndo("Auto-Correct All ("+entries.length+" row(s), "+correctedFields+" field(s))", entries);
   recompute();
   logAudit("Auto-Correct All", entries.length+" row(s) corrected, "+correctedFields+" field(s) matched to MasterList's exact formatting", entries.length);
   showToast("Auto-corrected "+entries.length+" row(s), "+correctedFields+" field(s).");
@@ -643,8 +824,7 @@ function applyAutoCorrectRow(rowId){
   if (!res || !res.mismatches.length){ showToast("Nothing to correct on this row."); return; }
   var before = {};
   res.mismatches.forEach(function(m){ before[m.key]=r[m.key]; r[m.key]=m.correct; });
-  state.undoStack.push({ label:"Auto-Correct Row "+r.nr, entries:[{rowId:rowId, before:before}] });
-  if (state.undoStack.length > 25) state.undoStack.shift();
+  pushUndo("Auto-Correct Row "+r.nr, [{rowId:rowId, before:before}]);
   recompute();
   logAudit("Auto-Correct Row", "Row "+r.nr+" \u00b7 "+res.mismatches.length+" field(s) matched to MasterList's exact formatting", 1);
   showToast("Row "+r.nr+" fixed ("+res.mismatches.length+" field(s)).");
@@ -659,42 +839,73 @@ function applyAutoCorrectField(rowId, fieldKey){
   if (!m){ showToast("That field is already correct."); return; }
   var before = {}; before[fieldKey] = r[fieldKey];
   r[fieldKey] = m.correct;
-  state.undoStack.push({ label:"Auto-Correct Field ("+m.label+") \u00b7 Row "+r.nr, entries:[{rowId:rowId, before:before}] });
-  if (state.undoStack.length > 25) state.undoStack.shift();
+  pushUndo("Auto-Correct Field ("+m.label+") \u00b7 Row "+r.nr, [{rowId:rowId, before:before}]);
   recompute();
   logAudit("Auto-Correct Field", "Row "+r.nr+" \u00b7 "+m.label+" matched to MasterList's exact formatting", 1);
   showToast('Fixed "'+m.label+'" on row '+r.nr+".");
   renderAll();
 }
 
-function undoLast(){
-  var batch = state.undoStack.pop();
-  if (!batch){ showToast("Nothing to undo.", true); return; }
-  var byId = new Map(state.roster.map(function(r){ return [r.id, r]; }));
-  batch.entries.forEach(function(entry){
-    var r = byId.get(entry.rowId);
-    if (!r) return;
-    Object.keys(entry.before).forEach(function(k){ r[k] = entry.before[k]; });
+function applyAutoCorrectSelected(){
+  var ids = Array.from(state.selectedRosterIds);
+  var entries = [], correctedFields = 0;
+  ids.forEach(function(id){
+    var r = state.roster.find(function(x){ return x.id===id; });
+    var res = r && state.results.get(id);
+    if (!r || !res || !res.mismatches.length) return;
+    var before = {};
+    res.mismatches.forEach(function(m){ before[m.key]=r[m.key]; r[m.key]=m.correct; correctedFields++; });
+    entries.push({ rowId:id, before:before });
   });
+  if (!entries.length){ showToast("None of the selected rows need correction."); return; }
+  pushUndo("Auto-Correct Selected ("+entries.length+" row(s), "+correctedFields+" field(s))", entries);
   recompute();
-  logAudit("Undo", "Reverted: "+batch.label, batch.entries.length);
-  showToast("Reverted: "+batch.label);
+  logAudit("Auto-Correct Selected", entries.length+" row(s) corrected via bulk selection, "+correctedFields+" field(s)", entries.length);
+  showToast("Corrected "+entries.length+" selected row(s).");
   renderAll();
 }
 
-function promoteRow(rowId){
+function promoteRow(rowId, silent){
   var r = state.roster.find(function(x){ return x.id===rowId; });
-  if (!r) return;
+  if (!r) return false;
   var res = state.results.get(rowId);
-  if (res.status !== "Badge Not Found in MasterList"){ showToast("This row already matches a MasterList record.", true); return; }
-  if (state.masterIndex.has(normVal(r.badgeNumber))){ showToast("A MasterList record with this badge already exists.", true); return; }
+  if (res.status !== "Badge Not Found in MasterList"){ if (!silent) showToast("This row already matches a MasterList record.", true); return false; }
+  if (state.masterIndex.has(normVal(r.badgeNumber))){ if (!silent) showToast("A MasterList record with this badge already exists.", true); return false; }
   var mrec = { id:"m_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
     acctNumber:r.acctNumber, rank:r.rank, lastName:r.lastName, firstName:r.firstName,
     middleName:r.middleName, qualifier:r.qualifier, badgeNumber:r.badgeNumber, unit:"", subUnit:r.subUnit };
   state.master.push(mrec);
+  state.masterIndex.set(normVal(mrec.badgeNumber), mrec);
+  if (!silent){
+    recompute();
+    logAudit("Promote to MasterList", "Roster row "+r.nr+" \u00b7 Badge "+r.badgeNumber+" added as a new reference record", 1);
+    showToast("Badge "+r.badgeNumber+" added to MasterList.");
+    renderAll();
+  }
+  return true;
+}
+
+function promoteSelected(){
+  var ids = Array.from(state.selectedRosterIds);
+  var count = 0;
+  ids.forEach(function(id){ if (promoteRow(id, true)) count++; });
+  if (!count){ showToast("None of the selected rows are eligible to promote.", true); return; }
   recompute();
-  logAudit("Promote to MasterList", "Roster row "+r.nr+" \u00b7 Badge "+r.badgeNumber+" added as a new reference record", 1);
-  showToast("Badge "+r.badgeNumber+" added to MasterList.");
+  logAudit("Promote Selected", count+" row(s) added to MasterList via bulk selection", count);
+  showToast("Promoted "+count+" row(s) to MasterList.");
+  renderAll();
+}
+
+function deleteSelected(){
+  var ids = state.selectedRosterIds;
+  if (!ids.size){ showToast("No rows selected.", true); return; }
+  if (!confirm("Delete "+ids.size+" selected row(s)? This cannot be undone.")) return;
+  state.roster = state.roster.filter(function(r){ return !ids.has(r.id); });
+  var n = ids.size;
+  state.selectedRosterIds = new Set();
+  recompute();
+  logAudit("Delete Selected", n+" roster row(s) deleted via bulk selection", n);
+  showToast("Deleted "+n+" row(s).");
   renderAll();
 }
 
@@ -714,6 +925,14 @@ function downloadCsv(filename, rows){
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+function rosterExportRows(list){
+  var rows = [["Nr","Badge No.","Last Name","First Name","Middle Name","Rank","Account Number","Qualifier","Sub-Unit","Verification Status"]];
+  list.forEach(function(r){
+    var res = state.results.get(r.id);
+    rows.push([r.nr, r.badgeNumber, r.lastName, r.firstName, r.middleName, r.rank, r.acctNumber, r.qualifier, r.subUnit, res ? res.status : ""]);
+  });
+  return rows;
 }
 
 function parseCsv(text){
@@ -750,7 +969,8 @@ function normalizeHeader(h){
 // Imports CSV text into either "roster" or "master". For MasterList, a row
 // whose Badge No. already exists updates that reference record in place
 // (so re-importing a refreshed original MasterList export is safe); a new
-// badge is added as a new reference record.
+// badge is added as a new reference record. Rows with no usable Badge No.
+// are skipped and counted, never silently dropped without a report.
 function importCsvInto(target, text){
   var parsed = parseCsv(text);
   if (parsed.length < 2) throw new Error("CSV needs a header row plus at least one data row.");
@@ -758,16 +978,16 @@ function importCsvInto(target, text){
   var keyForCol = header.map(function(h){ return CSV_ALIASES[h] || null; });
   if (keyForCol.indexOf("badgeNumber") === -1) throw new Error("CSV header must include a Badge Number column.");
 
-  var added = 0, updated = 0;
+  var added = 0, updated = 0, skipped = 0;
 
   if (target === "roster"){
     var nextNr = state.roster.length ? Math.max.apply(null, state.roster.map(function(r){return r.nr;})) + 1 : 1;
     for (var i=1;i<parsed.length;i++){
       var csvRow = parsed[i];
       if (!csvRow.length || csvRow.every(function(c){ return String(c).trim()===""; })) continue;
-      var rec = { id:"r_"+Date.now()+"_"+i, nr:nextNr++, acctNumber:"", rank:"", lastName:"", firstName:"", middleName:"", qualifier:"", badgeNumber:"", subUnit:"" };
+      var rec = { id:"r_"+Date.now()+"_"+i+"_"+Math.random().toString(36).slice(2,6), nr:nextNr++, acctNumber:"", rank:"", lastName:"", firstName:"", middleName:"", qualifier:"", badgeNumber:"", subUnit:"" };
       keyForCol.forEach(function(key, idx){ if (key && key!=="nr" && csvRow[idx]!==undefined) rec[key] = csvRow[idx]; });
-      if (!rec.badgeNumber) continue;
+      if (!rec.badgeNumber){ skipped++; continue; }
       state.roster.push(rec);
       added++;
     }
@@ -775,9 +995,9 @@ function importCsvInto(target, text){
     for (var j=1;j<parsed.length;j++){
       var row2 = parsed[j];
       if (!row2.length || row2.every(function(c){ return String(c).trim()===""; })) continue;
-      var mrec = { id:"m_"+Date.now()+"_"+j, acctNumber:"", rank:"", lastName:"", firstName:"", middleName:"", qualifier:"", badgeNumber:"", unit:"", subUnit:"" };
+      var mrec = { id:"m_"+Date.now()+"_"+j+"_"+Math.random().toString(36).slice(2,6), acctNumber:"", rank:"", lastName:"", firstName:"", middleName:"", qualifier:"", badgeNumber:"", unit:"", subUnit:"" };
       keyForCol.forEach(function(key, idx){ if (key && key!=="nr" && row2[idx]!==undefined) mrec[key] = row2[idx]; });
-      if (!mrec.badgeNumber) continue;
+      if (!mrec.badgeNumber){ skipped++; continue; }
       var badgeNorm = normVal(mrec.badgeNumber);
       var existingIdx = state.master.findIndex(function(m){ return normVal(m.badgeNumber) === badgeNorm; });
       if (existingIdx !== -1){
@@ -791,13 +1011,13 @@ function importCsvInto(target, text){
     }
   }
 
-  if (!added && !updated) throw new Error("No valid data rows found in the CSV.");
+  if (!added && !updated) throw new Error("No valid data rows found in the CSV (rows need a Badge Number).");
   recompute();
   var detail = target==="roster"
-    ? added+" row(s) added to Roster"
-    : added+" new reference record(s) added, "+updated+" existing MasterList record(s) updated to match the imported original";
+    ? added+" row(s) added to Roster"+(skipped?", "+skipped+" row(s) skipped (missing Badge No.)":"")
+    : added+" new reference record(s) added, "+updated+" existing MasterList record(s) updated to match the imported original"+(skipped?", "+skipped+" row(s) skipped (missing Badge No.)":"");
   logAudit("Import CSV", detail, added+updated);
-  return { added:added, updated:updated };
+  return { added:added, updated:updated, skipped:skipped };
 }
 
 // =================================================================
@@ -951,13 +1171,76 @@ function deleteRecord(target, id){
 }
 
 // =================================================================
+// SAMPLE DATA / BACKUP / RESTORE
+// =================================================================
+function addSampleData(n){
+  var seed = Math.floor(Math.random()*100000) + 1;
+  var ds = generateDataset(n, seed);
+  var nextNr = state.roster.length ? Math.max.apply(null, state.roster.map(function(r){return r.nr;})) + 1 : 1;
+  var idSuffix = "_s"+Date.now()+"_"+Math.floor(Math.random()*1000);
+  ds.master.forEach(function(m){ m.id = m.id + idSuffix; });
+  ds.roster.forEach(function(r,i){ r.id = r.id + idSuffix; r.nr = nextNr + i; });
+  state.master = state.master.concat(ds.master);
+  state.roster = state.roster.concat(ds.roster);
+  recompute();
+  logAudit("Load Sample Data", n.toLocaleString()+" generated sample record(s) added on top of existing data", n*2);
+  showToast("Added "+n.toLocaleString()+" sample record(s).");
+  renderAll();
+}
+
+function exportBackup(){
+  var payload = {
+    v: 2, exportedAt: new Date().toISOString(),
+    master: state.master, roster: state.roster,
+    ignoredFields: Array.from(state.ignoredFields),
+    auditLog: state.auditLog.map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; })
+  };
+  var blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = "reconciliation-backup-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  logAudit("Export Backup", "Full JSON backup downloaded ("+state.master.length.toLocaleString()+" MasterList, "+state.roster.length.toLocaleString()+" Roster)", state.master.length+state.roster.length);
+  showToast("Backup downloaded.");
+}
+
+function restoreFromFile(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var data = JSON.parse(String(reader.result||""));
+      if (!data || !Array.isArray(data.master) || !Array.isArray(data.roster)) throw new Error("File doesn't look like a valid backup.");
+      if (!confirm("Restore from this backup? This replaces all current Roster and MasterList data, the audit log, and undo/redo history in this browser.")) return;
+      state.master = data.master;
+      state.roster = data.roster;
+      state.ignoredFields = new Set(data.ignoredFields || []);
+      state.auditLog = (data.auditLog || []).map(function(a){ return {ts:new Date(a.ts), action:a.action, details:a.details, rows:a.rows}; });
+      state.undoStack = []; state.redoStack = []; state.selectedRosterIds = new Set();
+      state.page = { roster:1, master:1, audit:1 };
+      recompute();
+      logAudit("Restore Backup", "Session restored from uploaded JSON backup ("+state.roster.length.toLocaleString()+" roster record(s))", state.roster.length);
+      showToast("Backup restored.");
+      renderAll();
+    } catch(e){ showToast("Restore failed: "+e.message, true); }
+  };
+  reader.readAsText(file);
+}
+
+// =================================================================
 // FILTER / SORT / PAGINATE
 // =================================================================
+function effectivePageSize(){ return state.pageSize; }
+
 function filteredRoster(){
   var f = state.filters, q = f.search.trim().toLowerCase();
   var rows = state.roster.filter(function(r){
     var res = state.results.get(r.id);
-    if (f.status !== "all" && res.status !== f.status) return false;
+    if (f.status !== "all"){
+      if (f.status === "dup"){
+        if (!state.dupBadges.has(normVal(r.badgeNumber))) return false;
+      } else if (res.status !== f.status) return false;
+    }
     if (f.subUnit !== "all" && normVal(r.subUnit||"(No Sub-Unit)") !== f.subUnit) return false;
     if (q){
       var hay = [r.badgeNumber, r.lastName, r.firstName, r.middleName, r.rank, r.subUnit, r.acctNumber].join(" ").toLowerCase();
@@ -979,15 +1262,33 @@ function filteredRoster(){
   return rows;
 }
 
+function currentRosterPage(){
+  var all = filteredRoster();
+  var pageSize = effectivePageSize();
+  var totalPages = Math.max(1, Math.ceil(all.length / pageSize));
+  if (state.page.roster > totalPages) state.page.roster = totalPages;
+  var startIdx = (state.page.roster - 1) * pageSize;
+  return { all: all, pageRows: all.slice(startIdx, startIdx + pageSize), totalPages: totalPages };
+}
+
 // =================================================================
 // RENDER: Dashboard
 // =================================================================
 function renderDashboard(){
+  var hasData = (state.master.length > 0) || (state.roster.length > 0);
+  els.emptyStateWrap.style.display = hasData ? "none" : "grid";
+  els.statsGrid.style.display = hasData ? "grid" : "none";
+  els.barsStatusDist.style.display = hasData ? "block" : "none";
+  els.barsFieldChart.style.display = hasData ? "block" : "none";
+
+  if (!hasData){ els.dashFooter.textContent = "No data loaded yet."; renderDupBanner(); return; }
+
   var c = state.counts, total = state.roster.length;
   els.statTotal.textContent = total.toLocaleString();
   els.statAligned.textContent = c.Aligned.toLocaleString();
   els.statMisaligned.textContent = c.Misaligned.toLocaleString();
   els.statNotFound.textContent = c["Badge Not Found in MasterList"].toLocaleString();
+  els.statDup.textContent = state.dupBadges.size.toLocaleString();
   document.querySelectorAll(".stat-card").forEach(function(card){
     card.classList.toggle("filter-active", card.getAttribute("data-statfilter") === state.filters.status);
   });
@@ -1019,6 +1320,15 @@ function renderDashboard(){
   }
   els.dashFooter.textContent = "MasterList: " + state.master.length.toLocaleString() + " reference record(s) \u00b7 Roster: " + total.toLocaleString() + " record(s) \u00b7 Checked fields: " +
     CHECK_FIELDS.filter(function(f){ return !state.ignoredFields.has(f.key); }).map(function(f){ return f.label; }).join(", ");
+  renderDupBanner();
+}
+
+function renderDupBanner(){
+  var n = state.dupBadges.size;
+  if (!n){ els.dupBanner.style.display="none"; els.dupChip.style.display="none"; return; }
+  els.dupBanner.style.display="flex";
+  els.dupChip.style.display="inline-block";
+  els.dupBannerText.textContent = n.toLocaleString() + " duplicate badge number" + (n===1?"":"s") + " found within Roster \u2014 duplicate rows can cause ambiguous corrections. Review and merge or delete the extras.";
 }
 
 // =================================================================
@@ -1040,19 +1350,39 @@ function populateSubUnitSelect(){
   els.subUnitSelect.value = Array.from(els.subUnitSelect.options).some(function(o){ return o.value===current; }) ? current : "all";
 }
 
+function updateSortArrows(containerId, sortKey, dir){
+  document.querySelectorAll("#"+containerId+" [data-sort]").forEach(function(th){
+    var arrow = th.querySelector(".sort-arrow");
+    if (!arrow) return;
+    arrow.textContent = th.getAttribute("data-sort")===sortKey ? (dir==="asc"?" \u25B2":" \u25BC") : "";
+  });
+}
+
+function syncSelectAllCheckbox(pageRows){
+  var box = document.getElementById("chkAllRoster");
+  if (!box) return;
+  if (!pageRows.length){ box.checked=false; box.indeterminate=false; return; }
+  var selectedCount = pageRows.filter(function(r){ return state.selectedRosterIds.has(r.id); }).length;
+  box.checked = selectedCount === pageRows.length;
+  box.indeterminate = selectedCount > 0 && selectedCount < pageRows.length;
+}
+
+function updateBulkBar(){
+  var n = state.selectedRosterIds.size;
+  els.bulkBar.classList.toggle("show", n>0);
+  els.bulkCount.textContent = n.toLocaleString() + " selected";
+}
+
 function renderRosterTable(){
-  var all = filteredRoster();
-  var pageSize = state.pageSize;
-  var totalPages = Math.max(1, Math.ceil(all.length / pageSize));
-  if (state.page.roster > totalPages) state.page.roster = totalPages;
-  var startIdx = (state.page.roster - 1) * pageSize;
-  var pageRows = all.slice(startIdx, startIdx + pageSize);
+  var pageInfo = currentRosterPage();
+  var all = pageInfo.all, pageRows = pageInfo.pageRows, totalPages = pageInfo.totalPages;
 
   if (!pageRows.length){
-    els.rosterBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-soft);">No records match the current filters.</td></tr>';
+    els.rosterBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-soft);">No records match the current filters.</td></tr>';
   } else {
     els.rosterBody.innerHTML = pageRows.map(function(r){
       var res = state.results.get(r.id);
+      var isDup = state.dupBadges.has(normVal(r.badgeNumber));
       var fullName = [r.lastName, r.firstName].filter(Boolean).join(", ") + (r.middleName ? " "+r.middleName : "");
       var diffHtml;
       if (res.status === "Misaligned"){
@@ -1065,11 +1395,13 @@ function renderRosterTable(){
       } else {
         diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">Matches MasterList</span>';
       }
+      if (isDup) diffHtml += '<div style="margin-top:4px;"><span class="stamp dup">Duplicate Badge</span></div>';
       var actions = (res.status==="Misaligned" ? '<button type="button" class="small ghost" data-fixrow="'+r.id+'">Fix</button>' : "") +
         (res.status==="Badge Not Found in MasterList" ? '<button type="button" class="small ghost" data-promote="'+r.id+'">Promote</button>' : "") +
         '<button type="button" class="small ghost" data-editroster="'+r.id+'">Edit</button>' +
         '<button type="button" class="small danger" data-delroster="'+r.id+'">Delete</button>';
-      return '<tr>'+
+      return '<tr class="'+(state.selectedRosterIds.has(r.id)?"is-selected ":"")+(isDup?"is-dup":"")+'">'+
+        '<td class="col-chk"><input type="checkbox" class="row-chk" data-rowchk="'+r.id+'"'+(state.selectedRosterIds.has(r.id)?" checked":"")+'></td>'+
         '<td class="mono">'+esc(r.nr)+'</td>'+
         '<td class="mono">'+esc(r.badgeNumber)+'</td>'+
         '<td class="name-cell"><div class="full">'+esc(fullName||"\u2014")+'</div><div class="unit">'+esc(r.rank||"")+(r.subUnit?" \u00b7 "+esc(r.subUnit):"")+'</div></td>'+
@@ -1087,12 +1419,26 @@ function renderRosterTable(){
   }); });
   els.rosterBody.querySelectorAll("[data-editroster]").forEach(function(btn){ btn.addEventListener("click", function(){ openModal("roster","edit",btn.getAttribute("data-editroster")); }); });
   els.rosterBody.querySelectorAll("[data-delroster]").forEach(function(btn){ btn.addEventListener("click", function(){ deleteRecord("roster", btn.getAttribute("data-delroster")); }); });
+  els.rosterBody.querySelectorAll("[data-rowchk]").forEach(function(cb){
+    cb.addEventListener("change", function(){
+      var id = cb.getAttribute("data-rowchk");
+      if (cb.checked) state.selectedRosterIds.add(id); else state.selectedRosterIds.delete(id);
+      updateBulkBar();
+      syncSelectAllCheckbox(pageRows);
+      cb.closest("tr").classList.toggle("is-selected", cb.checked);
+    });
+  });
+
+  syncSelectAllCheckbox(pageRows);
+  updateBulkBar();
+  updateSortArrows("rosterHead", state.sort.key, state.sort.dir);
 
   renderPager("rosterPager", state.page.roster, totalPages, all.length, function(p){ state.page.roster = p; renderRosterTable(); });
   els.tabCountRoster.textContent = "(" + state.roster.length.toLocaleString() + ")";
 
   var subtitleParts = [state.roster.length.toLocaleString()+" roster record(s)", state.master.length.toLocaleString()+" MasterList record(s)"];
   els.subtitle.innerHTML = subtitleParts.join(" &middot; ") + ' &middot; <span class="tag ok">spacing-safe</span>' +
+    (state.dupBadges.size ? ' &middot; <span class="tag warn">'+state.dupBadges.size+' duplicate badge(s)</span>' : "") +
     (state.ignoredFields.size ? ' &middot; <span class="tag info">ignoring '+esc(Array.from(state.ignoredFields).map(function(k){var f=CHECK_FIELDS.find(function(x){return x.key===k;});return f?f.label:k;}).join(", "))+'</span>' : "");
 }
 
@@ -1125,15 +1471,28 @@ function renderPager(elId, page, totalPages, totalRows, onGo){
 // =================================================================
 function filteredMaster(){
   var q = state.masterSearch.trim().toLowerCase();
-  if (!q) return state.master;
-  return state.master.filter(function(m){
+  var rows = state.master.filter(function(m){
+    if (!q) return true;
     var hay = [m.badgeNumber, m.lastName, m.firstName, m.middleName, m.rank, m.subUnit, m.acctNumber].join(" ").toLowerCase();
     return hay.indexOf(q) !== -1;
   });
+  var key = state.sortMaster.key, dir = state.sortMaster.dir;
+  rows.sort(function(a,b){
+    var va, vb;
+    if (key==="badge"){ va=String(a.badgeNumber||"").toLowerCase(); vb=String(b.badgeNumber||"").toLowerCase(); }
+    else if (key==="name"){ va=(a.lastName||"").toLowerCase(); vb=(b.lastName||"").toLowerCase(); }
+    else if (key==="rank"){ va=(a.rank||"").toLowerCase(); vb=(b.rank||"").toLowerCase(); }
+    else if (key==="acct"){ va=String(a.acctNumber||"").toLowerCase(); vb=String(b.acctNumber||"").toLowerCase(); }
+    else if (key==="subunit"){ va=(a.subUnit||"").toLowerCase(); vb=(b.subUnit||"").toLowerCase(); }
+    if (va<vb) return dir==="asc"?-1:1;
+    if (va>vb) return dir==="asc"?1:-1;
+    return 0;
+  });
+  return rows;
 }
 function renderMasterTable(){
   var all = filteredMaster();
-  var pageSize = state.pageSize;
+  var pageSize = effectivePageSize();
   var totalPages = Math.max(1, Math.ceil(all.length/pageSize));
   if (state.page.master > totalPages) state.page.master = totalPages;
   var startIdx = (state.page.master-1)*pageSize;
@@ -1157,6 +1516,7 @@ function renderMasterTable(){
   }
   els.masterBody.querySelectorAll("[data-editmaster]").forEach(function(btn){ btn.addEventListener("click", function(){ openModal("master","edit",btn.getAttribute("data-editmaster")); }); });
   els.masterBody.querySelectorAll("[data-delmaster]").forEach(function(btn){ btn.addEventListener("click", function(){ deleteRecord("master", btn.getAttribute("data-delmaster")); }); });
+  updateSortArrows("masterHead", state.sortMaster.key, state.sortMaster.dir);
   renderPager("masterPager", state.page.master, totalPages, all.length, function(p){ state.page.master=p; renderMasterTable(); });
   els.tabCountMaster.textContent = "(" + state.master.length.toLocaleString() + ")";
 }
@@ -1171,20 +1531,26 @@ function filteredAudit(){
 }
 function renderAudit(){
   var rows = filteredAudit();
-  if (!rows.length){
+  var pageSize = effectivePageSize();
+  var totalPages = Math.max(1, Math.ceil(rows.length/pageSize));
+  if (state.page.audit > totalPages) state.page.audit = totalPages;
+  var startIdx = (state.page.audit-1)*pageSize;
+  var pageRows = rows.slice(startIdx, startIdx+pageSize);
+  if (!pageRows.length){
     els.auditBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:30px;color:var(--ink-soft);">No actions logged yet.</td></tr>';
   } else {
-    els.auditBody.innerHTML = rows.slice(0,500).map(function(a){
+    els.auditBody.innerHTML = pageRows.map(function(a){
       return '<tr><td class="mono" style="font-size:11px;">'+esc(a.ts.toLocaleString())+'</td>'+
         '<td><span class="stamp" style="border-color:var(--accent);color:var(--accent);background:var(--accent-soft);">'+esc(a.action)+'</span></td>'+
         '<td>'+esc(a.details)+'</td><td class="mono" style="text-align:right;">'+esc(a.rows)+'</td></tr>';
     }).join("");
   }
+  renderPager("auditPager", state.page.audit, totalPages, rows.length, function(p){ state.page.audit=p; renderAudit(); });
   els.tabCountAudit.textContent = "(" + state.auditLog.length.toLocaleString() + ")";
 }
 
 // =================================================================
-// RENDER: Settings + Undo modals
+// RENDER: Settings + Undo/Redo modals
 // =================================================================
 function renderSettingsModal(){
   els.ignoreList.innerHTML = CHECK_FIELDS.map(function(f){
@@ -1202,21 +1568,30 @@ function renderUndoButton(){
   var badge = els.undoBtn.querySelector(".btn-badge");
   if (badge) badge.remove();
   if (n>0){ var b=document.createElement("span"); b.className="btn-badge"; b.textContent=n; els.undoBtn.appendChild(b); }
+
+  var rn = state.redoStack.length;
+  els.redoBtn.disabled = rn===0;
+  var rbadge = els.redoBtn.querySelector(".btn-badge");
+  if (rbadge) rbadge.remove();
+  if (rn>0){ var rb=document.createElement("span"); rb.className="btn-badge"; rb.textContent=rn; els.redoBtn.appendChild(rb); }
 }
 function renderUndoList(){
   var history = state.undoStack.slice().reverse();
-  if (!history.length){
-    els.undoList.innerHTML = '<p class="hint-note">No auto-correct actions to undo yet.</p>';
-    els.undoConfirmBtn.disabled = true;
-    els.undoModalSub.textContent = "Nothing to revert.";
-    return;
-  }
-  els.undoConfirmBtn.disabled = false;
-  els.undoModalSub.textContent = "Up to "+history.length+" recent action(s) can be stepped back through, most recent first.";
-  els.undoList.innerHTML = history.map(function(h,i){
+  var redoHistory = state.redoStack.slice().reverse();
+  els.undoModalSub.textContent = history.length
+    ? "Up to "+history.length+" recent action(s) can be undone, most recent first."
+    : "Nothing to undo yet.";
+  els.undoConfirmBtn.disabled = !history.length;
+  els.undoList.innerHTML = history.length ? history.map(function(h,i){
     return '<div class="undo-item'+(i===0?" latest":"")+'"><div><b>'+esc(h.label)+'</b>'+(i===0?" \u2014 next to revert":"")+'</div>'+
       '<div class="ui-meta">'+h.entries.length+' row(s) affected</div></div>';
-  }).join("");
+  }).join("") : '<p class="hint-note">No auto-correct actions to undo yet.</p>';
+
+  els.redoConfirmBtn.disabled = !redoHistory.length;
+  els.redoList.innerHTML = redoHistory.length ? redoHistory.map(function(h,i){
+    return '<div class="undo-item'+(i===0?" latest":"")+'"><div><b>'+esc(h.label)+'</b>'+(i===0?" \u2014 next to reapply":"")+'</div>'+
+      '<div class="ui-meta">'+h.entries.length+' row(s) affected</div></div>';
+  }).join("") : '<p class="hint-note">Nothing to redo.</p>';
 }
 
 // =================================================================
@@ -1228,11 +1603,11 @@ function renderInstructions(){
     '<p>It cross-checks a working <b>Roster</b> against a <b>MasterList</b> reference sheet (the "original" source-of-truth data), keyed on Badge Number, and flags every row as <b>Aligned</b>, <b>Misaligned</b>, or <b>Badge Not Found in MasterList</b>. It runs entirely in your browser &mdash; nothing is uploaded to any server.</p>'+
 
     '<h2>How matching works</h2>'+
-    '<p>Badge Number is the key field. It is looked up, never compared or corrected. If a Roster row\u2019s badge doesn\u2019t exist in MasterList, it\u2019s flagged <b>Badge Not Found</b> &mdash; add that badge to MasterList, or fix a typo, to resolve it.</p>'+
+    '<p>Badge Number is the key field. It is looked up, never compared or corrected. If a Roster row\u2019s badge doesn\u2019t exist in MasterList, it\u2019s flagged <b>Badge Not Found</b> &mdash; add that badge to MasterList, or fix a typo, to resolve it. If the same badge appears more than once in Roster, it\u2019s flagged as a <b>Duplicate Badge</b> in a banner on the Dashboard and with a marker on each affected row, since duplicates can make a correction ambiguous.</p>'+
 
     '<h2>Spacing-tolerant comparison, exact-format correction</h2>'+
     '<p>Detecting a mismatch trims leading/trailing spaces and collapses doubled internal spaces before comparing, so stray spacing alone never flags a false Misaligned row &mdash; in either sheet.</p>'+
-    '<p><b>But when a field IS corrected</b> (via any Fix button or Auto-Correct All), the Roster receives MasterList\u2019s value <b>exactly as typed there</b>: same spacing, capitalization, and punctuation, for every field, with no exceptions. MasterList\u2019s own typing is always the standard, never the other way around.</p>'+
+    '<p><b>But when a field IS corrected</b> (via any Fix button, Auto-Correct Selected, or Auto-Correct All), the Roster receives MasterList\u2019s value <b>exactly as typed there</b>: same spacing, capitalization, and punctuation, for every field, with no exceptions. MasterList\u2019s own typing is always the standard, never the other way around.</p>'+
 
     '<h2>Live Check &mdash; validating data entry against the originals in real time</h2>'+
     '<p>When you click <b>+ Add Record</b> or <b>Edit</b> on a Roster row, a <b>Live Check</b> panel appears below the form and updates as you type (after a brief pause), comparing your in-progress entry against the matching MasterList record:</p>'+
@@ -1243,27 +1618,35 @@ function renderInstructions(){
     '</ul>'+
     '<p>On a <b>MasterList</b> Add/Edit form, the same panel instead checks the Badge Number for duplicates, since MasterList must have exactly one record per badge.</p>'+
 
+    '<h2>Bulk actions on the Roster</h2>'+
+    '<p>Tick the checkbox on any row (or the header checkbox to select the whole page) to open a bulk action bar: <b>Auto-Correct Selected</b>, <b>Promote Selected</b> (for eligible Not Found rows), <b>Export Selected (CSV)</b>, and <b>Delete Selected</b>. Use <b>Select all matching filter</b> to extend the selection beyond the current page to every row matching your current search/status/sub-unit filters.</p>'+
+
     '<h2>Buttons &amp; automation</h2>'+
     '<ul>'+
       '<li><b>Auto-Correct All</b> &mdash; fixes every Misaligned row across the entire Roster in one action, using MasterList\u2019s exact values. Undo-safe.</li>'+
       '<li><b>Fix</b> (per row) / <b>Fix field</b> (per mismatched field) &mdash; same correction, scoped to one row or one field.</li>'+
-      '<li><b>Undo</b> &mdash; steps backward through your last several Auto-Correct actions, most recent first.</li>'+
-      '<li><b>Download Errors (CSV)</b> &mdash; exports every Misaligned / Not Found row with its mismatch detail, for reviewing or fixing manually in a spreadsheet instead of using the buttons.</li>'+
+      '<li><b>Undo / Redo</b> &mdash; step backward and forward through every correction action, with no history-length cap. Keyboard: <span class="kbd">Ctrl/Cmd+Z</span> to undo, <span class="kbd">Ctrl/Cmd+Shift+Z</span> to redo.</li>'+
+      '<li><b>Download Errors (CSV)</b> &mdash; exports every Misaligned / Not Found row with its mismatch detail. <b>Export Filtered (CSV)</b> exports only what the current Roster filters show. <b>Export MasterList (CSV)</b> exports the reference sheet.</li>'+
       '<li><b>Download Roster (CSV)</b> &mdash; exports the full Roster with its live Verification Status.</li>'+
-      '<li><b>Import CSV</b> &mdash; bulk-adds or updates rows in either the <b>Roster</b> or the <b>MasterList</b> from pasted or uploaded CSV text; headers are matched by name the same way as everywhere else. Re-importing a refreshed original MasterList export updates existing reference records in place by Badge Number, rather than duplicating them.</li>'+
+      '<li><b>Import CSV</b> &mdash; bulk-adds or updates rows in either the <b>Roster</b> or the <b>MasterList</b> from pasted or uploaded CSV text; headers are matched by name the same way as everywhere else. Re-importing a refreshed original MasterList export updates existing reference records in place by Badge Number, rather than duplicating them. Rows without a Badge Number are skipped and reported, not silently dropped.</li>'+
+      '<li><b>Export Backup / Restore Backup</b> &mdash; download a full JSON snapshot of every record, the ignored-fields setting, and the audit log, and load it back later or on another device.</li>'+
       '<li><b>Settings</b> &mdash; choose which fields are included in the crosscheck.</li>'+
       '<li><b>Promote</b> (on a Not Found row) &mdash; inserts that person into MasterList as a new reference record, for when they\u2019re simply missing from it.</li>'+
-      '<li><b>New Session</b> &mdash; clears the autosaved data in this browser and reloads the 11,000-record sample dataset. Use this to start over from a clean slate.</li>'+
+      '<li><b>Load Sample Data</b> &mdash; adds 11,000 generated sample records on top of whatever is already loaded, to demo every feature without disturbing real data.</li>'+
+      '<li><b>Clear All Data</b> &mdash; permanently wipes the autosaved data in this browser (Roster, MasterList, audit log, undo/redo history) and returns to an empty state.</li>'+
     '</ul>'+
 
+    '<h2>Paging, sorting, and search</h2>'+
+    '<p>Choose how many rows show per page (25 up to 1,000, or "Show all" to disable paging) from the page-size selector on the Roster tab &mdash; it applies to Roster, MasterList, and the Audit Log alike. Click any column header with an arrow to sort by it; click again to reverse the direction. Press <span class="kbd">/</span> anywhere on the Roster tab to jump to the search box.</p>'+
+
     '<h2>Autosave &amp; data privacy</h2>'+
-    '<p>Every change (edits, imports, corrections, settings) is automatically saved to this browser\u2019s local storage a moment after you make it \u2014 closing or reloading the tab restores your last session. Nothing is sent to a server; the small banner under the page title confirms when a save completes. Because the data lives only in this browser, it will not appear on another device or browser profile, and clearing your browser data will remove it. Use <b>Download Roster (CSV)</b> / <b>Download Errors (CSV)</b> to keep a durable copy, and <b>New Session</b> to deliberately reset.</p>'+
+    '<p>Every change (edits, imports, corrections, settings) is automatically saved to this browser a moment after you make it \u2014 closing or reloading the tab restores your last session. Data is stored in <b>IndexedDB</b> for effectively unlimited local capacity, with an automatic fallback to browser local storage if IndexedDB isn\u2019t available. Nothing is sent to a server; the small line under the page title confirms when a save completes and which storage backend is active. Because the data lives only in this browser, it will not appear on another device or browser profile, and clearing your browser data will remove it. Use <b>Export Backup</b> to keep a durable, portable copy you can restore anywhere, and <b>Clear All Data</b> to deliberately reset.</p>'+
 
     '<h2>Settings &mdash; choosing which fields to check</h2>'+
     '<p>Badge Number, Nr, and Verification Status are always system-managed and excluded. Every other field (Account Number, Rank, Last Name, First Name, Middle Name, Qualifier, Sub-Unit) can be turned off if you don\u2019t want it checked yet.</p>'+
 
     '<h2>Getting your real data in</h2>'+
-    '<p>Use <b>Import CSV</b> to load your actual MasterList and Roster exports (choose the target sheet in the dialog), or add/edit records directly in the Roster and MasterList tabs. The tool loads with 11,000 generated sample records on first run purely so every feature is demonstrated immediately; import your real data (or use <b>New Session</b> first) to replace it.</p>';
+    '<p>Use <b>Import CSV</b> to load your actual MasterList and Roster exports (choose the target sheet in the dialog), or add/edit records directly in the Roster and MasterList tabs. The tool loads with 11,000 generated sample records on first run purely so every feature is demonstrated immediately; import your real data (or use <b>Clear All Data</b> first) to replace it.</p>';
 }
 
 // =================================================================
@@ -1291,14 +1674,14 @@ document.querySelectorAll(".tab-btn").forEach(function(btn){
   });
 });
 
-document.querySelectorAll(".stat-card").forEach(function(card){
-  card.addEventListener("click", function(){
-    state.filters.status = card.getAttribute("data-statfilter");
-    els.statusChips.querySelectorAll(".chip").forEach(function(c){ c.classList.toggle("active", c.getAttribute("data-status")===state.filters.status); });
-    state.page.roster = 1;
-    document.querySelector('.tab-btn[data-tab="roster"]').click();
-    renderRosterTable(); renderDashboard();
-  });
+document.addEventListener("click", function(e){
+  var card = e.target.closest(".stat-card");
+  if (!card) return;
+  state.filters.status = card.getAttribute("data-statfilter");
+  els.statusChips.querySelectorAll(".chip").forEach(function(c){ c.classList.toggle("active", c.getAttribute("data-status")===state.filters.status); });
+  state.page.roster = 1;
+  document.querySelector('.tab-btn[data-tab="roster"]').click();
+  renderRosterTable(); renderDashboard();
 });
 
 els.statusChips.addEventListener("click", function(e){
@@ -1312,13 +1695,26 @@ els.statusChips.addEventListener("click", function(e){
 els.subUnitSelect.addEventListener("change", function(){ state.filters.subUnit = this.value; state.page.roster=1; renderRosterTable(); });
 els.searchInput.addEventListener("input", debounce(function(){ state.filters.search = this.value; state.page.roster=1; renderRosterTable(); }, 200));
 els.masterSearchInput.addEventListener("input", debounce(function(){ state.masterSearch = this.value; state.page.master=1; renderMasterTable(); }, 200));
-els.auditSearchInput.addEventListener("input", debounce(function(){ state.auditSearch = this.value; renderAudit(); }, 200));
+els.auditSearchInput.addEventListener("input", debounce(function(){ state.auditSearch = this.value; state.page.audit=1; renderAudit(); }, 200));
+
+els.pageSizeSelect.addEventListener("change", function(){
+  state.pageSize = this.value === "all" ? Infinity : parseInt(this.value, 10);
+  state.page = { roster:1, master:1, audit:1 };
+  renderRosterTable(); renderMasterTable(); renderAudit();
+});
 
 document.querySelectorAll("#rosterHead th[data-sort]").forEach(function(th){
   th.addEventListener("click", function(){
     var key = th.getAttribute("data-sort");
     if (state.sort.key===key) state.sort.dir = state.sort.dir==="asc"?"desc":"asc"; else { state.sort.key=key; state.sort.dir="asc"; }
     renderRosterTable();
+  });
+});
+document.querySelectorAll("#masterHead th[data-sort]").forEach(function(th){
+  th.addEventListener("click", function(){
+    var key = th.getAttribute("data-sort");
+    if (state.sortMaster.key===key) state.sortMaster.dir = state.sortMaster.dir==="asc"?"desc":"asc"; else { state.sortMaster.key=key; state.sortMaster.dir="asc"; }
+    renderMasterTable();
   });
 });
 
@@ -1336,7 +1732,12 @@ els.autoCorrectAllBtn.addEventListener("click", function(){
   applyAutoCorrectAll();
 });
 
+els.themeToggleBtn.addEventListener("click", function(){
+  setTheme(document.body.classList.contains("dark") ? "light" : "dark");
+});
+
 els.undoBtn.addEventListener("click", function(){ els.undoBackdrop.classList.add("show"); renderUndoList(); });
+els.redoBtn.addEventListener("click", function(){ redoLast(); });
 els.undoCancelBtn.addEventListener("click", function(){ els.undoBackdrop.classList.remove("show"); });
 els.undoBackdrop.addEventListener("click", function(e){ if (e.target===els.undoBackdrop) els.undoBackdrop.classList.remove("show"); });
 els.undoConfirmBtn.addEventListener("click", function(){
@@ -1344,7 +1745,13 @@ els.undoConfirmBtn.addEventListener("click", function(){
   if (!top) return;
   if (!confirm('Revert "'+top.label+'"? Affected row(s) will be restored to their pre-correction values.')) return;
   undoLast();
-  els.undoBackdrop.classList.remove("show");
+  renderUndoList();
+});
+els.redoConfirmBtn.addEventListener("click", function(){
+  var top = state.redoStack[state.redoStack.length-1];
+  if (!top){ showToast("Nothing to redo.", true); return; }
+  redoLast();
+  renderUndoList();
 });
 
 els.settingsBtn.addEventListener("click", function(){ els.settingsBackdrop.classList.add("show"); renderSettingsModal(); });
@@ -1379,14 +1786,27 @@ els.downloadErrorsBtn.addEventListener("click", function(){
 });
 
 els.downloadRosterBtn.addEventListener("click", function(){
-  var rows = [["Nr","Badge No.","Last Name","First Name","Middle Name","Rank","Account Number","Qualifier","Sub-Unit","Verification Status"]];
-  state.roster.forEach(function(r){
-    var res = state.results.get(r.id);
-    rows.push([r.nr, r.badgeNumber, r.lastName, r.firstName, r.middleName, r.rank, r.acctNumber, r.qualifier, r.subUnit, res.status]);
-  });
+  var rows = rosterExportRows(state.roster);
   downloadCsv("roster-full-"+new Date().toISOString().slice(0,10)+".csv", rows);
   logAudit("Download Roster CSV", rows.length-1+" row(s) exported", rows.length-1);
   showToast("Downloaded full roster.");
+});
+
+els.downloadFilteredBtn.addEventListener("click", function(){
+  var rows = rosterExportRows(filteredRoster());
+  if (rows.length===1){ showToast("No rows match the current filters.", true); return; }
+  downloadCsv("roster-filtered-"+new Date().toISOString().slice(0,10)+".csv", rows);
+  logAudit("Export Filtered CSV", (rows.length-1)+" filtered row(s) exported", rows.length-1);
+  showToast("Downloaded "+(rows.length-1).toLocaleString()+" filtered row(s).");
+});
+
+els.downloadMasterBtn.addEventListener("click", function(){
+  var rows = [["Badge No.","Last Name","First Name","Middle Name","Rank","Account Number","Qualifier","Sub-Unit"]];
+  filteredMaster().forEach(function(m){ rows.push([m.badgeNumber, m.lastName, m.firstName, m.middleName, m.rank, m.acctNumber, m.qualifier, m.subUnit]); });
+  if (rows.length===1){ showToast("No MasterList records to export.", true); return; }
+  downloadCsv("masterlist-"+new Date().toISOString().slice(0,10)+".csv", rows);
+  logAudit("Download MasterList CSV", (rows.length-1)+" row(s) exported", rows.length-1);
+  showToast("Downloaded MasterList.");
 });
 
 els.downloadAuditBtn.addEventListener("click", function(){
@@ -1430,32 +1850,98 @@ els.csvImportBtn.addEventListener("click", function(){
     var result = importCsvInto(target, text);
     els.csvBackdrop.classList.remove("show");
     var msg = target==="roster"
-      ? "Imported "+result.added.toLocaleString()+" row(s) into Roster."
-      : "MasterList: "+result.added.toLocaleString()+" added, "+result.updated.toLocaleString()+" updated.";
+      ? "Imported "+result.added.toLocaleString()+" row(s) into Roster."+(result.skipped?" Skipped "+result.skipped+" (no Badge No.).":"")
+      : "MasterList: "+result.added.toLocaleString()+" added, "+result.updated.toLocaleString()+" updated."+(result.skipped?" Skipped "+result.skipped+" (no Badge No.).":"");
     showToast(msg);
     renderAll();
   } catch(e){ showToast("Error: "+e.message, true); }
 });
 
+els.backupBtn.addEventListener("click", exportBackup);
+els.restoreBtn.addEventListener("click", function(){ els.restoreFileInput.click(); });
+els.restoreFileInput.addEventListener("change", function(){
+  if (!this.files || !this.files[0]) return;
+  restoreFromFile(this.files[0]);
+  els.restoreFileInput.value = "";
+});
+
+els.loadSampleBtn.addEventListener("click", function(){
+  if (!confirm("Add 11,000 generated sample records to your current data, purely to demo every feature? This does not remove any existing records.")) return;
+  addSampleData(11000);
+});
+els.emptyImportBtn.addEventListener("click", function(){ els.importCsvBtn.click(); });
+els.emptySampleBtn.addEventListener("click", function(){ els.loadSampleBtn.click(); });
+
+els.dupBannerBtn.addEventListener("click", function(){
+  state.filters.status = "dup";
+  state.page.roster = 1;
+  document.querySelector('.tab-btn[data-tab="roster"]').click();
+  els.statusChips.querySelectorAll(".chip").forEach(function(c){ c.classList.toggle("active", c.getAttribute("data-status")==="dup"); });
+  renderRosterTable(); renderDashboard();
+});
+
+// ---- Bulk selection wiring ----
+document.getElementById("chkAllRoster").addEventListener("change", function(){
+  var checked = this.checked;
+  var pageRows = currentRosterPage().pageRows;
+  pageRows.forEach(function(r){ if (checked) state.selectedRosterIds.add(r.id); else state.selectedRosterIds.delete(r.id); });
+  renderRosterTable();
+});
+els.bulkFixBtn.addEventListener("click", applyAutoCorrectSelected);
+els.bulkPromoteBtn.addEventListener("click", function(){
+  if (!confirm("Promote all eligible selected rows (status: Badge Not Found) into MasterList as new reference records?")) return;
+  promoteSelected();
+});
+els.bulkExportBtn.addEventListener("click", function(){
+  var ids = state.selectedRosterIds;
+  var list = state.roster.filter(function(r){ return ids.has(r.id); });
+  if (!list.length){ showToast("No rows selected.", true); return; }
+  downloadCsv("roster-selected-"+new Date().toISOString().slice(0,10)+".csv", rosterExportRows(list));
+  logAudit("Export Selected CSV", list.length+" selected row(s) exported", list.length);
+  showToast("Downloaded "+list.length.toLocaleString()+" selected row(s).");
+});
+els.bulkDeleteBtn.addEventListener("click", deleteSelected);
+els.bulkSelectAllFilteredBtn.addEventListener("click", function(){
+  var all = filteredRoster();
+  all.forEach(function(r){ state.selectedRosterIds.add(r.id); });
+  showToast("Selected "+all.length.toLocaleString()+" row(s) matching the current filters.");
+  renderRosterTable();
+});
+els.bulkClearBtn.addEventListener("click", function(){
+  state.selectedRosterIds = new Set();
+  renderRosterTable();
+});
+
 els.newSessionBtn.addEventListener("click", function(){
-  if (!confirm("Start a new session? This clears the data saved in this browser and reloads the 11,000-record sample dataset. This cannot be undone.")) return;
+  if (!confirm("Clear all data? This permanently deletes every Roster and MasterList record, the audit log, and undo/redo history saved in this browser. This cannot be undone.")) return;
   clearSession();
-  state.undoStack = [];
+  state.undoStack = []; state.redoStack = [];
   state.auditLog = [];
-  var ds = generateDataset(11000, 42);
-  state.master = ds.master; state.roster = ds.roster; state.ignoredFields = new Set();
+  state.selectedRosterIds = new Set();
+  state.master = []; state.roster = []; state.ignoredFields = new Set();
   state.filters = { status:"all", search:"", subUnit:"all" };
-  state.page = { roster:1, master:1 };
-  els.searchInput.value = ""; els.masterSearchInput.value = "";
+  state.masterSearch = ""; state.auditSearch = "";
+  state.page = { roster:1, master:1, audit:1 };
+  els.searchInput.value = ""; els.masterSearchInput.value = ""; els.auditSearchInput.value = "";
   recompute();
-  logAudit("New Session", "Session reset to the sample dataset", 0);
-  showToast("New session started.");
+  logAudit("Clear All Data", "All data wiped; session reset to empty", 0);
+  showToast("All data cleared.");
   renderAll();
 });
 
 document.addEventListener("keydown", function(e){
-  if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA"){
+  var tag = document.activeElement ? document.activeElement.tagName : "";
+  var typing = tag === "INPUT" || tag === "TEXTAREA";
+  if (e.key === "/" && !typing){
     if (document.getElementById("tab-roster").classList.contains("active")){ e.preventDefault(); els.searchInput.focus(); }
+  }
+  if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase()==="z" && !typing){ e.preventDefault(); undoLast(); }
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase()==="z" && !typing){ e.preventDefault(); redoLast(); }
+  if (e.key === "Escape"){
+    els.modalBackdrop.classList.remove("show");
+    els.settingsBackdrop.classList.remove("show");
+    els.undoBackdrop.classList.remove("show");
+    els.csvBackdrop.classList.remove("show");
   }
 });
 
@@ -1464,14 +1950,14 @@ document.addEventListener("keydown", function(e){
 // =================================================================
 function boot(){
   renderInstructions();
+  applyStoredTheme();
   els.subtitle.textContent = "Loading\u2026";
-  setTimeout(function(){
-    var saved = loadSession();
+  loadSession().then(function(saved){
     if (saved){
       state.master = saved.master;
       state.roster = saved.roster;
       state.ignoredFields = new Set(saved.ignoredFields || []);
-      state.auditLog = (saved.auditLog || []).map(function(a){ return {ts:new Date(a.ts), action:a.action, details:a.details, rows:a.rows}; });
+      state.auditLog = saved.auditLog || [];
       recompute();
       renderAll();
       showToast("Restored your last saved session ("+state.roster.length.toLocaleString()+" roster record(s)).");
@@ -1482,7 +1968,7 @@ function boot(){
       recompute();
       renderAll();
     }
-  }, 10);
+  });
 }
 boot();
 
