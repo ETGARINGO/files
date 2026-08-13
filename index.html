@@ -24,7 +24,7 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;transition:background .15s ease,color .15s ease;}
-  .wrap{max-width:1320px;margin:0 auto;padding:0 24px 56px;}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 24px 56px;}
 
   header{
     display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
@@ -77,7 +77,7 @@
   .bars{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px;}
   .bars h3{margin:0 0 12px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);}
   .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;}
-  .bar-row .bar-label{width:120px;flex-shrink:0;font-weight:700;}
+  .bar-row .bar-label{width:130px;flex-shrink:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .bar-row .bar-track{flex:1;background:var(--thead-bg);border-radius:6px;height:16px;overflow:hidden;border:1px solid var(--hairline);}
   .bar-row .bar-fill{height:100%;border-radius:6px 0 0 6px;}
   .bar-row .bar-num{width:90px;text-align:right;font-family:'Courier New',monospace;font-weight:700;}
@@ -93,18 +93,17 @@
 
   .table-wrap{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);overflow:auto;max-height:600px;}
   table{width:100%;border-collapse:collapse;table-layout:fixed;}
-  thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;padding:9px 11px;border-bottom:1.5px solid var(--hairline);background:var(--thead-bg);position:sticky;top:0;z-index:5;}
+  thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);font-weight:700;padding:9px 10px;border-bottom:1.5px solid var(--hairline);background:var(--thead-bg);position:sticky;top:0;z-index:5;white-space:nowrap;}
   thead th[data-sort]{cursor:pointer;user-select:none;}
   thead th[data-sort]:hover{color:var(--ink);}
   .sort-arrow{font-size:9px;}
-  th.col-nr{width:50px;} th.col-badge{width:100px;} th.col-status{width:110px;} th.col-fix{width:190px;}
-  tbody td{padding:8px 11px;border-bottom:1px solid var(--hairline);vertical-align:top;font-size:12.5px;}
+  th.col-nr{width:52px;} th.col-badge{width:100px;} th.col-status{width:110px;} th.col-fix{width:210px;} th.col-qual{width:66px;} th.col-unit{width:100px;}
+  tbody td{padding:8px 10px;border-bottom:1px solid var(--hairline);vertical-align:top;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;}
   tbody tr:hover{background:var(--row-hover);}
   tbody tr.is-selected{background:var(--accent-soft);}
   tbody tr.is-dup td:first-child{box-shadow:inset 3px 0 0 var(--warn);}
   .mono{font-family:'Courier New',monospace;}
-  .name-cell .full{font-weight:700;}
-  .name-cell .unit{color:var(--ink-soft);font-size:11px;margin-top:2px;}
+  .cell-diff{color:var(--bad);}
   .diff-list{margin-top:3px;font-size:11px;line-height:1.7;}
   .diff-list .diff-row{display:flex;flex-wrap:wrap;gap:4px;align-items:baseline;}
   .diff-list .diff-row .field{color:var(--ink-soft);white-space:nowrap;}
@@ -125,7 +124,8 @@
   .pager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;}
   .pager .pg-controls{display:flex;gap:4px;align-items:center;}
   .pager button{padding:5px 10px;}
-  .pager .pg-size{margin-left:10px;}
+  .pager .pg-jump{display:flex;align-items:center;gap:6px;margin-left:10px;}
+  .pager .pg-jump input{width:52px;padding:5px 6px;border:1.5px solid var(--hairline);border-radius:6px;background:var(--surface);color:var(--ink);font-family:'Courier New',monospace;}
 
   th.col-chk, td.col-chk{width:32px;text-align:center;}
 
@@ -139,8 +139,9 @@
   .empty-state p{color:var(--ink-soft);font-size:13px;max-width:480px;margin:0 auto 16px;}
   .empty-state .es-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
 
-  .dup-banner{display:flex;align-items:center;gap:10px;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;font-weight:600;border:1.5px solid var(--warn);background:var(--warn-soft);color:var(--warn);}
+  .dup-banner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;font-weight:600;border:1.5px solid var(--warn);background:var(--warn-soft);color:var(--warn);}
   .dup-banner button{padding:5px 11px;}
+  .dup-banner .dup-actions{display:flex;gap:8px;margin-left:auto;}
 
   .storage-line{font-size:11px;}
 
@@ -153,12 +154,13 @@
   .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:70;padding:20px;}
   .modal-backdrop.show{display:flex;}
   .modal{background:var(--surface);border-radius:var(--radius);width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:22px 24px;box-shadow:var(--shadow);}
-  .modal.wide{max-width:660px;}
+  .modal.wide{max-width:680px;}
   .modal h2{font-size:18px;margin:0 0 4px;}
   .modal .modal-sub{color:var(--ink-soft);font-size:12px;margin:0 0 16px;font-family:'Courier New',monospace;}
   .field-row{margin-bottom:12px;}
   .field-row label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);margin-bottom:4px;}
   .field-row input, .field-row textarea, .field-row select{width:100%;border:1.5px solid var(--hairline);border-radius:8px;padding:8px 10px;font-family:Arial,sans-serif;font-size:13px;background:var(--surface);color:var(--ink);}
+  .field-row input.field-error{border-color:var(--bad);background:var(--bad-soft);}
   .field-row textarea{font-family:'Courier New',monospace;font-size:11.5px;min-height:140px;resize:vertical;}
   .hint-note{color:var(--ink-soft);font-size:11px;margin-top:4px;}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px;}
@@ -181,6 +183,9 @@
   .instr-body h2:first-child{margin-top:0;}
   .instr-body p, .instr-body li{font-size:13px;line-height:1.6;color:var(--ink);}
   .instr-body code{background:var(--thead-bg);border:1px solid var(--hairline);border-radius:4px;padding:1px 5px;font-family:'Courier New',monospace;font-size:12px;}
+  .instr-body table{width:100%;border-collapse:collapse;margin:8px 0 16px;}
+  .instr-body table th, .instr-body table td{border:1px solid var(--hairline);padding:6px 9px;font-size:12px;text-align:left;}
+  .instr-body table th{background:var(--thead-bg);}
   .kbd{display:inline-block;font-family:'Courier New',monospace;font-size:11px;border:1px solid var(--hairline);border-bottom-width:2px;border-radius:4px;padding:1px 6px;background:var(--thead-bg);}
 
   .live-check{border:1.5px solid var(--hairline);border-radius:8px;padding:10px 12px;margin-top:14px;background:var(--thead-bg);}
@@ -192,6 +197,9 @@
   #autosaveLine{color:var(--ink-soft);}
   #autosaveLine .as-ok{color:var(--ok);font-weight:700;}
   #autosaveLine .as-bad{color:var(--bad);font-weight:700;}
+
+  #csvMappingPreview table{border-collapse:collapse;}
+  #csvMappingPreview td{border-bottom:1px solid var(--hairline);padding:5px 6px;}
 
   @media (max-width:640px){ header{align-items:flex-start;flex-direction:column;} .actions{width:100%;} }
   @media print{
@@ -248,7 +256,10 @@
     </div>
     <div class="dup-banner" id="dupBanner" style="display:none;">
       <span id="dupBannerText"></span>
-      <button type="button" class="ghost" id="dupBannerBtn" style="margin-left:auto;">View Duplicates</button>
+      <span class="dup-actions">
+        <button type="button" class="ghost" id="dupBannerBtn">View Duplicates</button>
+        <button type="button" class="ghost" id="dupMergeBtn">Merge Duplicates&hellip;</button>
+      </span>
     </div>
     <section class="stats" id="emptyStateWrap" style="display:none;">
       <div class="empty-state" style="grid-column:1/-1;">
@@ -275,13 +286,17 @@
       <h3>Top Mismatched Fields</h3>
       <div id="fieldChart"></div>
     </div>
+    <div class="bars" id="barsUnitChart">
+      <h3>Roster by Unit</h3>
+      <div id="unitChart"></div>
+    </div>
     <footer id="dashFooter">&nbsp;</footer>
   </div>
 
   <!-- ================= ROSTER ================= -->
   <div class="tab-panel" id="tab-roster">
     <div class="filter-bar">
-      <div class="search-wrap"><input type="search" id="searchInput" placeholder="Search name, badge no., sub-unit&hellip; (press / to focus)"></div>
+      <div class="search-wrap"><input type="search" id="searchInput" placeholder="Search name, badge no., unit, sub-unit&hellip; (press / to focus)"></div>
       <div class="chip-row" id="statusChips">
         <span class="chip active" data-status="all">All</span>
         <span class="chip" data-status="Misaligned">Misaligned</span>
@@ -289,6 +304,7 @@
         <span class="chip" data-status="Aligned">Aligned</span>
         <span class="chip warnchip" data-status="dup" id="dupChip" style="display:none;">Duplicates</span>
       </div>
+      <select id="unitSelect"><option value="all">All Units</option></select>
       <select id="subUnitSelect"><option value="all">All Sub-Units</option></select>
       <select id="pageSizeSelect" title="Rows per page">
         <option value="25">25 / page</option>
@@ -298,7 +314,7 @@
         <option value="1000">1000 / page</option>
         <option value="all">Show all (no paging)</option>
       </select>
-      <button class="ghost" id="downloadFilteredBtn" title="Download only the rows matching the current search / status / sub-unit filters">Export Filtered (CSV)</button>
+      <button class="ghost" id="downloadFilteredBtn" title="Download only the rows matching the current search / status / unit / sub-unit filters">Export Filtered (CSV)</button>
       <button class="primary" id="addRosterBtn">+ Add Record</button>
     </div>
     <div class="bulk-bar" id="bulkBar">
@@ -317,14 +333,21 @@
           <tr id="rosterHead">
             <th class="col-chk"><input type="checkbox" id="chkAllRoster" title="Select all rows on this page"></th>
             <th class="col-nr" data-sort="nr">Nr<span class="sort-arrow"></span></th>
-            <th class="col-badge" data-sort="badge">Badge No.<span class="sort-arrow"></span></th>
-            <th data-sort="name">Name / Sub-Unit<span class="sort-arrow"></span></th>
+            <th data-sort="acctNumber">Salary Account Number<span class="sort-arrow"></span></th>
+            <th data-sort="rank">Rank<span class="sort-arrow"></span></th>
+            <th data-sort="lastName">Last Name<span class="sort-arrow"></span></th>
+            <th data-sort="firstName">First Name<span class="sort-arrow"></span></th>
+            <th data-sort="middleName">Middle Name<span class="sort-arrow"></span></th>
+            <th class="col-qual" data-sort="qualifier">Qlfr<span class="sort-arrow"></span></th>
+            <th class="col-badge" data-sort="badgeNumber">Badge No.<span class="sort-arrow"></span></th>
+            <th class="col-unit" data-sort="unit">Unit<span class="sort-arrow"></span></th>
+            <th data-sort="subUnit">Sub-Unit<span class="sort-arrow"></span></th>
             <th class="col-status" data-sort="status">Status<span class="sort-arrow"></span></th>
             <th>Discrepancy Detail</th>
             <th class="col-fix"></th>
           </tr>
         </thead>
-        <tbody id="rosterBody"><tr><td colspan="7" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
+        <tbody id="rosterBody"><tr><td colspan="14" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
     <div class="pager" id="rosterPager"></div>
@@ -333,21 +356,25 @@
   <!-- ================= MASTERLIST ================= -->
   <div class="tab-panel" id="tab-master">
     <div class="filter-bar">
-      <div class="search-wrap"><input type="search" id="masterSearchInput" placeholder="Search name, badge no., sub-unit&hellip;"></div>
+      <div class="search-wrap"><input type="search" id="masterSearchInput" placeholder="Search name, badge no., unit, sub-unit&hellip;"></div>
       <button class="ghost" id="downloadMasterBtn">Export MasterList (CSV)</button>
       <button class="primary" id="addMasterBtn" style="margin-left:auto;">+ Add Reference Record</button>
     </div>
     <div class="table-wrap">
       <table>
         <thead><tr id="masterHead">
-          <th class="col-badge" data-sort="badge">Badge No.<span class="sort-arrow"></span></th>
-          <th data-sort="name">Name<span class="sort-arrow"></span></th>
+          <th data-sort="acctNumber">Account Number<span class="sort-arrow"></span></th>
           <th data-sort="rank">Rank<span class="sort-arrow"></span></th>
-          <th data-sort="acct">Account No.<span class="sort-arrow"></span></th>
-          <th data-sort="subunit">Sub-Unit<span class="sort-arrow"></span></th>
+          <th data-sort="lastName">Last Name<span class="sort-arrow"></span></th>
+          <th data-sort="firstName">First Name<span class="sort-arrow"></span></th>
+          <th data-sort="middleName">Middle Name<span class="sort-arrow"></span></th>
+          <th class="col-qual" data-sort="qualifier">Qual<span class="sort-arrow"></span></th>
+          <th class="col-badge" data-sort="badgeNumber">Badge Number<span class="sort-arrow"></span></th>
+          <th class="col-unit" data-sort="unit">Unit<span class="sort-arrow"></span></th>
+          <th data-sort="subUnit">Sub-Unit<span class="sort-arrow"></span></th>
           <th class="col-fix"></th>
         </tr></thead>
-        <tbody id="masterBody"><tr><td colspan="6" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
+        <tbody id="masterBody"><tr><td colspan="10" style="text-align:center;padding:30px;">Loading&hellip;</td></tr></tbody>
       </table>
     </div>
     <div class="pager" id="masterPager"></div>
@@ -367,7 +394,7 @@
       </table>
     </div>
     <div class="pager" id="auditPager"></div>
-    <footer>Every Auto-Correct, Undo, Redo, Settings change, Import, Add, Edit, Delete, and Promote action is recorded here, with no cap on history length.</footer>
+    <footer>Every Auto-Correct, Undo, Redo, Settings change, Import, Add, Edit, Delete, Merge, and Promote action is recorded here, with no cap on history length.</footer>
   </div>
 
   <!-- ================= INSTRUCTIONS ================= -->
@@ -425,7 +452,7 @@
 <div class="modal-backdrop" id="csvBackdrop">
   <div class="modal wide">
     <h2>Import CSV</h2>
-    <p class="modal-sub">Headers are matched to fields by name (Badge No., Account Number, Rank, etc.) &mdash; most HR exports line up automatically.</p>
+    <p class="modal-sub">Headers are matched to fields by name (Badge No., Salary Account Number, Rank, Unit, etc.) &mdash; most HR exports line up automatically. Review the detected mapping below before importing.</p>
     <div class="field-row">
       <label>Import Into</label>
       <select id="csvTargetSelect">
@@ -436,12 +463,25 @@
     </div>
     <input type="file" id="csvFileInput" accept=".csv,text/csv" style="margin-bottom:10px;">
     <div class="field-row"><label>Or paste CSV text</label>
-      <textarea id="csvTextarea" placeholder="Badge No.,Last Name,First Name,Account Number,Rank,Sub-Unit&#10;10-1234,Dela Cruz,Juan,001234,PO1,Alpha Team"></textarea>
+      <textarea id="csvTextarea" placeholder="Salary Account Number,Rank,Last Name,First Name,Middle Name,Qlfr,Badge No.,Unit,Sub-Unit&#10;001234,PO1,Dela Cruz,Juan,Santos,A,10-1234,Patrol,Alpha Team"></textarea>
     </div>
     <div class="hint-note" id="csvPreview"></div>
+    <div class="field-row" id="csvMappingPreview" style="margin-top:8px;"></div>
     <div class="modal-actions">
       <button type="button" class="ghost" id="csvCancelBtn">Cancel</button>
       <button type="button" class="primary" id="csvImportBtn">Import Rows</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MERGE DUPLICATES MODAL ===================== -->
+<div class="modal-backdrop" id="mergeBackdrop">
+  <div class="modal wide">
+    <h2>Merge Duplicate Badges</h2>
+    <p class="modal-sub" id="mergeModalSub">Pick which row to keep for each duplicated Badge Number; the others are deleted.</p>
+    <div id="mergeList"></div>
+    <div class="modal-actions">
+      <button type="button" class="ghost" id="mergeCloseBtn">Close</button>
     </div>
   </div>
 </div>
@@ -451,6 +491,34 @@
 <script>
 (function(){
 "use strict";
+
+// =================================================================
+// FIELD SCHEMA
+// MasterList sequence:  Account Number, Rank, Last Name, First Name,
+//                        Middle Name, Qual, Badge Number, Unit, Sub-Unit
+// Roster sequence:      Nr, Salary Account Number, Rank, Last Name,
+//                        First Name, Middle Name, Qlfr, Badge No.,
+//                        Unit, Sub-Unit
+// FORM_SCHEMA below carries that exact field order (Nr is system-managed
+// and not part of the form). Each entry has a neutral "label" (used in
+// settings, mismatch details, CSV exports and audit text) plus a
+// "rosterLabel" / "masterLabel" used wherever the sheet's own header
+// wording matters (forms, table headers, CSV import aliasing).
+// =================================================================
+var FORM_SCHEMA = [
+  {key:"acctNumber",  label:"Account Number", rosterLabel:"Salary Account Number", masterLabel:"Account Number"},
+  {key:"rank",         label:"Rank",           rosterLabel:"Rank",                  masterLabel:"Rank"},
+  {key:"lastName",     label:"Last Name",      rosterLabel:"Last Name",             masterLabel:"Last Name"},
+  {key:"firstName",    label:"First Name",     rosterLabel:"First Name",            masterLabel:"First Name"},
+  {key:"middleName",   label:"Middle Name",    rosterLabel:"Middle Name",           masterLabel:"Middle Name"},
+  {key:"qualifier",    label:"Qualifier",      rosterLabel:"Qlfr",                  masterLabel:"Qual"},
+  {key:"badgeNumber",  label:"Badge Number",   rosterLabel:"Badge No.",             masterLabel:"Badge Number"},
+  {key:"unit",         label:"Unit",           rosterLabel:"Unit",                  masterLabel:"Unit"},
+  {key:"subUnit",      label:"Sub-Unit",       rosterLabel:"Sub-Unit",              masterLabel:"Sub-Unit"}
+];
+var CHECK_FIELDS = FORM_SCHEMA.filter(function(f){ return f.key !== "badgeNumber"; });
+function fieldByKey(key){ return FORM_SCHEMA.find(function(f){ return f.key===key; }); }
+function labelFor(f, target){ return target==="roster" ? f.rosterLabel : f.masterLabel; }
 
 // =================================================================
 // ENGINE: deterministic sample-data generator + reconciliation logic
@@ -470,16 +538,6 @@ var RANKS=["PO1","PO2","PO3","SPO1","SPO2","SPO3","PSSG","PEMS"];
 var QUALIFIERS=["A","B","C","D","E"];
 var UNITS=["Patrol","Records","Investigation","Traffic","Admin"];
 var SUB_UNITS=["Alpha Team","Bravo Team","Charlie Team","Delta Team","Records","HR"];
-
-var CHECK_FIELDS=[
-  {key:"acctNumber",label:"Account Number"},
-  {key:"rank",label:"Rank"},
-  {key:"lastName",label:"Last Name"},
-  {key:"firstName",label:"First Name"},
-  {key:"middleName",label:"Middle Name"},
-  {key:"qualifier",label:"Qualifier"},
-  {key:"subUnit",label:"Sub-Unit"}
-];
 
 function normVal(v){
   if (v===null||v===undefined) return "";
@@ -507,16 +565,17 @@ function generateDataset(n, seed){
   for (var j=1;j<=n;j++){
     var m = master[j-1];
     var roll = rng();
-    var rrec = {id:"r"+j, nr:j, acctNumber:m.acctNumber, rank:m.rank, lastName:m.lastName, firstName:m.firstName, middleName:m.middleName, qualifier:m.qualifier, badgeNumber:m.badgeNumber, subUnit:m.subUnit};
+    var rrec = {id:"r"+j, nr:j, acctNumber:m.acctNumber, rank:m.rank, lastName:m.lastName, firstName:m.firstName, middleName:m.middleName, qualifier:m.qualifier, badgeNumber:m.badgeNumber, unit:m.unit, subUnit:m.subUnit};
     if (roll < 0.05){
       rrec.badgeNumber = "99-"+(9000+j);
     } else if (roll < 0.20){
-      var field = pick(rng,["rank","lastName","qualifier","subUnit","acctNumber"]);
+      var field = pick(rng,["rank","lastName","qualifier","subUnit","acctNumber","unit"]);
       if (field==="rank"){ var opts=RANKS.filter(function(x){return normVal(x)!==normVal(m.rank);}); rrec.rank=pick(rng,opts); }
       else if (field==="lastName"){ rrec.lastName = normVal(m.lastName).toLowerCase(); }
       else if (field==="qualifier"){ var qopts=QUALIFIERS.filter(function(x){return x!==m.qualifier;}); rrec.qualifier=pick(rng,qopts); }
       else if (field==="subUnit"){ var sopts=SUB_UNITS.filter(function(x){return normVal(x)!==normVal(m.subUnit);}); rrec.subUnit=pick(rng,sopts); }
       else if (field==="acctNumber"){ rrec.acctNumber = pad6(parseInt(m.acctNumber,10)+1); }
+      else if (field==="unit"){ var uopts=UNITS.filter(function(x){return normVal(x)!==normVal(m.unit);}); rrec.unit=pick(rng,uopts); }
     } else if (roll < 0.30){
       var noisy = pick(rng,["subUnit","lastName","rank"]);
       if (noisy==="subUnit") rrec.subUnit = "  " + rrec.subUnit.trim().replace(/ /g,"  ") + "  ";
@@ -574,10 +633,10 @@ var state = {
   redoStack: [],
   auditLog: [],
   selectedRosterIds: new Set(),
-  filters: { status:"all", search:"", subUnit:"all" },
+  filters: { status:"all", search:"", subUnit:"all", unit:"all" },
   masterSearch: "", auditSearch: "",
   sort: { key:"nr", dir:"asc" },
-  sortMaster: { key:"badge", dir:"asc" },
+  sortMaster: { key:"acctNumber", dir:"asc" },
   page: { roster:1, master:1, audit:1 }, pageSize: 50,
   modal: { target:null, mode:null, id:null },
   storageMode: "unknown"
@@ -585,18 +644,19 @@ var state = {
 
 var els = {};
 ["subtitle","autosaveLine","themeToggleBtn","printBtn","downloadErrorsBtn","downloadRosterBtn","importCsvBtn","backupBtn","restoreBtn","restoreFileInput","loadSampleBtn","settingsBtn","undoBtn","redoBtn","newSessionBtn","autoCorrectAllBtn",
- "statTotal","statAligned","statMisaligned","statNotFound","statDup","barChart","fieldChart","dashFooter",
- "searchInput","statusChips","subUnitSelect","pageSizeSelect","downloadFilteredBtn","addRosterBtn","rosterBody","rosterPager","rosterHead",
+ "statTotal","statAligned","statMisaligned","statNotFound","statDup","barChart","fieldChart","unitChart","dashFooter",
+ "searchInput","statusChips","subUnitSelect","unitSelect","pageSizeSelect","downloadFilteredBtn","addRosterBtn","rosterBody","rosterPager","rosterHead",
  "masterSearchInput","downloadMasterBtn","addMasterBtn","masterBody","masterPager","masterHead",
  "auditSearchInput","downloadAuditBtn","auditBody","auditPager",
  "tabCountRoster","tabCountMaster","tabCountAudit","instrBody",
  "modalBackdrop","modalTitle","modalSub","modalForm","modalCancelBtn","modalSaveBtn",
  "settingsBackdrop","ignoreList","settingsCancelBtn","settingsSaveBtn",
  "undoBackdrop","undoModalSub","undoList","redoList","undoCancelBtn","undoConfirmBtn","redoConfirmBtn",
- "csvBackdrop","csvTargetSelect","csvTargetHint","csvFileInput","csvTextarea","csvPreview","csvCancelBtn","csvImportBtn",
+ "csvBackdrop","csvTargetSelect","csvTargetHint","csvFileInput","csvTextarea","csvPreview","csvMappingPreview","csvCancelBtn","csvImportBtn",
+ "mergeBackdrop","mergeModalSub","mergeList","mergeCloseBtn",
  "toast", "bulkBar", "bulkCount", "bulkFixBtn","bulkPromoteBtn","bulkExportBtn","bulkDeleteBtn","bulkSelectAllFilteredBtn","bulkClearBtn",
- "emptyStateWrap","statsGrid","barsStatusDist","barsFieldChart","emptyImportBtn","emptySampleBtn",
- "dupBanner","dupBannerText","dupBannerBtn","dupChip"
+ "emptyStateWrap","statsGrid","barsStatusDist","barsFieldChart","barsUnitChart","emptyImportBtn","emptySampleBtn",
+ "dupBanner","dupBannerText","dupBannerBtn","dupMergeBtn","dupChip"
 ].forEach(function(id){ els[id] = document.getElementById(id); });
 
 function esc(v){
@@ -664,7 +724,7 @@ function setAutosaveIndicator(ok, msg){
 
 function saveSession(){
   var payload = {
-    v: 2, savedAt: new Date(),
+    v: 3, savedAt: new Date(),
     master: state.master, roster: state.roster,
     ignoredFields: Array.from(state.ignoredFields),
     auditLog: state.auditLog
@@ -675,7 +735,7 @@ function saveSession(){
   }).catch(function(){
     try{
       var lsPayload = {
-        v: 2, savedAt: payload.savedAt.toISOString(),
+        v: 3, savedAt: payload.savedAt.toISOString(),
         master: state.master, roster: state.roster,
         ignoredFields: Array.from(state.ignoredFields),
         auditLog: state.auditLog.map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; })
@@ -739,16 +799,19 @@ function recompute(){
   state.masterIndex = buildMasterIndex(state.master);
   var results = new Map();
   var counts = {Aligned:0, Misaligned:0, "Badge Not Found in MasterList":0};
-  var fieldCounts = {};
+  var fieldCounts = {}, unitCounts = {};
   state.roster.forEach(function(r){
     var res = computeRow(r, state.masterIndex, state.ignoredFields);
     results.set(r.id, res);
     counts[res.status]++;
     res.mismatches.forEach(function(m){ fieldCounts[m.label] = (fieldCounts[m.label]||0)+1; });
+    var u = normVal(r.unit) || "(No Unit)";
+    unitCounts[u] = (unitCounts[u]||0)+1;
   });
   state.results = results;
   state.counts = counts;
   state.fieldCounts = fieldCounts;
+  state.unitCounts = unitCounts;
   state.dupBadges = computeDuplicateBadges(state.roster);
   // prune selections that no longer exist
   var liveIds = new Set(state.roster.map(function(r){ return r.id; }));
@@ -873,7 +936,7 @@ function promoteRow(rowId, silent){
   if (state.masterIndex.has(normVal(r.badgeNumber))){ if (!silent) showToast("A MasterList record with this badge already exists.", true); return false; }
   var mrec = { id:"m_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),
     acctNumber:r.acctNumber, rank:r.rank, lastName:r.lastName, firstName:r.firstName,
-    middleName:r.middleName, qualifier:r.qualifier, badgeNumber:r.badgeNumber, unit:"", subUnit:r.subUnit };
+    middleName:r.middleName, qualifier:r.qualifier, badgeNumber:r.badgeNumber, unit:r.unit, subUnit:r.subUnit };
   state.master.push(mrec);
   state.masterIndex.set(normVal(mrec.badgeNumber), mrec);
   if (!silent){
@@ -910,6 +973,28 @@ function deleteSelected(){
 }
 
 // =================================================================
+// MERGE DUPLICATE BADGES
+// =================================================================
+function duplicateGroups(){
+  var groups = new Map();
+  state.roster.forEach(function(r){
+    var b = normVal(r.badgeNumber);
+    if (!b || !state.dupBadges.has(b)) return;
+    if (!groups.has(b)) groups.set(b, []);
+    groups.get(b).push(r);
+  });
+  return groups;
+}
+function mergeGroup(badge, keepId){
+  var toDelete = state.roster.filter(function(r){ return normVal(r.badgeNumber)===badge && r.id!==keepId; }).map(function(r){ return r.id; });
+  if (!toDelete.length) return 0;
+  state.roster = state.roster.filter(function(r){ return toDelete.indexOf(r.id)===-1; });
+  recompute();
+  logAudit("Merge Duplicates", "Badge "+badge+" \u00b7 kept 1 row, removed "+toDelete.length+" duplicate row(s)", toDelete.length);
+  return toDelete.length;
+}
+
+// =================================================================
 // CSV (import into Roster OR MasterList; export helpers)
 // =================================================================
 function csvEscape(v){
@@ -927,11 +1012,16 @@ function downloadCsv(filename, rows){
   URL.revokeObjectURL(url);
 }
 function rosterExportRows(list){
-  var rows = [["Nr","Badge No.","Last Name","First Name","Middle Name","Rank","Account Number","Qualifier","Sub-Unit","Verification Status"]];
+  var rows = [["Nr","Salary Account Number","Rank","Last Name","First Name","Middle Name","Qlfr","Badge No.","Unit","Sub-Unit","Verification Status"]];
   list.forEach(function(r){
     var res = state.results.get(r.id);
-    rows.push([r.nr, r.badgeNumber, r.lastName, r.firstName, r.middleName, r.rank, r.acctNumber, r.qualifier, r.subUnit, res ? res.status : ""]);
+    rows.push([r.nr, r.acctNumber, r.rank, r.lastName, r.firstName, r.middleName, r.qualifier, r.badgeNumber, r.unit, r.subUnit, res ? res.status : ""]);
   });
+  return rows;
+}
+function masterExportRows(list){
+  var rows = [["Account Number","Rank","Last Name","First Name","Middle Name","Qual","Badge Number","Unit","Sub-Unit"]];
+  list.forEach(function(m){ rows.push([m.acctNumber, m.rank, m.lastName, m.firstName, m.middleName, m.qualifier, m.badgeNumber, m.unit, m.subUnit]); });
   return rows;
 }
 
@@ -954,16 +1044,60 @@ function parseCsv(text){
   return rows;
 }
 
-var CSV_ALIASES = {
-  "badge no": "badgeNumber", "badge number": "badgeNumber", "badgeno": "badgeNumber",
-  "account number": "acctNumber", "salary account number": "acctNumber",
-  "rank": "rank", "last name": "lastName", "first name": "firstName", "middle name": "middleName",
-  "qual": "qualifier", "qlfr": "qualifier", "qualifier": "qualifier",
-  "sub unit": "subUnit", "sub-unit": "subUnit", "subunit": "subUnit",
-  "nr": "nr", "no": "nr", "number": "nr"
-};
 function normalizeHeader(h){
   return String(h||"").toLowerCase().replace(/[.:]/g,"").replace(/[-_]/g," ").replace(/\s+/g," ").trim();
+}
+
+// Alias table built from FORM_SCHEMA (generic + roster + master header
+// wording) plus a handful of common HR-export variants, so CSVs whose
+// column order or exact header text differs from the sequence above
+// still map to the right field automatically.
+var CSV_ALIASES = {};
+(function buildAliases(){
+  function add(str, key){ if (str) CSV_ALIASES[normalizeHeader(str)] = key; }
+  FORM_SCHEMA.forEach(function(f){ add(f.label,f.key); add(f.rosterLabel,f.key); add(f.masterLabel,f.key); });
+  add("Nr","nr"); add("No","nr"); add("Number","nr"); add("Row","nr");
+  add("Badge No","badgeNumber"); add("BadgeNo","badgeNumber"); add("Badge","badgeNumber");
+  add("Acct No","acctNumber"); add("Account No","acctNumber"); add("Salary Acct No","acctNumber"); add("Salary Account No","acctNumber");
+  add("Qlfr","qualifier"); add("Qual","qualifier"); add("Qualification","qualifier");
+  add("Sub Unit","subUnit"); add("SubUnit","subUnit"); add("Sub-Unit","subUnit");
+})();
+function computeAutoMapping(headerRow){
+  return headerRow.map(function(h){ return CSV_ALIASES[normalizeHeader(h)] || ""; });
+}
+function buildMapSelect(idx, selectedKey){
+  var all = [{key:"",label:"(ignore column)"},{key:"nr",label:"Nr"}].concat(
+    FORM_SCHEMA.map(function(f){ return {key:f.key, label:f.label}; })
+  );
+  var opts = all.map(function(o){ return '<option value="'+o.key+'"'+(o.key===selectedKey?" selected":"")+'>'+esc(o.label)+'</option>'; }).join("");
+  return '<select data-mapcol="'+idx+'" style="width:100%;padding:5px 7px;border:1.5px solid var(--hairline);border-radius:6px;background:var(--surface);color:var(--ink);font-size:11.5px;">'+opts+'</select>';
+}
+var csvColumnOverrides = {};
+function renderCsvMappingPreview(){
+  var text = (els.csvTextarea.value||"").trim();
+  csvColumnOverrides = {};
+  if (!text){ els.csvMappingPreview.innerHTML = ""; return; }
+  var lines = parseCsv(text);
+  if (!lines.length || !lines[0].length){ els.csvMappingPreview.innerHTML = ""; return; }
+  var header = lines[0];
+  var auto = computeAutoMapping(header);
+  var rowsHtml = header.map(function(h,i){
+    return '<tr><td class="mono" style="font-size:11px;">'+esc(h||"(blank)")+'</td><td>'+buildMapSelect(i, auto[i])+'</td></tr>';
+  }).join("");
+  els.csvMappingPreview.innerHTML =
+    '<label style="margin-bottom:6px;">Detected Column Mapping</label>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr><th style="text-align:left;padding:4px 6px;font-size:10.5px;color:var(--ink-soft);">CSV Column</th><th style="text-align:left;padding:4px 6px;font-size:10.5px;color:var(--ink-soft);">Maps To</th></tr></thead><tbody>'+rowsHtml+'</tbody></table>'+
+    '<p class="hint-note">Auto-detected from the header text; override any column before importing if a header doesn\u2019t match its usual name.</p>';
+  els.csvMappingPreview.querySelectorAll("[data-mapcol]").forEach(function(sel){
+    sel.addEventListener("change", function(){ csvColumnOverrides[sel.getAttribute("data-mapcol")] = sel.value; });
+  });
+}
+function resolveKeyForCol(header){
+  var auto = computeAutoMapping(header);
+  return header.map(function(h,i){
+    if (csvColumnOverrides.hasOwnProperty(String(i))) return csvColumnOverrides[i] || null;
+    return auto[i] || null;
+  });
 }
 
 // Imports CSV text into either "roster" or "master". For MasterList, a row
@@ -974,9 +1108,9 @@ function normalizeHeader(h){
 function importCsvInto(target, text){
   var parsed = parseCsv(text);
   if (parsed.length < 2) throw new Error("CSV needs a header row plus at least one data row.");
-  var header = parsed[0].map(normalizeHeader);
-  var keyForCol = header.map(function(h){ return CSV_ALIASES[h] || null; });
-  if (keyForCol.indexOf("badgeNumber") === -1) throw new Error("CSV header must include a Badge Number column.");
+  var header = parsed[0];
+  var keyForCol = resolveKeyForCol(header);
+  if (keyForCol.indexOf("badgeNumber") === -1) throw new Error("No column is mapped to Badge Number. Adjust the column mapping and try again.");
 
   var added = 0, updated = 0, skipped = 0;
 
@@ -985,7 +1119,7 @@ function importCsvInto(target, text){
     for (var i=1;i<parsed.length;i++){
       var csvRow = parsed[i];
       if (!csvRow.length || csvRow.every(function(c){ return String(c).trim()===""; })) continue;
-      var rec = { id:"r_"+Date.now()+"_"+i+"_"+Math.random().toString(36).slice(2,6), nr:nextNr++, acctNumber:"", rank:"", lastName:"", firstName:"", middleName:"", qualifier:"", badgeNumber:"", subUnit:"" };
+      var rec = { id:"r_"+Date.now()+"_"+i+"_"+Math.random().toString(36).slice(2,6), nr:nextNr++, acctNumber:"", rank:"", lastName:"", firstName:"", middleName:"", qualifier:"", badgeNumber:"", unit:"", subUnit:"" };
       keyForCol.forEach(function(key, idx){ if (key && key!=="nr" && csvRow[idx]!==undefined) rec[key] = csvRow[idx]; });
       if (!rec.badgeNumber){ skipped++; continue; }
       state.roster.push(rec);
@@ -1023,12 +1157,6 @@ function importCsvInto(target, text){
 // =================================================================
 // CRUD (Add / Edit) with a live, real-time crosscheck against MasterList
 // =================================================================
-var FORM_SCHEMA = [
-  {key:"badgeNumber", label:"Badge Number"}, {key:"acctNumber", label:"Account Number"},
-  {key:"rank", label:"Rank"}, {key:"lastName", label:"Last Name"}, {key:"firstName", label:"First Name"},
-  {key:"middleName", label:"Middle Name"}, {key:"qualifier", label:"Qualifier"}, {key:"subUnit", label:"Sub-Unit"}
-];
-
 function currentFormValues(){
   var vals = {};
   FORM_SCHEMA.forEach(function(f){ var inp = document.getElementById("f_"+f.key); vals[f.key] = inp ? inp.value : ""; });
@@ -1120,10 +1248,10 @@ function openModal(target, mode, id){
     FORM_SCHEMA.forEach(function(f){ values[f.key] = ""; });
   }
   els.modalTitle.textContent = (mode==="add"?"Add ":"Edit ") + (target==="roster"?"Roster Record":"Reference Record");
-  els.modalSub.textContent = target==="roster" ? "Roster" : "MasterList";
+  els.modalSub.textContent = (target==="roster" ? "Roster" : "MasterList") + " \u00b7 field order matches the original sheet";
   els.modalForm.innerHTML = FORM_SCHEMA.map(function(f){
-    return '<div class="field-row"><label>'+esc(f.label)+'</label><input id="f_'+f.key+'" value="'+esc(values[f.key])+'"></div>';
-  }).join("") + '<p class="hint-note">Leading/trailing spaces are trimmed automatically when comparing, so extra spacing here won\u2019t cause a false mismatch. Exact spacing you type on MasterList IS what gets copied into Roster on correction.</p>';
+    return '<div class="field-row"><label>'+esc(labelFor(f,target))+(f.key==="badgeNumber"?" *":"")+'</label><input id="f_'+f.key+'" value="'+esc(values[f.key])+'"></div>';
+  }).join("") + '<p class="hint-note">Leading/trailing spaces are trimmed automatically when comparing, so extra spacing here won\u2019t cause a false mismatch. Exact spacing you type on MasterList IS what gets copied into Roster on correction. * Badge Number is required.</p>';
   els.modalBackdrop.classList.add("show");
   wireLiveCheck(target, target==="master" && mode==="edit" ? id : null);
   var first = els.modalForm.querySelector("input");
@@ -1133,20 +1261,26 @@ function closeModal(){ els.modalBackdrop.classList.remove("show"); }
 
 function saveModal(){
   var fields = currentFormValues();
-  if (!fields.badgeNumber.trim()){ showToast("Badge Number is required.", true); return; }
+  var badgeInput = document.getElementById("f_badgeNumber");
+  if (!fields.badgeNumber.trim()){
+    if (badgeInput) badgeInput.classList.add("field-error");
+    showToast("Badge Number is required.", true);
+    return;
+  }
+  if (badgeInput) badgeInput.classList.remove("field-error");
   var m = state.modal;
 
   if (m.target === "master"){
     var badgeNorm = normVal(fields.badgeNumber);
     var dupe = state.master.find(function(x){ return x.id !== m.id && normVal(x.badgeNumber) === badgeNorm; });
-    if (dupe){ showToast("A MasterList record with Badge "+fields.badgeNumber+" already exists. Edit that record instead.", true); return; }
+    if (dupe){ if (badgeInput) badgeInput.classList.add("field-error"); showToast("A MasterList record with Badge "+fields.badgeNumber+" already exists. Edit that record instead.", true); return; }
   }
 
   if (m.mode === "add"){
     var nextNr = state.roster.length ? Math.max.apply(null, state.roster.map(function(r){return r.nr;})) + 1 : 1;
     var rec = Object.assign({id: (m.target==="roster"?"r_":"m_")+Date.now()+"_"+Math.random().toString(36).slice(2,7)}, fields);
     if (m.target === "roster") { rec.nr = nextNr; state.roster.push(rec); }
-    else { rec.unit = ""; state.master.push(rec); }
+    else { state.master.push(rec); }
     logAudit("Create Record", (m.target==="roster"?"Roster":"MasterList")+" \u00b7 Badge "+fields.badgeNumber, 1);
   } else {
     var arr = m.target==="roster" ? state.roster : state.master;
@@ -1190,7 +1324,7 @@ function addSampleData(n){
 
 function exportBackup(){
   var payload = {
-    v: 2, exportedAt: new Date().toISOString(),
+    v: 3, exportedAt: new Date().toISOString(),
     master: state.master, roster: state.roster,
     ignoredFields: Array.from(state.ignoredFields),
     auditLog: state.auditLog.map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; })
@@ -1232,6 +1366,20 @@ function restoreFromFile(file){
 // =================================================================
 function effectivePageSize(){ return state.pageSize; }
 
+function genericSort(rows, sortState, resultsMap){
+  var key = sortState.key, dir = sortState.dir;
+  rows.sort(function(a,b){
+    var va, vb;
+    if (key==="status" && resultsMap){ va=resultsMap.get(a.id).status; vb=resultsMap.get(b.id).status; }
+    else if (key==="nr"){ va=Number(a.nr)||0; vb=Number(b.nr)||0; }
+    else { va=String(a[key]||"").toLowerCase(); vb=String(b[key]||"").toLowerCase(); }
+    if (va<vb) return dir==="asc"?-1:1;
+    if (va>vb) return dir==="asc"?1:-1;
+    return 0;
+  });
+  return rows;
+}
+
 function filteredRoster(){
   var f = state.filters, q = f.search.trim().toLowerCase();
   var rows = state.roster.filter(function(r){
@@ -1241,25 +1389,15 @@ function filteredRoster(){
         if (!state.dupBadges.has(normVal(r.badgeNumber))) return false;
       } else if (res.status !== f.status) return false;
     }
-    if (f.subUnit !== "all" && normVal(r.subUnit||"(No Sub-Unit)") !== f.subUnit) return false;
+    if (f.subUnit !== "all" && (normVal(r.subUnit)||"(No Sub-Unit)") !== f.subUnit) return false;
+    if (f.unit !== "all" && (normVal(r.unit)||"(No Unit)") !== f.unit) return false;
     if (q){
-      var hay = [r.badgeNumber, r.lastName, r.firstName, r.middleName, r.rank, r.subUnit, r.acctNumber].join(" ").toLowerCase();
+      var hay = [r.badgeNumber, r.lastName, r.firstName, r.middleName, r.rank, r.unit, r.subUnit, r.acctNumber, r.qualifier].join(" ").toLowerCase();
       if (hay.indexOf(q) === -1) return false;
     }
     return true;
   });
-  var key = state.sort.key, dir = state.sort.dir;
-  rows.sort(function(a,b){
-    var va, vb;
-    if (key==="nr"){ va=a.nr; vb=b.nr; }
-    else if (key==="badge"){ va=String(a.badgeNumber||"").toLowerCase(); vb=String(b.badgeNumber||"").toLowerCase(); }
-    else if (key==="name"){ va=(a.lastName||"").toLowerCase(); vb=(b.lastName||"").toLowerCase(); }
-    else if (key==="status"){ va=state.results.get(a.id).status; vb=state.results.get(b.id).status; }
-    if (va<vb) return dir==="asc"?-1:1;
-    if (va>vb) return dir==="asc"?1:-1;
-    return 0;
-  });
-  return rows;
+  return genericSort(rows, state.sort, state.results);
 }
 
 function currentRosterPage(){
@@ -1280,6 +1418,7 @@ function renderDashboard(){
   els.statsGrid.style.display = hasData ? "grid" : "none";
   els.barsStatusDist.style.display = hasData ? "block" : "none";
   els.barsFieldChart.style.display = hasData ? "block" : "none";
+  els.barsUnitChart.style.display = hasData ? "block" : "none";
 
   if (!hasData){ els.dashFooter.textContent = "No data loaded yet."; renderDupBanner(); return; }
 
@@ -1307,7 +1446,7 @@ function renderDashboard(){
   }).join("");
 
   var fieldEntries = Object.keys(state.fieldCounts).map(function(k){ return {label:k, val:state.fieldCounts[k]}; })
-    .sort(function(a,b){ return b.val-a.val; }).slice(0,7);
+    .sort(function(a,b){ return b.val-a.val; }).slice(0,8);
   if (!fieldEntries.length){
     els.fieldChart.innerHTML = '<p style="color:var(--ink-soft);font-size:12px;">No field-level mismatches.</p>';
   } else {
@@ -1318,6 +1457,20 @@ function renderDashboard(){
         '<div class="bar-num">'+f.val.toLocaleString()+'</div></div>';
     }).join("");
   }
+
+  var unitEntries = Object.keys(state.unitCounts).map(function(k){ return {label:k, val:state.unitCounts[k]}; })
+    .sort(function(a,b){ return b.val-a.val; }).slice(0,8);
+  if (!unitEntries.length){
+    els.unitChart.innerHTML = '<p style="color:var(--ink-soft);font-size:12px;">No Unit data.</p>';
+  } else {
+    var umax = unitEntries[0].val;
+    els.unitChart.innerHTML = unitEntries.map(function(u){
+      return '<div class="bar-row"><div class="bar-label">'+esc(u.label)+'</div>'+
+        '<div class="bar-track"><div class="bar-fill" style="width:'+((u.val/umax)*100)+'%;background:var(--info);"></div></div>'+
+        '<div class="bar-num">'+u.val.toLocaleString()+'</div></div>';
+    }).join("");
+  }
+
   els.dashFooter.textContent = "MasterList: " + state.master.length.toLocaleString() + " reference record(s) \u00b7 Roster: " + total.toLocaleString() + " record(s) \u00b7 Checked fields: " +
     CHECK_FIELDS.filter(function(f){ return !state.ignoredFields.has(f.key); }).map(function(f){ return f.label; }).join(", ");
   renderDupBanner();
@@ -1340,14 +1493,20 @@ function stampClass(status){
   return "notfound";
 }
 
+function populateFilterSelect(selectEl, values, currentValue){
+  var set = new Set(values);
+  var current = selectEl.value || currentValue || "all";
+  var placeholder = selectEl.querySelector('option[value="all"]');
+  var opts = [placeholder ? placeholder.outerHTML : '<option value="all">All</option>'];
+  Array.from(set).sort().forEach(function(v){ opts.push('<option value="'+esc(v)+'">'+esc(v)+'</option>'); });
+  selectEl.innerHTML = opts.join("");
+  selectEl.value = Array.from(selectEl.options).some(function(o){ return o.value===current; }) ? current : "all";
+}
 function populateSubUnitSelect(){
-  var set = new Set();
-  state.roster.forEach(function(r){ set.add(normVal(r.subUnit) || "(No Sub-Unit)"); });
-  var current = els.subUnitSelect.value || "all";
-  var opts = ['<option value="all">All Sub-Units</option>'];
-  Array.from(set).sort().forEach(function(su){ opts.push('<option value="'+esc(su)+'">'+esc(su)+'</option>'); });
-  els.subUnitSelect.innerHTML = opts.join("");
-  els.subUnitSelect.value = Array.from(els.subUnitSelect.options).some(function(o){ return o.value===current; }) ? current : "all";
+  populateFilterSelect(els.subUnitSelect, state.roster.map(function(r){ return normVal(r.subUnit) || "(No Sub-Unit)"; }));
+}
+function populateUnitSelect(){
+  populateFilterSelect(els.unitSelect, state.roster.map(function(r){ return normVal(r.unit) || "(No Unit)"; }));
 }
 
 function updateSortArrows(containerId, sortKey, dir){
@@ -1378,12 +1537,14 @@ function renderRosterTable(){
   var all = pageInfo.all, pageRows = pageInfo.pageRows, totalPages = pageInfo.totalPages;
 
   if (!pageRows.length){
-    els.rosterBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-soft);">No records match the current filters.</td></tr>';
+    els.rosterBody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:30px;color:var(--ink-soft);">No records match the current filters.</td></tr>';
   } else {
     els.rosterBody.innerHTML = pageRows.map(function(r){
       var res = state.results.get(r.id);
       var isDup = state.dupBadges.has(normVal(r.badgeNumber));
-      var fullName = [r.lastName, r.firstName].filter(Boolean).join(", ") + (r.middleName ? " "+r.middleName : "");
+      var mismatchKeys = {};
+      res.mismatches.forEach(function(m){ mismatchKeys[m.key]=true; });
+      function cell(key){ return '<td class="'+(mismatchKeys[key]?"cell-diff":"")+'">'+esc(r[key])+'</td>'; }
       var diffHtml;
       if (res.status === "Misaligned"){
         diffHtml = '<div class="diff-list">' + res.mismatches.map(function(m){
@@ -1403,8 +1564,15 @@ function renderRosterTable(){
       return '<tr class="'+(state.selectedRosterIds.has(r.id)?"is-selected ":"")+(isDup?"is-dup":"")+'">'+
         '<td class="col-chk"><input type="checkbox" class="row-chk" data-rowchk="'+r.id+'"'+(state.selectedRosterIds.has(r.id)?" checked":"")+'></td>'+
         '<td class="mono">'+esc(r.nr)+'</td>'+
+        '<td class="mono '+(mismatchKeys.acctNumber?"cell-diff":"")+'">'+esc(r.acctNumber)+'</td>'+
+        cell("rank")+
+        cell("lastName")+
+        cell("firstName")+
+        cell("middleName")+
+        '<td class="'+(mismatchKeys.qualifier?"cell-diff":"")+'">'+esc(r.qualifier)+'</td>'+
         '<td class="mono">'+esc(r.badgeNumber)+'</td>'+
-        '<td class="name-cell"><div class="full">'+esc(fullName||"\u2014")+'</div><div class="unit">'+esc(r.rank||"")+(r.subUnit?" \u00b7 "+esc(r.subUnit):"")+'</div></td>'+
+        cell("unit")+
+        cell("subUnit")+
         '<td><span class="stamp '+stampClass(res.status)+'">'+esc(res.status==="Badge Not Found in MasterList"?"Not Found":res.status)+'</span></td>'+
         '<td>'+diffHtml+'</td>'+
         '<td class="fix-cell">'+actions+'</td>'+
@@ -1439,7 +1607,7 @@ function renderRosterTable(){
   var subtitleParts = [state.roster.length.toLocaleString()+" roster record(s)", state.master.length.toLocaleString()+" MasterList record(s)"];
   els.subtitle.innerHTML = subtitleParts.join(" &middot; ") + ' &middot; <span class="tag ok">spacing-safe</span>' +
     (state.dupBadges.size ? ' &middot; <span class="tag warn">'+state.dupBadges.size+' duplicate badge(s)</span>' : "") +
-    (state.ignoredFields.size ? ' &middot; <span class="tag info">ignoring '+esc(Array.from(state.ignoredFields).map(function(k){var f=CHECK_FIELDS.find(function(x){return x.key===k;});return f?f.label:k;}).join(", "))+'</span>' : "");
+    (state.ignoredFields.size ? ' &middot; <span class="tag info">ignoring '+esc(Array.from(state.ignoredFields).map(function(k){var f=fieldByKey(k);return f?f.label:k;}).join(", "))+'</span>' : "");
 }
 
 function renderPager(elId, page, totalPages, totalRows, onGo){
@@ -1451,6 +1619,7 @@ function renderPager(elId, page, totalPages, totalRows, onGo){
       '<button type="button" class="ghost" data-pg="prev">&lsaquo; Prev</button>'+
       '<button type="button" class="ghost" data-pg="next">Next &rsaquo;</button>'+
       '<button type="button" class="ghost" data-pg="last">Last &raquo;</button>'+
+      '<span class="pg-jump"><label for="'+elId+'_jump" style="font-size:11px;">Go to</label><input type="number" id="'+elId+'_jump" min="1" max="'+totalPages+'" value="'+page+'"></span>'+
     '</div>';
   el.querySelectorAll("[data-pg]").forEach(function(btn){
     btn.addEventListener("click", function(){
@@ -1460,6 +1629,18 @@ function renderPager(elId, page, totalPages, totalRows, onGo){
       onGo(p);
     });
   });
+  var jumpInput = document.getElementById(elId+"_jump");
+  if (jumpInput){
+    jumpInput.addEventListener("keydown", function(e){
+      if (e.key !== "Enter") return;
+      var p = Math.min(totalPages, Math.max(1, parseInt(jumpInput.value,10) || 1));
+      onGo(p);
+    });
+    jumpInput.addEventListener("change", function(){
+      var p = Math.min(totalPages, Math.max(1, parseInt(jumpInput.value,10) || 1));
+      onGo(p);
+    });
+  }
   el.querySelector('[data-pg="first"]').disabled = page<=1;
   el.querySelector('[data-pg="prev"]').disabled = page<=1;
   el.querySelector('[data-pg="next"]').disabled = page>=totalPages;
@@ -1473,22 +1654,10 @@ function filteredMaster(){
   var q = state.masterSearch.trim().toLowerCase();
   var rows = state.master.filter(function(m){
     if (!q) return true;
-    var hay = [m.badgeNumber, m.lastName, m.firstName, m.middleName, m.rank, m.subUnit, m.acctNumber].join(" ").toLowerCase();
+    var hay = [m.badgeNumber, m.lastName, m.firstName, m.middleName, m.rank, m.unit, m.subUnit, m.acctNumber, m.qualifier].join(" ").toLowerCase();
     return hay.indexOf(q) !== -1;
   });
-  var key = state.sortMaster.key, dir = state.sortMaster.dir;
-  rows.sort(function(a,b){
-    var va, vb;
-    if (key==="badge"){ va=String(a.badgeNumber||"").toLowerCase(); vb=String(b.badgeNumber||"").toLowerCase(); }
-    else if (key==="name"){ va=(a.lastName||"").toLowerCase(); vb=(b.lastName||"").toLowerCase(); }
-    else if (key==="rank"){ va=(a.rank||"").toLowerCase(); vb=(b.rank||"").toLowerCase(); }
-    else if (key==="acct"){ va=String(a.acctNumber||"").toLowerCase(); vb=String(b.acctNumber||"").toLowerCase(); }
-    else if (key==="subunit"){ va=(a.subUnit||"").toLowerCase(); vb=(b.subUnit||"").toLowerCase(); }
-    if (va<vb) return dir==="asc"?-1:1;
-    if (va>vb) return dir==="asc"?1:-1;
-    return 0;
-  });
-  return rows;
+  return genericSort(rows, state.sortMaster, null);
 }
 function renderMasterTable(){
   var all = filteredMaster();
@@ -1498,17 +1667,21 @@ function renderMasterTable(){
   var startIdx = (state.page.master-1)*pageSize;
   var pageRows = all.slice(startIdx, startIdx+pageSize);
   if (!pageRows.length){
-    els.masterBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-soft);">No reference records match.</td></tr>';
+    els.masterBody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--ink-soft);">No reference records match.</td></tr>';
   } else {
     els.masterBody.innerHTML = pageRows.map(function(m){
-      var fullName = [m.lastName, m.firstName].filter(Boolean).join(", ") + (m.middleName ? " "+m.middleName : "");
+      var isDup = state.master.filter(function(x){ return normVal(x.badgeNumber)===normVal(m.badgeNumber); }).length > 1;
       var actions = '<button type="button" class="small ghost" data-editmaster="'+m.id+'">Edit</button>'+
         '<button type="button" class="small danger" data-delmaster="'+m.id+'">Delete</button>';
-      return '<tr>'+
-        '<td class="mono">'+esc(m.badgeNumber)+'</td>'+
-        '<td>'+esc(fullName||"\u2014")+'</td>'+
+      return '<tr class="'+(isDup?"is-dup":"")+'">'+
+        '<td class="mono">'+esc(m.acctNumber)+'</td>'+
         '<td>'+esc(m.rank||"")+'</td>'+
-        '<td class="mono">'+esc(m.acctNumber||"")+'</td>'+
+        '<td>'+esc(m.lastName||"")+'</td>'+
+        '<td>'+esc(m.firstName||"")+'</td>'+
+        '<td>'+esc(m.middleName||"")+'</td>'+
+        '<td>'+esc(m.qualifier||"")+'</td>'+
+        '<td class="mono">'+esc(m.badgeNumber)+(isDup?' <span class="stamp dup">Dup</span>':'')+'</td>'+
+        '<td>'+esc(m.unit||"")+'</td>'+
         '<td>'+esc(m.subUnit||"")+'</td>'+
         '<td class="fix-cell">'+actions+'</td>'+
       '</tr>';
@@ -1550,7 +1723,7 @@ function renderAudit(){
 }
 
 // =================================================================
-// RENDER: Settings + Undo/Redo modals
+// RENDER: Settings + Undo/Redo + Merge modals
 // =================================================================
 function renderSettingsModal(){
   els.ignoreList.innerHTML = CHECK_FIELDS.map(function(f){
@@ -1593,6 +1766,42 @@ function renderUndoList(){
       '<div class="ui-meta">'+h.entries.length+' row(s) affected</div></div>';
   }).join("") : '<p class="hint-note">Nothing to redo.</p>';
 }
+function renderMergeModal(){
+  var groups = duplicateGroups();
+  if (!groups.size){
+    els.mergeModalSub.textContent = "No duplicate badges remain.";
+    els.mergeList.innerHTML = '<p class="hint-note">Every Badge Number in Roster is now unique.</p>';
+    return;
+  }
+  els.mergeModalSub.textContent = groups.size + " duplicate badge group(s) found. Pick which row to keep in each; the rest are deleted.";
+  var html = "";
+  groups.forEach(function(rows, badge){
+    html += '<div class="undo-item" style="margin-bottom:14px;">' +
+      '<div style="font-weight:800;margin-bottom:8px;">Badge '+esc(badge)+' &middot; '+rows.length+' row(s)</div>' +
+      rows.map(function(r,i){
+        var name=[r.lastName,r.firstName].filter(Boolean).join(", ");
+        return '<label class="ignore-row"><input type="radio" name="mg_'+esc(badge)+'" value="'+r.id+'"'+(i===0?" checked":"")+'>'+
+          '<span class="ir-label">Row Nr '+esc(r.nr)+' \u2014 '+esc(name||"(no name)")+'</span>'+
+          '<span class="ir-sub">'+esc(r.rank||"")+' \u00b7 '+esc(r.unit||"")+' \u00b7 '+esc(r.subUnit||"")+'</span></label>';
+      }).join("") +
+      '<div style="margin-top:8px;"><button type="button" class="small primary" data-mergegroup="'+esc(badge)+'">Keep Selected, Delete Others</button></div>' +
+    '</div>';
+  });
+  els.mergeList.innerHTML = html;
+  els.mergeList.querySelectorAll("[data-mergegroup]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var badge = btn.getAttribute("data-mergegroup");
+      var checked = els.mergeList.querySelector('input[name="mg_'+badge.replace(/"/g,'\\"')+'"]:checked');
+      if (!checked){ showToast("Select a row to keep first.", true); return; }
+      var removed = mergeGroup(badge, checked.value);
+      if (removed){
+        showToast("Merged badge "+badge+" \u2014 removed "+removed+" duplicate row(s).");
+        renderAll();
+        renderMergeModal();
+      }
+    });
+  });
+}
 
 // =================================================================
 // RENDER: Instructions
@@ -1601,6 +1810,12 @@ function renderInstructions(){
   els.instrBody.innerHTML =
     '<h2>What this tool does</h2>'+
     '<p>It cross-checks a working <b>Roster</b> against a <b>MasterList</b> reference sheet (the "original" source-of-truth data), keyed on Badge Number, and flags every row as <b>Aligned</b>, <b>Misaligned</b>, or <b>Badge Not Found in MasterList</b>. It runs entirely in your browser &mdash; nothing is uploaded to any server.</p>'+
+
+    '<h2>Field order, matched to your original sheets</h2>'+
+    '<p>Every form, table and CSV export in this tool follows the same field sequence as the source sheets:</p>'+
+    '<table><tr><th>MasterList</th><td>Account Number &rarr; Rank &rarr; Last Name &rarr; First Name &rarr; Middle Name &rarr; Qual &rarr; Badge Number &rarr; Unit &rarr; Sub-Unit</td></tr>'+
+    '<tr><th>Roster</th><td>Nr &rarr; Salary Account Number &rarr; Rank &rarr; Last Name &rarr; First Name &rarr; Middle Name &rarr; Qlfr &rarr; Badge No. &rarr; Unit &rarr; Sub-Unit</td></tr></table>'+
+    '<p><b>Unit</b> is now a fully tracked field, just like Sub-Unit: it appears in both tables, both Add/Edit forms, CSV import/export, and is included in the crosscheck (toggle it off in Settings if you don\u2019t want it checked yet).</p>'+
 
     '<h2>How matching works</h2>'+
     '<p>Badge Number is the key field. It is looked up, never compared or corrected. If a Roster row\u2019s badge doesn\u2019t exist in MasterList, it\u2019s flagged <b>Badge Not Found</b> &mdash; add that badge to MasterList, or fix a typo, to resolve it. If the same badge appears more than once in Roster, it\u2019s flagged as a <b>Duplicate Badge</b> in a banner on the Dashboard and with a marker on each affected row, since duplicates can make a correction ambiguous.</p>'+
@@ -1616,37 +1831,43 @@ function renderInstructions(){
       '<li><b>Misaligned</b> &mdash; shows exactly which fields differ from the original and what the correct value is, before you even save.</li>'+
       '<li><b>Not Found</b> &mdash; no MasterList record uses that Badge Number yet.</li>'+
     '</ul>'+
-    '<p>On a <b>MasterList</b> Add/Edit form, the same panel instead checks the Badge Number for duplicates, since MasterList must have exactly one record per badge.</p>'+
+    '<p>On a <b>MasterList</b> Add/Edit form, the same panel instead checks the Badge Number for duplicates, since MasterList must have exactly one record per badge. Badge Number is a required field; leaving it blank highlights the input in red and blocks Save.</p>'+
 
     '<h2>Bulk actions on the Roster</h2>'+
-    '<p>Tick the checkbox on any row (or the header checkbox to select the whole page) to open a bulk action bar: <b>Auto-Correct Selected</b>, <b>Promote Selected</b> (for eligible Not Found rows), <b>Export Selected (CSV)</b>, and <b>Delete Selected</b>. Use <b>Select all matching filter</b> to extend the selection beyond the current page to every row matching your current search/status/sub-unit filters.</p>'+
+    '<p>Tick the checkbox on any row (or the header checkbox to select the whole page) to open a bulk action bar: <b>Auto-Correct Selected</b>, <b>Promote Selected</b> (for eligible Not Found rows), <b>Export Selected (CSV)</b>, and <b>Delete Selected</b>. Use <b>Select all matching filter</b> to extend the selection beyond the current page to every row matching your current search/status/Unit/Sub-Unit filters.</p>'+
+
+    '<h2>Merge Duplicates</h2>'+
+    '<p>When the same Badge Number appears more than once in Roster, the Dashboard shows a warning banner. <b>Merge Duplicates&hellip;</b> opens a dedicated view, grouped by badge, where you pick which single row to keep for each group (by Nr, name, rank, Unit, Sub-Unit) and the rest are deleted in one click. <b>View Duplicates</b> instead just filters the Roster table down to the affected rows if you\u2019d rather edit them individually.</p>'+
+
+    '<h2>Import CSV &mdash; column mapping preview</h2>'+
+    '<p>Paste or choose a CSV for either Roster or MasterList and the tool detects each column\u2019s field from its header text (matching the sequences above and common export variants like "Salary Acct No" or "Badge No"). Before importing, a preview table lists every detected CSV column next to the field it will map to, with a dropdown to correct any column the auto-detection got wrong or that has no obvious match. Rows without a Badge Number are skipped and reported, not silently dropped. Re-importing a refreshed original MasterList export updates existing reference records in place by Badge Number rather than duplicating them.</p>'+
 
     '<h2>Buttons &amp; automation</h2>'+
     '<ul>'+
       '<li><b>Auto-Correct All</b> &mdash; fixes every Misaligned row across the entire Roster in one action, using MasterList\u2019s exact values. Undo-safe.</li>'+
-      '<li><b>Fix</b> (per row) / <b>Fix field</b> (per mismatched field) &mdash; same correction, scoped to one row or one field.</li>'+
+      '<li><b>Fix</b> (per row) / <b>Fix field</b> (per mismatched field) &mdash; same correction, scoped to one row or one field. Mismatched cells are highlighted directly in the Roster table.</li>'+
       '<li><b>Undo / Redo</b> &mdash; step backward and forward through every correction action, with no history-length cap. Keyboard: <span class="kbd">Ctrl/Cmd+Z</span> to undo, <span class="kbd">Ctrl/Cmd+Shift+Z</span> to redo.</li>'+
-      '<li><b>Download Errors (CSV)</b> &mdash; exports every Misaligned / Not Found row with its mismatch detail. <b>Export Filtered (CSV)</b> exports only what the current Roster filters show. <b>Export MasterList (CSV)</b> exports the reference sheet.</li>'+
-      '<li><b>Download Roster (CSV)</b> &mdash; exports the full Roster with its live Verification Status.</li>'+
-      '<li><b>Import CSV</b> &mdash; bulk-adds or updates rows in either the <b>Roster</b> or the <b>MasterList</b> from pasted or uploaded CSV text; headers are matched by name the same way as everywhere else. Re-importing a refreshed original MasterList export updates existing reference records in place by Badge Number, rather than duplicating them. Rows without a Badge Number are skipped and reported, not silently dropped.</li>'+
+      '<li><b>Download Errors (CSV)</b> &mdash; exports every Misaligned / Not Found row with its mismatch detail. <b>Export Filtered (CSV)</b> exports only what the current Roster filters show. <b>Export MasterList (CSV)</b> exports the reference sheet in its native column order.</li>'+
+      '<li><b>Download Roster (CSV)</b> &mdash; exports the full Roster, in its native column order, with its live Verification Status.</li>'+
+      '<li><b>Import CSV</b> &mdash; bulk-adds or updates rows in either the <b>Roster</b> or the <b>MasterList</b> from pasted or uploaded CSV text, with the column mapping preview described above.</li>'+
       '<li><b>Export Backup / Restore Backup</b> &mdash; download a full JSON snapshot of every record, the ignored-fields setting, and the audit log, and load it back later or on another device.</li>'+
       '<li><b>Settings</b> &mdash; choose which fields are included in the crosscheck.</li>'+
-      '<li><b>Promote</b> (on a Not Found row) &mdash; inserts that person into MasterList as a new reference record, for when they\u2019re simply missing from it.</li>'+
+      '<li><b>Promote</b> (on a Not Found row) &mdash; inserts that person into MasterList as a new reference record, for when they\u2019re simply missing from it, carrying over Unit and Sub-Unit too.</li>'+
       '<li><b>Load Sample Data</b> &mdash; adds 11,000 generated sample records on top of whatever is already loaded, to demo every feature without disturbing real data.</li>'+
       '<li><b>Clear All Data</b> &mdash; permanently wipes the autosaved data in this browser (Roster, MasterList, audit log, undo/redo history) and returns to an empty state.</li>'+
     '</ul>'+
 
-    '<h2>Paging, sorting, and search</h2>'+
-    '<p>Choose how many rows show per page (25 up to 1,000, or "Show all" to disable paging) from the page-size selector on the Roster tab &mdash; it applies to Roster, MasterList, and the Audit Log alike. Click any column header with an arrow to sort by it; click again to reverse the direction. Press <span class="kbd">/</span> anywhere on the Roster tab to jump to the search box.</p>'+
+    '<h2>Paging, sorting, filtering, and search</h2>'+
+    '<p>Choose how many rows show per page (25 up to 1,000, or "Show all" to disable paging) from the page-size selector on the Roster tab &mdash; it applies to Roster, MasterList, and the Audit Log alike. Every pager also has a <b>Go to</b> page-number box for jumping straight to a page on large datasets. Click any column header with an arrow to sort by it (every column in both tables is sortable); click again to reverse the direction. Filter the Roster by status, Unit, or Sub-Unit, or press <span class="kbd">/</span> anywhere on the Roster tab to jump to the search box.</p>'+
 
     '<h2>Autosave &amp; data privacy</h2>'+
     '<p>Every change (edits, imports, corrections, settings) is automatically saved to this browser a moment after you make it \u2014 closing or reloading the tab restores your last session. Data is stored in <b>IndexedDB</b> for effectively unlimited local capacity, with an automatic fallback to browser local storage if IndexedDB isn\u2019t available. Nothing is sent to a server; the small line under the page title confirms when a save completes and which storage backend is active. Because the data lives only in this browser, it will not appear on another device or browser profile, and clearing your browser data will remove it. Use <b>Export Backup</b> to keep a durable, portable copy you can restore anywhere, and <b>Clear All Data</b> to deliberately reset.</p>'+
 
     '<h2>Settings &mdash; choosing which fields to check</h2>'+
-    '<p>Badge Number, Nr, and Verification Status are always system-managed and excluded. Every other field (Account Number, Rank, Last Name, First Name, Middle Name, Qualifier, Sub-Unit) can be turned off if you don\u2019t want it checked yet.</p>'+
+    '<p>Badge Number, Nr, and Verification Status are always system-managed and excluded. Every other field (Account Number, Rank, Last Name, First Name, Middle Name, Qualifier, Unit, Sub-Unit) can be turned off if you don\u2019t want it checked yet.</p>'+
 
     '<h2>Getting your real data in</h2>'+
-    '<p>Use <b>Import CSV</b> to load your actual MasterList and Roster exports (choose the target sheet in the dialog), or add/edit records directly in the Roster and MasterList tabs. The tool loads with 11,000 generated sample records on first run purely so every feature is demonstrated immediately; import your real data (or use <b>Clear All Data</b> first) to replace it.</p>';
+    '<p>Use <b>Import CSV</b> to load your actual MasterList and Roster exports (choose the target sheet in the dialog and review the column mapping preview), or add/edit records directly in the Roster and MasterList tabs. The tool loads with 11,000 generated sample records on first run purely so every feature is demonstrated immediately; import your real data (or use <b>Clear All Data</b> first) to replace it.</p>';
 }
 
 // =================================================================
@@ -1655,6 +1876,7 @@ function renderInstructions(){
 function renderAll(){
   renderDashboard();
   populateSubUnitSelect();
+  populateUnitSelect();
   renderRosterTable();
   renderMasterTable();
   renderAudit();
@@ -1693,6 +1915,7 @@ els.statusChips.addEventListener("click", function(e){
   renderRosterTable(); renderDashboard();
 });
 els.subUnitSelect.addEventListener("change", function(){ state.filters.subUnit = this.value; state.page.roster=1; renderRosterTable(); });
+els.unitSelect.addEventListener("change", function(){ state.filters.unit = this.value; state.page.roster=1; renderRosterTable(); });
 els.searchInput.addEventListener("input", debounce(function(){ state.filters.search = this.value; state.page.roster=1; renderRosterTable(); }, 200));
 els.masterSearchInput.addEventListener("input", debounce(function(){ state.masterSearch = this.value; state.page.master=1; renderMasterTable(); }, 200));
 els.auditSearchInput.addEventListener("input", debounce(function(){ state.auditSearch = this.value; state.page.audit=1; renderAudit(); }, 200));
@@ -1763,7 +1986,7 @@ els.settingsSaveBtn.addEventListener("click", function(){
   state.ignoredFields = new Set(ignored);
   recompute();
   els.settingsBackdrop.classList.remove("show");
-  var labels = ignored.map(function(k){ var f=CHECK_FIELDS.find(function(x){return x.key===k;}); return f?f.label:k; });
+  var labels = ignored.map(function(k){ var f=fieldByKey(k); return f?f.label:k; });
   logAudit("Update Settings", labels.length ? "Ignored fields set to: "+labels.join(", ") : "All fields are now checked", 0);
   showToast(labels.length ? "Now ignoring: "+labels.join(", ") : "All fields are now checked.");
   renderAll();
@@ -1772,12 +1995,12 @@ els.settingsSaveBtn.addEventListener("click", function(){
 els.printBtn.addEventListener("click", function(){ window.print(); });
 
 els.downloadErrorsBtn.addEventListener("click", function(){
-  var rows = [["Nr","Badge No.","Last Name","First Name","Middle Name","Rank","Account Number","Qualifier","Sub-Unit","Status","Mismatch Detail"]];
+  var rows = [["Nr","Salary Account Number","Rank","Last Name","First Name","Middle Name","Qlfr","Badge No.","Unit","Sub-Unit","Status","Mismatch Detail"]];
   state.roster.forEach(function(r){
     var res = state.results.get(r.id);
     if (res.status === "Aligned") return;
     var detail = res.mismatches.map(function(m){ return m.label+": "+m.current+" -> "+m.correct; }).join(" | ");
-    rows.push([r.nr, r.badgeNumber, r.lastName, r.firstName, r.middleName, r.rank, r.acctNumber, r.qualifier, r.subUnit, res.status, detail]);
+    rows.push([r.nr, r.acctNumber, r.rank, r.lastName, r.firstName, r.middleName, r.qualifier, r.badgeNumber, r.unit, r.subUnit, res.status, detail]);
   });
   if (rows.length === 1){ showToast("No errors to download \u2014 everything is Aligned."); return; }
   downloadCsv("reconciliation-errors-"+new Date().toISOString().slice(0,10)+".csv", rows);
@@ -1801,8 +2024,7 @@ els.downloadFilteredBtn.addEventListener("click", function(){
 });
 
 els.downloadMasterBtn.addEventListener("click", function(){
-  var rows = [["Badge No.","Last Name","First Name","Middle Name","Rank","Account Number","Qualifier","Sub-Unit"]];
-  filteredMaster().forEach(function(m){ rows.push([m.badgeNumber, m.lastName, m.firstName, m.middleName, m.rank, m.acctNumber, m.qualifier, m.subUnit]); });
+  var rows = masterExportRows(filteredMaster());
   if (rows.length===1){ showToast("No MasterList records to export.", true); return; }
   downloadCsv("masterlist-"+new Date().toISOString().slice(0,10)+".csv", rows);
   logAudit("Download MasterList CSV", (rows.length-1)+" row(s) exported", rows.length-1);
@@ -1820,7 +2042,7 @@ els.downloadAuditBtn.addEventListener("click", function(){
 els.importCsvBtn.addEventListener("click", function(){
   els.csvBackdrop.classList.add("show");
   els.csvTargetSelect.value = "roster";
-  els.csvTextarea.value=""; els.csvPreview.textContent="";
+  els.csvTextarea.value=""; els.csvPreview.textContent=""; els.csvMappingPreview.innerHTML="";
   updateCsvTargetHint();
 });
 els.csvTargetSelect.addEventListener("change", updateCsvTargetHint);
@@ -1834,14 +2056,14 @@ els.csvBackdrop.addEventListener("click", function(e){ if (e.target===els.csvBac
 els.csvFileInput.addEventListener("change", function(){
   if (!this.files || !this.files[0]) return;
   var reader = new FileReader();
-  reader.onload = function(){ els.csvTextarea.value = String(reader.result||""); updateCsvPreview(); };
+  reader.onload = function(){ els.csvTextarea.value = String(reader.result||""); updateCsvPreview(); renderCsvMappingPreview(); };
   reader.readAsText(this.files[0]);
 });
 function updateCsvPreview(){
   var lines = (els.csvTextarea.value||"").split(/\r\n|\n/).filter(function(l){ return l.trim()!==""; });
   els.csvPreview.textContent = lines.length ? (lines.length-1)+" data row(s) detected \u00b7 header: "+lines[0].slice(0,120) : "";
 }
-els.csvTextarea.addEventListener("input", debounce(updateCsvPreview, 150));
+els.csvTextarea.addEventListener("input", debounce(function(){ updateCsvPreview(); renderCsvMappingPreview(); }, 200));
 els.csvImportBtn.addEventListener("click", function(){
   var text = els.csvTextarea.value.trim();
   if (!text){ showToast("Paste or choose a CSV file first.", true); return; }
@@ -1879,6 +2101,9 @@ els.dupBannerBtn.addEventListener("click", function(){
   els.statusChips.querySelectorAll(".chip").forEach(function(c){ c.classList.toggle("active", c.getAttribute("data-status")==="dup"); });
   renderRosterTable(); renderDashboard();
 });
+els.dupMergeBtn.addEventListener("click", function(){ els.mergeBackdrop.classList.add("show"); renderMergeModal(); });
+els.mergeCloseBtn.addEventListener("click", function(){ els.mergeBackdrop.classList.remove("show"); });
+els.mergeBackdrop.addEventListener("click", function(e){ if (e.target===els.mergeBackdrop) els.mergeBackdrop.classList.remove("show"); });
 
 // ---- Bulk selection wiring ----
 document.getElementById("chkAllRoster").addEventListener("change", function(){
@@ -1919,7 +2144,7 @@ els.newSessionBtn.addEventListener("click", function(){
   state.auditLog = [];
   state.selectedRosterIds = new Set();
   state.master = []; state.roster = []; state.ignoredFields = new Set();
-  state.filters = { status:"all", search:"", subUnit:"all" };
+  state.filters = { status:"all", search:"", subUnit:"all", unit:"all" };
   state.masterSearch = ""; state.auditSearch = "";
   state.page = { roster:1, master:1, audit:1 };
   els.searchInput.value = ""; els.masterSearchInput.value = ""; els.auditSearchInput.value = "";
@@ -1931,7 +2156,7 @@ els.newSessionBtn.addEventListener("click", function(){
 
 document.addEventListener("keydown", function(e){
   var tag = document.activeElement ? document.activeElement.tagName : "";
-  var typing = tag === "INPUT" || tag === "TEXTAREA";
+  var typing = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
   if (e.key === "/" && !typing){
     if (document.getElementById("tab-roster").classList.contains("active")){ e.preventDefault(); els.searchInput.focus(); }
   }
@@ -1942,6 +2167,7 @@ document.addEventListener("keydown", function(e){
     els.settingsBackdrop.classList.remove("show");
     els.undoBackdrop.classList.remove("show");
     els.csvBackdrop.classList.remove("show");
+    els.mergeBackdrop.classList.remove("show");
   }
 });
 
