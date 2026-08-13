@@ -13,9 +13,17 @@
     --thead-bg:#F7F8F6; --row-hover:#FAFAF8;
     --shadow:0 1px 2px rgba(27,42,47,.06), 0 8px 24px -16px rgba(27,42,47,.25);
   }
+  body.dark{
+    --bg:#121917; --surface:#1B2422; --ink:#E9EFEC; --ink-soft:#93A39D;
+    --hairline:#31403A; --accent:#E0AC5B; --accent-soft:#3A2F1C;
+    --ok:#5FC493; --ok-soft:#173226; --bad:#E58076; --bad-soft:#3A211F;
+    --warn:#E7B65C; --warn-soft:#3A2E17; --info:#7FA6D6; --info-soft:#1C2B3E;
+    --thead-bg:#202824; --row-hover:#212B27;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px -16px rgba(0,0,0,.6);
+  }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
-  body{background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;}
+  body{background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;transition:background .15s ease,color .15s ease;}
   .wrap{max-width:1280px;margin:0 auto;padding:0 24px 56px;}
 
   header{
@@ -109,6 +117,24 @@
   .pager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;}
   .pager .pg-controls{display:flex;gap:4px;align-items:center;}
   .pager button{padding:5px 10px;}
+  .pager .pg-size{margin-left:10px;}
+
+  th.col-chk, td.col-chk{width:32px;text-align:center;}
+
+  .bulk-bar{display:none;align-items:center;gap:10px;background:var(--ink);color:var(--bg);border-radius:8px;padding:9px 14px;margin-bottom:10px;font-size:12.5px;font-weight:700;flex-wrap:wrap;}
+  .bulk-bar.show{display:flex;}
+  .bulk-bar button{background:var(--bg);color:var(--ink);border-color:var(--bg);padding:5px 11px;}
+  .bulk-bar .bulk-spacer{flex:1;}
+
+  .empty-state{background:var(--surface);border:1.5px dashed var(--hairline);border-radius:var(--radius);padding:40px 30px;text-align:center;}
+  .empty-state h3{margin:0 0 8px;font-size:16px;}
+  .empty-state p{color:var(--ink-soft);font-size:13px;max-width:480px;margin:0 auto 16px;}
+  .empty-state .es-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+  .dup-banner{display:flex;align-items:center;gap:10px;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12.5px;font-weight:600;border:1.5px solid var(--warn);background:var(--warn-soft);color:var(--warn);}
+  .dup-banner button{padding:5px 11px;}
+
+  .storage-line{font-size:11px;}
 
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s ease, bottom .25s ease;z-index:80;max-width:80vw;}
   .toast.show{opacity:1;bottom:28px;}
@@ -156,15 +182,6 @@
   #autosaveLine .as-ok{color:var(--ok);font-weight:700;}
   #autosaveLine .as-bad{color:var(--bad);font-weight:700;}
 
-  th.col-check{width:38px;} td.check-cell{width:38px;}
-  .bulk-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12.5px;}
-  .bulk-bar .bulk-count{font-weight:800;color:var(--ink);}
-  .bulk-bar button{padding:6px 11px;font-size:11.5px;}
-  .bulk-field-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-  .bulk-field-row label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;width:150px;flex-shrink:0;text-transform:none;letter-spacing:0;}
-  .bulk-field-row input[type=text]{flex:1;}
-  .bulk-field-row input[type=text]:disabled{background:var(--thead-bg);color:var(--ink-soft);}
-
   @media (max-width:920px){ .stats{grid-template-columns:repeat(2,1fr);} }
   @media print{
     header .actions, .tabs, .filter-bar, .pager, .checkbox-col, .fix-cell { display:none !important; }
@@ -182,16 +199,21 @@
       <p class="brand-eyebrow">Personnel &amp; Account Records &middot; Reconciliation</p>
       <h1>Reconciliation Data Checker</h1>
       <p class="subtitle" id="subtitle">Loading&hellip;</p>
-      <p class="subtitle" id="autosaveLine">&nbsp;</p>
+      <p class="subtitle storage-line" id="autosaveLine">&nbsp;</p>
     </div>
     <div class="actions">
+      <button class="ghost" id="themeToggleBtn" title="Toggle light / dark theme">&#127769; Dark</button>
       <button class="ghost" id="printBtn">Print</button>
       <button class="ghost" id="downloadErrorsBtn" title="Download every Misaligned / Not Found row as CSV, for manual review or fixing outside this tool">Download Errors (CSV)</button>
       <button class="ghost" id="downloadRosterBtn">Download Roster (CSV)</button>
       <button class="ghost" id="importCsvBtn">Import CSV</button>
+      <button class="ghost" id="backupBtn" title="Download a full JSON backup of every record, the audit log, and settings">Export Backup</button>
+      <button class="ghost" id="restoreBtn" title="Restore all data from a previously exported JSON backup (replaces current data)">Restore Backup</button>
+      <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none;">
+      <button class="ghost" id="loadSampleBtn" title="Add 11,000 generated sample records, purely to demo every feature">Load Sample Data</button>
       <button class="ghost" id="settingsBtn">&#9881; Settings</button>
       <button class="ghost has-badge" id="undoBtn" disabled>&#8630; Undo</button>
-      <button class="ghost danger" id="newSessionBtn" title="Clear the locally saved session and reload the sample dataset">New Session</button>
+      <button class="ghost danger" id="newSessionBtn" title="Permanently delete every Roster and MasterList record, the audit log, and undo history from this browser">Clear All Data</button>
       <button class="accent" id="autoCorrectAllBtn">Auto-Correct All</button>
     </div>
   </header>
@@ -210,9 +232,23 @@
       <span>&#10003;&nbsp;<b>Spacing-safe comparison is on.</b> Extra or doubled spaces in either sheet never by themselves cause a Misaligned flag. When a field IS corrected, it is written back as MasterList's exact literal cell &mdash; same spacing, casing and punctuation, for every field &mdash; so Roster ends up byte-for-byte identical to the reference record, even where MasterList's own cell happens to carry a stray space.</span>
     </div>
     <div class="banner warn">
-      <span>&#128190;&nbsp;<b>Your work autosaves to this browser</b> (nothing leaves your machine). Use <b>New Session</b> in the header to wipe the saved data and start fresh from the sample dataset.</span>
+      <span>&#128190;&nbsp;<b>Your work autosaves to this browser's local database</b> (nothing leaves your machine), with no built-in row limit. Use <b>Export Backup</b> for a portable copy, or <b>Clear All Data</b> in the header to permanently wipe everything and start from empty.</span>
     </div>
-    <section class="stats">
+    <div class="dup-banner" id="dupBanner" style="display:none;">
+      <span id="dupBannerText"></span>
+      <button type="button" class="ghost" id="dupBannerBtn" style="margin-left:auto;">View Duplicates</button>
+    </div>
+    <section class="stats" id="emptyStateWrap" style="display:none;">
+      <div class="empty-state" style="grid-column:1/-1;">
+        <h3>No data yet</h3>
+        <p>Import your real MasterList and Roster exports, add records by hand, restore a JSON backup, or load the generated sample dataset to see every feature in action.</p>
+        <div class="es-actions">
+          <button type="button" class="primary" id="emptyImportBtn">Import CSV</button>
+          <button type="button" class="ghost" id="emptySampleBtn">Load Sample Data</button>
+        </div>
+      </div>
+    </section>
+    <section class="stats" id="statsGrid">
       <div class="stat-card total" data-statfilter="all"><div class="num" id="statTotal">&mdash;</div><div class="lbl">Total Records</div></div>
       <div class="stat-card aligned" data-statfilter="Aligned"><div class="num" id="statAligned">&mdash;</div><div class="lbl">Aligned</div></div>
       <div class="stat-card misaligned" data-statfilter="Misaligned"><div class="num" id="statMisaligned">&mdash;</div><div class="lbl">Misaligned</div></div>
