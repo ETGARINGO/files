@@ -217,6 +217,11 @@
 
   .schema-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
 
+  .exp-two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .exp-lists{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .exp-lists .ignore-list{max-height:260px;overflow-y:auto;}
+  .exp-format-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+
   /* ============ RESPONSIVE / MOBILE AUTO-FIT ============ */
   @media (max-width:900px){
     .stats{grid-template-columns:repeat(2,1fr);}
@@ -232,6 +237,7 @@
     .modal{padding:16px 14px;}
     .modal-actions{flex-direction:column-reverse;}
     .modal-actions button{width:100%;}
+    .exp-two-col, .exp-lists{grid-template-columns:1fr;}
   }
   /* Card layout for data tables on narrow phones */
   @media (max-width:620px){
@@ -273,6 +279,7 @@
       <button class="ghost" id="downloadErrorsBtn" title="Download every Misaligned / Not Found row as CSV">Errors CSV</button>
       <button class="ghost" id="downloadRosterBtn">Working CSV</button>
       <button class="ghost" id="importCsvBtn">Import CSV</button>
+      <button class="ghost" id="exportBuilderBtn" title="Choose columns, arrange the row sequence, pick a print style, and export as Print/PDF, Word, or Excel">&#9638; Export Builder</button>
       <button class="ghost" id="backupBtn" title="Download a full JSON backup: records, schema, audit log, settings">Export Backup</button>
       <button class="ghost" id="restoreBtn" title="Restore all data from a previously exported JSON backup (replaces current data)">Restore Backup</button>
       <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none;">
@@ -371,6 +378,7 @@
       <button type="button" id="bulkFixBtn">Auto-Correct Selected</button>
       <button type="button" id="bulkPromoteBtn">Promote Selected</button>
       <button type="button" id="bulkExportBtn">Export Selected</button>
+      <button type="button" id="bulkBuildExportBtn">Build Export&hellip;</button>
       <button type="button" id="bulkDeleteBtn">Delete Selected</button>
       <span class="bulk-spacer"></span>
       <button type="button" id="bulkSelectAllFilteredBtn">Select all matching filter</button>
@@ -415,7 +423,7 @@
       </table>
     </div>
     <div class="pager" id="auditPager"></div>
-    <footer>Every correction, undo, redo, settings change, import, add, edit, delete, merge, and promote action is recorded here.</footer>
+    <footer>Every correction, undo, redo, settings change, import, add, edit, delete, merge, promote, and export action is recorded here.</footer>
   </div>
 
   <!-- ================= INSTRUCTIONS ================= -->
@@ -525,6 +533,78 @@
     <div class="modal-actions">
       <button type="button" class="ghost" id="cmpCloseBtn">Close</button>
       <button type="button" class="primary" id="cmpFixAllBtn">Auto-Correct This Row</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== EXPORT BUILDER MODAL ===================== -->
+<div class="modal-backdrop" id="exportBackdrop">
+  <div class="modal wide">
+    <h2>Export Builder</h2>
+    <p class="modal-sub">Pick which rows and columns go out, put them in the exact sequence you want, choose a print style, then generate a ready-to-share Print/PDF, Word, or Excel file.</p>
+
+    <div class="field-row">
+      <label>Data Source</label>
+      <select id="expSourceSelect">
+        <option value="selected">Selected rows (from Working Data)</option>
+        <option value="filtered">Rows matching current filters</option>
+        <option value="all">All Working Data</option>
+      </select>
+      <p class="hint-note">Switching source refreshes the row sequence below, defaulting to the current order &mdash; drag rows or use &uarr;/&darr; afterward to rearrange.</p>
+    </div>
+
+    <div class="exp-lists">
+      <div class="field-row" style="margin-bottom:0;">
+        <label>Columns (check to include &middot; &uarr;/&darr; to reorder)</label>
+        <div class="ignore-list" id="expColumnList"></div>
+      </div>
+      <div class="field-row" style="margin-bottom:0;">
+        <label>Row Sequence (drag to reorder &middot; &uarr;/&darr; also works)</label>
+        <div class="ignore-list" id="expRowList"></div>
+      </div>
+    </div>
+
+    <div class="field-row exp-two-col" style="margin-top:12px;">
+      <div>
+        <label>Document / Sheet Title</label>
+        <input id="expTitle" value="Data Export">
+      </div>
+      <div>
+        <label>Orientation</label>
+        <select id="expOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select>
+      </div>
+    </div>
+    <div class="field-row exp-two-col">
+      <div>
+        <label>Table Style</label>
+        <select id="expTableStyle">
+          <option value="bordered">Bordered</option>
+          <option value="striped">Striped rows</option>
+          <option value="compact">Compact</option>
+        </select>
+      </div>
+      <div>
+        <label>Font Size</label>
+        <select id="expFontSize">
+          <option value="small">Small</option>
+          <option value="medium" selected>Medium</option>
+          <option value="large">Large</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <label style="display:flex;align-items:center;gap:6px;text-transform:none;font-weight:600;color:var(--ink);"><input type="checkbox" id="expIncludeStatus" checked> Color-code rows by Verification Status (Aligned / Misaligned / Not Found)</label>
+    </div>
+
+    <p class="hint-note" id="expSummary">&nbsp;</p>
+
+    <div class="modal-actions">
+      <button type="button" class="ghost" id="expCancelBtn">Close</button>
+      <span class="exp-format-row">
+        <button type="button" class="ghost" id="expPdfBtn" title="Opens a print-ready view — choose &quot;Save as PDF&quot; in the print dialog">Print / PDF</button>
+        <button type="button" class="ghost" id="expWordBtn" title="Downloads a .doc file that opens in Microsoft Word / Google Docs">Word (.doc)</button>
+        <button type="button" class="primary" id="expExcelBtn" title="Downloads a spreadsheet that opens in Excel / Google Sheets">Excel (.xls)</button>
+      </span>
     </div>
   </div>
 </div>
@@ -733,9 +813,10 @@ var els = {};
  "csvBackdrop","csvTargetSelect","csvTargetHint","csvFileInput","csvTextarea","csvPreview","csvMappingPreview","csvCancelBtn","csvImportBtn","csvKeyRow","csvKeySelect",
  "mergeBackdrop","mergeModalSub","mergeList","mergeCloseBtn",
  "cmpBackdrop","cmpModalSub","cmpBody","cmpCloseBtn","cmpFixAllBtn",
- "toast", "bulkBar", "bulkCount", "bulkFixBtn","bulkPromoteBtn","bulkExportBtn","bulkDeleteBtn","bulkSelectAllFilteredBtn","bulkClearBtn",
+ "toast", "bulkBar", "bulkCount", "bulkFixBtn","bulkPromoteBtn","bulkExportBtn","bulkBuildExportBtn","bulkDeleteBtn","bulkSelectAllFilteredBtn","bulkClearBtn",
  "emptyStateWrap","statsGrid","barsStatusDist","barsFieldChart","barsUnitChart","emptyImportBtn","emptySampleBtn",
- "dupBanner","dupBannerText","dupBannerBtn","dupMergeBtn","dupChip"
+ "dupBanner","dupBannerText","dupBannerBtn","dupMergeBtn","dupChip",
+ "exportBuilderBtn","exportBackdrop","expSourceSelect","expColumnList","expRowList","expTitle","expOrientation","expTableStyle","expFontSize","expIncludeStatus","expSummary","expCancelBtn","expPdfBtn","expWordBtn","expExcelBtn"
 ].forEach(function(id){ els[id] = document.getElementById(id); });
 
 function showToast(msg, isErr){
@@ -2023,6 +2104,255 @@ els.cmpFixAllBtn.addEventListener("click", function(){
 });
 
 // =================================================================
+// EXPORT BUILDER — pick rows + columns, arrange sequence, choose print
+// style, then generate Print/PDF, Word (.doc), or Excel (.xls)
+// =================================================================
+var exportBuilderState = { columns: [], rows: [] };
+
+function exportAllColumnDefs(){
+  var defs = [{key:"__nr", label:"Nr"}];
+  state.schema.forEach(function(f){ defs.push({key:f.key, label:f.label}); });
+  defs.push({key:"__status", label:"Status"});
+  defs.push({key:"__confidence", label:"Match Confidence"});
+  return defs;
+}
+function exportRowValue(r, colKey){
+  if (colKey === "__nr") return r.nr;
+  if (colKey === "__status"){ var res=state.results.get(r.id); return res ? (res.status==="Key Not Found in Master"?"Not Found":res.status) : ""; }
+  if (colKey === "__confidence"){ var res2=state.results.get(r.id); return (res2 && res2.status!=="Key Not Found in Master") ? Math.round(res2.confidence*100)+"%" : ""; }
+  return r[colKey];
+}
+function sourceRowsFor(source){
+  if (source === "selected") return state.roster.filter(function(r){ return state.selectedRosterIds.has(r.id); });
+  if (source === "filtered") return filteredRoster();
+  return state.roster.slice();
+}
+function openExportBuilder(){
+  if (!state.schema.length){ showToast("Import a CSV first to define fields.", true); return; }
+  var hasSelected = state.selectedRosterIds.size > 0;
+  els.expSourceSelect.value = hasSelected ? "selected" : "filtered";
+  exportBuilderState.columns = exportAllColumnDefs().map(function(c){ return {key:c.key, label:c.label, on:true}; });
+  refreshExportRows();
+  renderExportColumnList();
+  renderExportRowList();
+  updateExportSummary();
+  els.exportBackdrop.classList.add("show");
+}
+function refreshExportRows(){
+  var rows = sourceRowsFor(els.expSourceSelect.value);
+  exportBuilderState.rows = rows.map(function(r){ return r.id; });
+}
+function renderExportColumnList(){
+  var list = els.expColumnList;
+  if (!exportBuilderState.columns.length){
+    list.innerHTML = '<p class="hint-note" style="padding:8px;">No fields yet.</p>'; return;
+  }
+  list.innerHTML = exportBuilderState.columns.map(function(c, i){
+    return '<div class="ignore-row">'+
+      '<input type="checkbox" data-colchk="'+i+'"'+(c.on?" checked":"")+'>'+
+      '<span class="ir-label">'+esc(c.label)+'</span>'+
+      '<button type="button" class="small ghost" data-colup="'+i+'" '+(i===0?"disabled":"")+' style="margin:0 2px;">&uarr;</button>'+
+      '<button type="button" class="small ghost" data-coldown="'+i+'" '+(i===exportBuilderState.columns.length-1?"disabled":"")+' style="margin:0;">&darr;</button>'+
+    '</div>';
+  }).join("");
+  list.querySelectorAll("[data-colchk]").forEach(function(cb){
+    cb.addEventListener("change", function(){
+      var i = parseInt(cb.getAttribute("data-colchk"),10);
+      exportBuilderState.columns[i].on = cb.checked;
+      updateExportSummary();
+    });
+  });
+  list.querySelectorAll("[data-colup]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var i = parseInt(btn.getAttribute("data-colup"),10);
+      var arr = exportBuilderState.columns, t=arr[i]; arr[i]=arr[i-1]; arr[i-1]=t;
+      renderExportColumnList(); updateExportSummary();
+    });
+  });
+  list.querySelectorAll("[data-coldown]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var i = parseInt(btn.getAttribute("data-coldown"),10);
+      var arr = exportBuilderState.columns, t=arr[i]; arr[i]=arr[i+1]; arr[i+1]=t;
+      renderExportColumnList(); updateExportSummary();
+    });
+  });
+}
+function renderExportRowList(){
+  var list = els.expRowList;
+  var byId = new Map(state.roster.map(function(r){ return [r.id, r]; }));
+  if (!exportBuilderState.rows.length){
+    list.innerHTML = '<p class="hint-note" style="padding:8px;">No rows in this source. Pick a different Data Source, or select rows in Working Data first.</p>';
+    return;
+  }
+  list.innerHTML = exportBuilderState.rows.map(function(id, i){
+    var r = byId.get(id);
+    if (!r) return "";
+    var res = state.results.get(id);
+    var preview = state.schema.slice(0,2).map(function(f){ return r[f.key]; }).filter(Boolean).join(" \u00b7 ");
+    return '<div class="ignore-row" draggable="true" data-rowid="'+esc(id)+'" style="cursor:grab;">'+
+      '<span class="ir-sub mono">'+(i+1)+'.</span>'+
+      '<span class="ir-label">Nr '+esc(r.nr)+' \u2014 '+esc(preview||"(no data)")+'</span>'+
+      '<span class="stamp '+stampClass(res?res.status:"")+'" style="margin-right:2px;">'+esc(res?(res.status==="Key Not Found in Master"?"Not Found":res.status):"")+'</span>'+
+      '<button type="button" class="small ghost" data-rowup="'+i+'" '+(i===0?"disabled":"")+' style="margin:0 2px;">&uarr;</button>'+
+      '<button type="button" class="small ghost" data-rowdown="'+i+'" '+(i===exportBuilderState.rows.length-1?"disabled":"")+' style="margin:0;">&darr;</button>'+
+    '</div>';
+  }).join("");
+  list.querySelectorAll("[data-rowup]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var i = parseInt(btn.getAttribute("data-rowup"),10);
+      var arr = exportBuilderState.rows, t=arr[i]; arr[i]=arr[i-1]; arr[i-1]=t;
+      renderExportRowList(); updateExportSummary();
+    });
+  });
+  list.querySelectorAll("[data-rowdown]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var i = parseInt(btn.getAttribute("data-rowdown"),10);
+      var arr = exportBuilderState.rows, t=arr[i]; arr[i]=arr[i+1]; arr[i+1]=t;
+      renderExportRowList(); updateExportSummary();
+    });
+  });
+  var dragSrc = null;
+  list.querySelectorAll("[draggable]").forEach(function(row){
+    row.addEventListener("dragstart", function(){ dragSrc = row.getAttribute("data-rowid"); row.style.opacity=".4"; });
+    row.addEventListener("dragend", function(){ row.style.opacity="1"; });
+    row.addEventListener("dragover", function(e){ e.preventDefault(); });
+    row.addEventListener("drop", function(e){
+      e.preventDefault();
+      var targetId = row.getAttribute("data-rowid");
+      if (!dragSrc || dragSrc===targetId) return;
+      var arr = exportBuilderState.rows;
+      var from = arr.indexOf(dragSrc), to = arr.indexOf(targetId);
+      if (from===-1 || to===-1) return;
+      arr.splice(from,1); arr.splice(to,0,dragSrc);
+      renderExportRowList(); updateExportSummary();
+    });
+  });
+}
+function updateExportSummary(){
+  var cols = exportBuilderState.columns.filter(function(c){ return c.on; });
+  els.expSummary.textContent =
+    exportBuilderState.rows.length.toLocaleString()+" row(s) \u00b7 "+cols.length+" column(s) selected, in the order shown \u00b7 rows will export in the sequence shown above.";
+}
+function exportSelectionData(){
+  var cols = exportBuilderState.columns.filter(function(c){ return c.on; });
+  var byId = new Map(state.roster.map(function(r){ return [r.id, r]; }));
+  var rows = exportBuilderState.rows.map(function(id){ return byId.get(id); }).filter(Boolean);
+  return { cols: cols, rows: rows };
+}
+function xmlEsc(v){ return esc(v===null||v===undefined?"":String(v)); }
+function readExportOptions(){
+  return {
+    title: els.expTitle.value || "Data Export",
+    orientation: els.expOrientation.value,
+    tblStyle: els.expTableStyle.value,
+    fontSize: els.expFontSize.value,
+    includeStatusColor: els.expIncludeStatus.checked
+  };
+}
+function buildExportBodyHtml(d, opts){
+  var cellPad = opts.tblStyle==="compact" ? "4px 6px" : "8px 10px";
+  var borderRule = opts.tblStyle==="bordered" ? "border:1px solid #999;" : "border-bottom:1px solid #ccc;";
+  var headHtml = d.cols.map(function(c){ return '<th style="text-align:left;'+borderRule+'padding:'+cellPad+';background:#eee;">'+xmlEsc(c.label)+'</th>'; }).join("");
+  var bodyHtml = d.rows.map(function(r){
+    var res = state.results.get(r.id);
+    var rowColor = "";
+    if (opts.includeStatusColor && res){
+      if (res.status==="Aligned") rowColor="background:#e1f0e7;";
+      else if (res.status==="Misaligned") rowColor="background:#fbe6e3;";
+      else if (res.status==="Key Not Found in Master") rowColor="background:#fbebd4;";
+    }
+    var cells = d.cols.map(function(c){ return '<td style="'+borderRule+'padding:'+cellPad+';">'+xmlEsc(exportRowValue(r,c.key))+'</td>'; }).join("");
+    return '<tr style="'+rowColor+'">'+cells+'</tr>';
+  }).join("");
+  var stripeCss = opts.tblStyle==="striped" ? "tbody tr:nth-child(even){background:#f3f3f3;}" : "";
+  return { headHtml: headHtml, bodyHtml: bodyHtml, stripeCss: stripeCss };
+}
+function generateExportPdf(){
+  var d = exportSelectionData();
+  if (!d.rows.length || !d.cols.length){ showToast("Choose at least one row and one column first.", true); return; }
+  var opts = readExportOptions();
+  var parts = buildExportBodyHtml(d, opts);
+  var fontPx = opts.fontSize==="small"?"11px":opts.fontSize==="large"?"15px":"13px";
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(opts.title)+'</title><style>'+
+    '@page{size:'+(opts.orientation==="landscape"?"landscape":"portrait")+';margin:16mm;}'+
+    'body{font-family:Arial,Helvetica,sans-serif;font-size:'+fontPx+';color:#1B2A2F;}'+
+    'h1{font-size:18px;margin-bottom:4px;} .meta{color:#666;font-size:11px;margin-bottom:14px;}'+
+    'table{width:100%;border-collapse:collapse;} thead{display:table-header-group;} '+parts.stripeCss+
+    '</style></head><body>'+
+    '<h1>'+esc(opts.title)+'</h1><div class="meta">'+d.rows.length+' row(s) \u00b7 generated '+new Date().toLocaleString()+'</div>'+
+    '<table><thead><tr>'+parts.headHtml+'</tr></thead><tbody>'+parts.bodyHtml+'</tbody></table>'+
+    '</body></html>';
+  var win = window.open("", "_blank");
+  if (!win){ showToast("Pop-up blocked \u2014 allow pop-ups to print or export as PDF.", true); return; }
+  win.document.open(); win.document.write(html); win.document.close();
+  logAudit("Export Builder \u2014 Print/PDF", d.rows.length+" row(s), "+d.cols.length+" column(s) sent to print", d.rows.length);
+  setTimeout(function(){ win.focus(); win.print(); }, 300);
+}
+function generateExportWord(){
+  var d = exportSelectionData();
+  if (!d.rows.length || !d.cols.length){ showToast("Choose at least one row and one column first.", true); return; }
+  var opts = readExportOptions();
+  var parts = buildExportBodyHtml(d, opts);
+  var fontPx = opts.fontSize==="small"?"11px":opts.fontSize==="large"?"15px":"13px";
+  var pageSize = opts.orientation==="landscape" ? "29.7cm 21cm" : "21cm 29.7cm";
+  var doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'+
+    '<head><meta charset="utf-8"><title>'+esc(opts.title)+'</title>'+
+    '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->'+
+    '<style>@page Section1{size:'+pageSize+';margin:2cm;} div.Section1{page:Section1;} '+
+    'body{font-family:Arial,Helvetica,sans-serif;font-size:'+fontPx+';} table{width:100%;border-collapse:collapse;} '+parts.stripeCss+'</style>'+
+    '</head><body><div class="Section1">'+
+    '<h1 style="font-size:18px;">'+esc(opts.title)+'</h1><div style="color:#666;font-size:11px;margin-bottom:14px;">'+d.rows.length+' row(s) \u00b7 generated '+new Date().toLocaleString()+'</div>'+
+    '<table><thead><tr>'+parts.headHtml+'</tr></thead><tbody>'+parts.bodyHtml+'</tbody></table>'+
+    '</div></body></html>';
+  var blob = new Blob(['\ufeff', doc], {type:"application/msword"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a"); a.href=url; a.download = (opts.title.replace(/[^a-z0-9\-_ ]/gi,"")||"export")+".doc";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  logAudit("Export Builder \u2014 Word", d.rows.length+" row(s), "+d.cols.length+" column(s) exported to Word", d.rows.length);
+  showToast("Word document downloaded ("+d.rows.length.toLocaleString()+" row(s)).");
+}
+function generateExportExcel(){
+  var d = exportSelectionData();
+  if (!d.rows.length || !d.cols.length){ showToast("Choose at least one row and one column first.", true); return; }
+  var opts = readExportOptions();
+  var headCells = d.cols.map(function(c){ return '<Cell ss:StyleID="Header"><Data ss:Type="String">'+xmlEsc(c.label)+'</Data></Cell>'; }).join("");
+  var bodyRows = d.rows.map(function(r){
+    var res = state.results.get(r.id);
+    var styleAttr = "";
+    if (opts.includeStatusColor && res){
+      if (res.status==="Aligned") styleAttr=' ss:StyleID="RowOK"';
+      else if (res.status==="Misaligned") styleAttr=' ss:StyleID="RowBad"';
+      else if (res.status==="Key Not Found in Master") styleAttr=' ss:StyleID="RowWarn"';
+    }
+    var cells = d.cols.map(function(c){
+      var v = exportRowValue(r, c.key);
+      var isNum = typeof v === "number";
+      return '<Cell'+styleAttr+'><Data ss:Type="'+(isNum?"Number":"String")+'">'+xmlEsc(v)+'</Data></Cell>';
+    }).join("");
+    return '<Row>' + cells + '</Row>';
+  }).join("");
+  var xml = '<?xml version="1.0"?>\n<?mso-application progid="Excel.Sheet"?>\n' +
+    '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+    '<Styles>'+
+      '<Style ss:ID="Header"><Font ss:Bold="1"/><Interior ss:Color="#DBE1DC" ss:Pattern="Solid"/></Style>'+
+      '<Style ss:ID="RowOK"><Interior ss:Color="#E1F0E7" ss:Pattern="Solid"/></Style>'+
+      '<Style ss:ID="RowBad"><Interior ss:Color="#FBE6E3" ss:Pattern="Solid"/></Style>'+
+      '<Style ss:ID="RowWarn"><Interior ss:Color="#FBEBD4" ss:Pattern="Solid"/></Style>'+
+    '</Styles>' +
+    '<Worksheet ss:Name="'+xmlEsc((opts.title||"Export").slice(0,30))+'"><Table>' +
+    '<Row>'+headCells+'</Row>' + bodyRows +
+    '</Table></Worksheet></Workbook>';
+  var blob = new Blob([xml], {type:"application/vnd.ms-excel"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a"); a.href=url; a.download = (opts.title.replace(/[^a-z0-9\-_ ]/gi,"")||"export")+".xls";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  logAudit("Export Builder \u2014 Excel", d.rows.length+" row(s), "+d.cols.length+" column(s) exported to Excel", d.rows.length);
+  showToast("Excel file downloaded ("+d.rows.length.toLocaleString()+" row(s)).");
+}
+
+// =================================================================
 // RENDER: Instructions
 // =================================================================
 function renderInstructions(){
@@ -2050,7 +2380,18 @@ function renderInstructions(){
     '<p>Adding or editing a Working Data record shows a Live Check panel that updates as you type, comparing your in-progress entry against the matching Master File record. Editing a Master File record instead checks the Key for duplicates, since the Master File must have exactly one record per key.</p>'+
 
     '<h2>Bulk actions</h2>'+
-    '<p>Tick rows (or the header checkbox) to open a bulk bar: <b>Auto-Correct Selected</b>, <b>Promote Selected</b> (for eligible Not Found rows), <b>Export Selected</b>, and <b>Delete Selected</b>. <b>Select all matching filter</b> extends the selection to every row matching your current filters, even off-page.</p>'+
+    '<p>Tick rows (or the header checkbox) to open a bulk bar: <b>Auto-Correct Selected</b>, <b>Promote Selected</b> (for eligible Not Found rows), <b>Export Selected</b> (quick CSV), <b>Build Export&hellip;</b> (opens the full Export Builder below), and <b>Delete Selected</b>. <b>Select all matching filter</b> extends the selection to every row matching your current filters, even off-page.</p>'+
+
+    '<h2>Export Builder &mdash; sequence, columns, print style, and file format</h2>'+
+    '<p>Open it from the header (<b>Export Builder</b>) or from the bulk bar (<b>Build Export&hellip;</b>). It lets you:</p>'+
+    '<ul>'+
+      '<li>Choose a <b>Data Source</b> &mdash; the rows currently selected, everything matching your active filters, or all Working Data.</li>'+
+      '<li>Tick which <b>columns</b> to include and reorder them with &uarr;/&darr; &mdash; this is the exact column order in the finished file.</li>'+
+      '<li>Arrange the <b>row sequence</b> by dragging rows or using &uarr;/&darr; &mdash; the concatenated output follows this order top to bottom.</li>'+
+      '<li>Set a <b>title</b>, <b>orientation</b> (portrait/landscape), <b>table style</b> (bordered, striped, or compact), <b>font size</b>, and whether rows are color-coded by Verification Status.</li>'+
+      '<li>Generate the result as <b>Print / PDF</b> (opens a print-ready view &mdash; choose "Save as PDF" in your browser\u2019s print dialog), <b>Word (.doc)</b> (opens directly in Microsoft Word or Google Docs), or <b>Excel (.xls)</b> (opens directly in Excel or Google Sheets, with the same status color-coding carried over as cell shading).</li>'+
+    '</ul>'+
+    '<p>All three formats use the same column order, row sequence, and print style you set up &mdash; so what you arrange is exactly what gets exported.</p>'+
 
     '<h2>Merge Duplicate Keys</h2>'+
     '<p>When the same Key value appears more than once in Working Data, a Dashboard banner appears. <b>Merge Duplicates&hellip;</b> lets you pick which single row to keep per group; the rest are deleted in one click.</p>'+
@@ -2059,7 +2400,8 @@ function renderInstructions(){
     '<ul>'+
       '<li><b>Auto-Correct All</b> &mdash; fixes every Misaligned row in one action, using the Master File\u2019s exact values. Undo-safe.</li>'+
       '<li><b>Undo / Redo</b> &mdash; unlimited history. <span class="kbd">Ctrl/Cmd+Z</span> / <span class="kbd">Ctrl/Cmd+Shift+Z</span>.</li>'+
-      '<li><b>Errors CSV / Working CSV / Export Filtered / Export Master CSV</b> &mdash; export at whichever scope you need, including Match Confidence and status.</li>'+
+      '<li><b>Errors CSV / Working CSV / Export Filtered / Export Master CSV</b> &mdash; quick exports at whichever scope you need, including Match Confidence and status.</li>'+
+      '<li><b>Export Builder</b> &mdash; the full custom export described above, for Print/PDF, Word, or Excel with your own column and row arrangement.</li>'+
       '<li><b>Import CSV</b> &mdash; bulk-add or update either file, with the column mapping preview described above.</li>'+
       '<li><b>Export Backup / Restore Backup</b> &mdash; a full JSON snapshot including the schema, key field, and settings &mdash; portable across browsers/devices.</li>'+
       '<li><b>Promote</b> &mdash; inserts a Not Found row into the Master File as a new reference record.</li>'+
@@ -2315,6 +2657,7 @@ els.bulkExportBtn.addEventListener("click", function(){
   logAudit("Export Selected CSV", list.length+" selected row(s) exported", list.length);
   showToast("Downloaded "+list.length.toLocaleString()+" selected row(s).");
 });
+els.bulkBuildExportBtn.addEventListener("click", openExportBuilder);
 els.bulkDeleteBtn.addEventListener("click", deleteSelected);
 els.bulkSelectAllFilteredBtn.addEventListener("click", function(){
   var all = filteredRoster();
@@ -2342,6 +2685,15 @@ els.newSessionBtn.addEventListener("click", function(){
   renderAll();
 });
 
+// Export Builder wiring
+els.exportBuilderBtn.addEventListener("click", openExportBuilder);
+els.expCancelBtn.addEventListener("click", function(){ els.exportBackdrop.classList.remove("show"); });
+els.exportBackdrop.addEventListener("click", function(e){ if (e.target===els.exportBackdrop) els.exportBackdrop.classList.remove("show"); });
+els.expSourceSelect.addEventListener("change", function(){ refreshExportRows(); renderExportRowList(); updateExportSummary(); });
+els.expPdfBtn.addEventListener("click", generateExportPdf);
+els.expWordBtn.addEventListener("click", generateExportWord);
+els.expExcelBtn.addEventListener("click", generateExportExcel);
+
 document.addEventListener("keydown", function(e){
   var tag = document.activeElement ? document.activeElement.tagName : "";
   var typing = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
@@ -2351,7 +2703,7 @@ document.addEventListener("keydown", function(e){
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase()==="z" && !typing){ e.preventDefault(); undoLast(); }
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase()==="z" && !typing){ e.preventDefault(); redoLast(); }
   if (e.key === "Escape"){
-    [els.modalBackdrop, els.settingsBackdrop, els.undoBackdrop, els.csvBackdrop, els.mergeBackdrop, els.cmpBackdrop].forEach(function(m){ m.classList.remove("show"); });
+    [els.modalBackdrop, els.settingsBackdrop, els.undoBackdrop, els.csvBackdrop, els.mergeBackdrop, els.cmpBackdrop, els.exportBackdrop].forEach(function(m){ m.classList.remove("show"); });
   }
 });
 
