@@ -106,6 +106,7 @@
   tbody tr.is-dup td:first-child{box-shadow:inset 3px 0 0 var(--warn);}
   .mono{font-family:'Courier New',monospace;}
   .cell-diff{color:var(--bad);}
+  .cell-excluded{opacity:.45;}
   .diff-list{margin-top:3px;font-size:11px;line-height:1.8;}
   .diff-list .diff-row{display:flex;flex-wrap:wrap;gap:5px;align-items:baseline;margin-bottom:2px;}
   .diff-list .diff-row .field{color:var(--ink-soft);white-space:nowrap;font-weight:700;}
@@ -177,6 +178,7 @@
   .ignore-row .ir-label input:hover, .ignore-row .ir-label input:focus{border-color:var(--hairline);background:var(--surface);}
   .ignore-row .ir-sub{color:var(--ink-soft);font-size:10.5px;font-family:'Courier New',monospace;white-space:nowrap;}
   .keypill{font-family:'Courier New',monospace;font-size:9.5px;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:10px;border:1px solid var(--accent);color:var(--accent);}
+  .autopill{font-family:'Courier New',monospace;font-size:9.5px;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:10px;border:1px solid var(--warn);color:var(--warn);}
 
   .undo-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;}
   .undo-item{border:1.5px solid var(--hairline);border-radius:8px;padding:9px 11px;font-size:12px;}
@@ -208,12 +210,15 @@
   #csvMappingPreview table{border-collapse:collapse;width:100%;}
   #csvMappingPreview td{border-bottom:1px solid var(--hairline);padding:6px;font-size:12px;}
   #csvMappingPreview select{font-size:11.5px;padding:6px 7px;}
+  #csvMappingPreview .map-auto{color:var(--ok);font-weight:800;font-size:10px;text-transform:uppercase;font-family:'Courier New',monospace;}
+  #csvMappingPreview .map-new{color:var(--warn);font-weight:800;font-size:10px;text-transform:uppercase;font-family:'Courier New',monospace;}
 
   .cmp-table{width:100%;border-collapse:collapse;margin-top:10px;}
   .cmp-table th{background:var(--thead-bg);text-align:left;font-size:10.5px;text-transform:uppercase;padding:7px 8px;border-bottom:1.5px solid var(--hairline);}
   .cmp-table td{padding:8px;border-bottom:1px solid var(--hairline);font-size:12.5px;vertical-align:top;}
   .cmp-table tr.cmp-mismatch td{background:var(--bad-soft);}
   .cmp-table tr.cmp-key td{background:var(--accent-soft);}
+  .cmp-table tr.cmp-excluded td{opacity:.5;}
 
   .schema-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
 
@@ -303,7 +308,7 @@
   <!-- ================= DASHBOARD ================= -->
   <div class="tab-panel active" id="tab-dashboard">
     <div class="banner info">
-      <span>&#10003;&nbsp;<b>Spacing-safe comparison is on.</b> Extra or doubled spaces never by themselves cause a Misaligned flag. When a field IS corrected, it's written back exactly as the Master File has it &mdash; same spacing, casing and punctuation &mdash; for whichever fields your schema defines.</span>
+      <span>&#10003;&nbsp;<b>Spacing-safe comparison is on, and the checked field set is auto-detected.</b> Extra or doubled spaces never by themselves cause a Misaligned flag. Whichever headers actually carry data in <b>both</b> the Master File and Working Data are compared automatically &mdash; fields that only exist on one side never falsely flag as mismatched. When a field IS corrected, it's written back exactly as the Master File has it &mdash; same spacing, casing and punctuation.</span>
     </div>
     <div class="banner warn">
       <span>&#128190;&nbsp;<b>Your work autosaves to this browser's local database</b> (nothing leaves your machine). Use <b>Export Backup</b> for a portable copy, or <b>Clear All</b> in the header to wipe everything and start from empty.</span>
@@ -315,10 +320,13 @@
         <button type="button" class="ghost" id="dupMergeBtn">Merge Duplicates&hellip;</button>
       </span>
     </div>
+    <div class="banner info" id="autoExcludeBanner" style="display:none;">
+      <span id="autoExcludeBannerText"></span>
+    </div>
     <section class="stats" id="emptyStateWrap" style="display:none;">
       <div class="empty-state" style="grid-column:1/-1;">
         <h3>No data yet</h3>
-        <p>Import <b>any</b> Master File and Working File CSV export &mdash; column headers are detected automatically and become the schema for this session &mdash; add records by hand, restore a JSON backup, or load generated sample data to see every feature in action.</p>
+        <p>Import <b>any</b> Master File and Working File CSV export &mdash; column headers are detected automatically and become the schema for this session, and the fields actually compared are auto-detected from whichever headers carry data on both sides &mdash; add records by hand, restore a JSON backup, or load generated sample data to see every feature in action.</p>
         <div class="es-actions">
           <button type="button" class="primary" id="emptyImportBtn">Import CSV</button>
           <button type="button" class="ghost" id="emptySampleBtn">Load Sample Data</button>
@@ -450,7 +458,7 @@
 <div class="modal-backdrop" id="settingsBackdrop">
   <div class="modal wide">
     <h2>Schema &amp; Settings</h2>
-    <p class="modal-sub">This session's fields, in order. Rename a field, mark the one Key/ID column used to match records, or exclude a field from the crosscheck. Changes apply to Working Data and Master File alike.</p>
+    <p class="modal-sub">This session's fields, in order. Rename a field, mark the one Key/ID column used to match records, or exclude a field from the crosscheck. Fields tagged <span class="autopill">auto</span> are already excluded automatically because they only carry data on one side. Changes apply to Working Data and Master File alike.</p>
     <div class="schema-toolbar">
       <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;"><input type="checkbox" id="caseInsensitiveChk"> Case-insensitive comparison</label>
       <button type="button" class="ghost small" id="addFieldBtn" style="margin:0;">+ Add Field</button>
@@ -797,7 +805,8 @@ var state = {
   page:{roster:1,master:1,audit:1}, pageSize:50,
   modal:{target:null,mode:null,id:null},
   unitChartField: null,
-  storageMode:"unknown"
+  storageMode:"unknown",
+  masterFieldsWithData: null, rosterFieldsWithData: null
 };
 
 var els = {};
@@ -816,6 +825,7 @@ var els = {};
  "toast", "bulkBar", "bulkCount", "bulkFixBtn","bulkPromoteBtn","bulkExportBtn","bulkBuildExportBtn","bulkDeleteBtn","bulkSelectAllFilteredBtn","bulkClearBtn",
  "emptyStateWrap","statsGrid","barsStatusDist","barsFieldChart","barsUnitChart","emptyImportBtn","emptySampleBtn",
  "dupBanner","dupBannerText","dupBannerBtn","dupMergeBtn","dupChip",
+ "autoExcludeBanner","autoExcludeBannerText",
  "exportBuilderBtn","exportBackdrop","expSourceSelect","expColumnList","expRowList","expTitle","expOrientation","expTableStyle","expFontSize","expIncludeStatus","expSummary","expCancelBtn","expPdfBtn","expWordBtn","expExcelBtn"
 ].forEach(function(id){ els[id] = document.getElementById(id); });
 
@@ -834,8 +844,56 @@ function logAudit(action, details, rowsAffected){
 }
 function fieldByKey(key){ return state.schema.find(function(f){ return f.key===key; }); }
 function fieldLabel(key){ var f=fieldByKey(key); return f ? f.label : key; }
+
+// -----------------------------------------------------------------
+// AUTO-DETECTED COMPARABLE FIELDS
+// Dynamically determines, for ANY schema built from ANY CSV headers,
+// which fields actually carry data on BOTH the Master File and the
+// Working Data. Fields with data on only one side (e.g. a column that
+// only ever appeared in one of the two imported files) are excluded
+// from the crosscheck automatically instead of falsely flagging every
+// row as Misaligned against a permanently-blank column.
+// -----------------------------------------------------------------
+function computeFieldsWithData(){
+  var masterHas = {}, rosterHas = {};
+  state.schema.forEach(function(f){ masterHas[f.key]=false; rosterHas[f.key]=false; });
+  var remaining = state.schema.length;
+  for (var i=0;i<state.master.length && remaining>0;i++){
+    var m = state.master[i];
+    state.schema.forEach(function(f){
+      if (!masterHas[f.key] && normVal(m[f.key])!==""){ masterHas[f.key]=true; }
+    });
+  }
+  for (var j=0;j<state.roster.length;j++){
+    var r = state.roster[j];
+    state.schema.forEach(function(f){
+      if (!rosterHas[f.key] && normVal(r[f.key])!==""){ rosterHas[f.key]=true; }
+    });
+  }
+  state.masterFieldsWithData = masterHas;
+  state.rosterFieldsWithData = rosterHas;
+}
+// A field is "comparable" (checked for mismatches) when it isn't the Key,
+// isn't manually ignored, AND has real data on both sides. This is fully
+// automatic and re-evaluates on every recompute, so it adapts live as you
+// import files with different headers or fill in previously-blank columns.
 function checkFields(){
-  return state.schema.filter(function(f){ return f.key!==state.keyField && !state.ignoredFields.has(f.key); });
+  return state.schema.filter(function(f){
+    if (f.key===state.keyField || state.ignoredFields.has(f.key)) return false;
+    var mOk = !state.masterFieldsWithData || state.masterFieldsWithData[f.key];
+    var rOk = !state.rosterFieldsWithData || state.rosterFieldsWithData[f.key];
+    return mOk && rOk;
+  });
+}
+// Fields present in the schema but auto-excluded from comparison because
+// they only have real data on one side (Master File or Working Data).
+function autoExcludedFields(){
+  return state.schema.filter(function(f){
+    if (f.key===state.keyField || state.ignoredFields.has(f.key)) return false;
+    var mOk = !state.masterFieldsWithData || state.masterFieldsWithData[f.key];
+    var rOk = !state.rosterFieldsWithData || state.rosterFieldsWithData[f.key];
+    return !(mOk && rOk);
+  });
 }
 function keyLabel(){ return state.keyField ? fieldLabel(state.keyField) : "Key"; }
 
@@ -978,6 +1036,7 @@ function computeDuplicateKeys(){
 }
 function recompute(){
   state.masterIndex = buildMasterIndex();
+  computeFieldsWithData();
   var results = new Map();
   var counts = {Aligned:0, Misaligned:0, "Key Not Found in Master":0};
   var fieldCounts = {}, confSum = 0, confN = 0;
@@ -1248,13 +1307,15 @@ function renderCsvMappingPreview(){
   if (!lines.length || !lines[0].length){ els.csvMappingPreview.innerHTML = ""; els.csvKeyRow.style.display="none"; return; }
   var header = lines[0];
   var auto = computeAutoMapping(header);
+  var matchedCount = auto.filter(function(k){ return k!==null; }).length;
   var rowsHtml = header.map(function(h,i){
-    return '<tr><td class="mono" style="font-size:11px;">'+esc(h||"(blank)")+'</td><td>'+buildMapSelect(i,h,auto[i])+'</td></tr>';
+    var tag = auto[i]!==null ? '<span class="map-auto">&#10003; auto-matched</span>' : '<span class="map-new">new field</span>';
+    return '<tr><td class="mono" style="font-size:11px;">'+esc(h||"(blank)")+' '+tag+'</td><td>'+buildMapSelect(i,h,auto[i])+'</td></tr>';
   }).join("");
   els.csvMappingPreview.innerHTML =
-    '<label style="margin-bottom:6px;">Detected Column Mapping</label>'+
+    '<label style="margin-bottom:6px;">Detected Column Mapping &mdash; '+matchedCount+' of '+header.length+' column(s) auto-matched by header name to this session\u2019s existing fields</label>'+
     '<table><thead><tr><th style="text-align:left;padding:4px 6px;font-size:10.5px;color:var(--ink-soft);">CSV Column</th><th style="text-align:left;padding:4px 6px;font-size:10.5px;color:var(--ink-soft);">Maps To</th></tr></thead><tbody>'+rowsHtml+'</tbody></table>'+
-    '<p class="hint-note">Unrecognized columns default to becoming new fields automatically. Override any column before importing.</p>';
+    '<p class="hint-note">Unrecognized columns default to becoming new fields automatically. Override any column before importing. After import, the Discrepancy checker automatically compares only the fields that end up with real data on both the Master File and Working Data &mdash; no manual setup required.</p>';
   els.csvMappingPreview.querySelectorAll("[data-mapcol]").forEach(function(sel){
     sel.addEventListener("change", function(){ csvColumnOverrides[sel.getAttribute("data-mapcol")] = sel.value; refreshCsvKeySelect(header); });
   });
@@ -1365,9 +1426,11 @@ function importCsvInto(target, text){
   if (!added && !updated) throw new Error("No valid data rows found (rows need a value in the "+keyLabel()+" column).");
   recompute();
   var schemaNote = addedFieldsThisImport.length ? " New field(s) added to schema: "+addedFieldsThisImport.map(fieldLabel).join(", ")+"." : "";
+  var excludedNow = autoExcludedFields();
+  var exclNote = excludedNow.length ? " "+excludedNow.length+" field(s) currently auto-excluded from the crosscheck (data only on one side): "+excludedNow.map(fieldLabel).join(", ")+"." : "";
   var detail = (target==="roster"
     ? added+" row(s) added to Working Data"+(skipped?", "+skipped+" row(s) skipped (missing "+keyLabel()+")":"")
-    : added+" new reference record(s) added, "+updated+" existing Master File record(s) updated"+(skipped?", "+skipped+" row(s) skipped (missing "+keyLabel()+")":"")) + schemaNote;
+    : added+" new reference record(s) added, "+updated+" existing Master File record(s) updated"+(skipped?", "+skipped+" row(s) skipped (missing "+keyLabel()+")":"")) + schemaNote + exclNote;
   logAudit("Import CSV", detail, added+updated);
   return { added:added, updated:updated, skipped:skipped };
 }
@@ -1402,7 +1465,7 @@ function computeLiveRosterCheck(){
   });
   if (!mismatches.length){
     box.className = "live-check ok";
-    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp aligned">Aligned</span></div><p class="hint-note">Matches the Master File original exactly (spacing-tolerant).</p>';
+    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp aligned">Aligned</span></div><p class="hint-note">Matches the Master File original exactly (spacing-tolerant, across '+checkFields().length+' auto-detected comparable field(s)).</p>';
   } else {
     box.className = "live-check bad";
     box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp misaligned">Misaligned</span></div>' +
@@ -1632,7 +1695,7 @@ function renderDashboard(){
   els.barsStatusDist.style.display = hasData ? "block" : "none";
   els.barsFieldChart.style.display = hasData ? "block" : "none";
   els.barsUnitChart.style.display = hasData ? "block" : "none";
-  if (!hasData){ els.dashFooter.textContent = "No data loaded yet."; renderDupBanner(); return; }
+  if (!hasData){ els.dashFooter.textContent = "No data loaded yet."; renderDupBanner(); renderAutoExcludeBanner(); return; }
 
   var c = state.counts, total = state.roster.length;
   els.statTotal.textContent = total.toLocaleString();
@@ -1690,9 +1753,10 @@ function renderDashboard(){
     }).join("");
   }
 
-  els.dashFooter.textContent = "Master File: " + state.master.length.toLocaleString() + " reference record(s) \u00b7 Working Data: " + total.toLocaleString() + " record(s) \u00b7 Checked fields: " +
+  els.dashFooter.textContent = "Master File: " + state.master.length.toLocaleString() + " reference record(s) \u00b7 Working Data: " + total.toLocaleString() + " record(s) \u00b7 Auto-detected checked fields: " +
     (checkFields().map(function(f){ return f.label; }).join(", ") || "none");
   renderDupBanner();
+  renderAutoExcludeBanner();
 }
 function renderDupBanner(){
   var n = state.dupKeys.size;
@@ -1700,6 +1764,15 @@ function renderDupBanner(){
   els.dupBanner.style.display="flex";
   els.dupChip.style.display="inline-block";
   els.dupBannerText.textContent = n.toLocaleString() + " duplicate " + keyLabel().toLowerCase() + " value" + (n===1?"":"s") + " found within Working Data \u2014 duplicates can cause ambiguous corrections. Review and merge or delete the extras.";
+}
+function renderAutoExcludeBanner(){
+  if (!els.autoExcludeBanner) return;
+  var excluded = autoExcludedFields();
+  if (!excluded.length){ els.autoExcludeBanner.style.display="none"; return; }
+  els.autoExcludeBanner.style.display="flex";
+  els.autoExcludeBannerText.innerHTML = '&#128269;&nbsp;<b>Auto-detected: '+excluded.length+' field(s) excluded from the crosscheck</b> because they only have data on one side (Master File or Working Data), not both \u2014 '+
+    excluded.map(function(f){ return esc(f.label); }).join(", ") +
+    '. This is fully automatic and updates as soon as both sides have data for a field \u2014 no setup needed, and it works the same way no matter what headers your files use.';
 }
 
 // =================================================================
@@ -1712,7 +1785,10 @@ function stampClass(status){
 }
 function buildRosterHead(){
   var cols = ['<th class="col-chk"><input type="checkbox" id="chkAllRoster" title="Select all rows on this page"></th>','<th class="col-nr" data-sort="nr">Nr<span class="sort-arrow"></span></th>'];
-  state.schema.forEach(function(f){ cols.push('<th data-sort="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?' <span class="keypill">Key</span>':'')+'<span class="sort-arrow"></span></th>'); });
+  var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
+  state.schema.forEach(function(f){
+    cols.push('<th data-sort="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?' <span class="keypill">Key</span>':'')+(excludedKeys[f.key]?' <span class="autopill" title="Auto-excluded: data only on one side">auto</span>':'')+'<span class="sort-arrow"></span></th>');
+  });
   cols.push('<th class="col-status" data-sort="status">Status<span class="sort-arrow"></span></th>');
   cols.push('<th class="col-conf">Match</th>');
   cols.push('<th>Discrepancy Detail</th>');
@@ -1721,7 +1797,10 @@ function buildRosterHead(){
 }
 function buildMasterHead(){
   var cols = [];
-  state.schema.forEach(function(f){ cols.push('<th data-sort="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?' <span class="keypill">Key</span>':'')+'<span class="sort-arrow"></span></th>'); });
+  var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
+  state.schema.forEach(function(f){
+    cols.push('<th data-sort="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?' <span class="keypill">Key</span>':'')+(excludedKeys[f.key]?' <span class="autopill" title="Auto-excluded: data only on one side">auto</span>':'')+'<span class="sort-arrow"></span></th>');
+  });
   cols.push('<th class="col-fix"></th>');
   els.masterHead.innerHTML = cols.join("");
 }
@@ -1773,6 +1852,7 @@ function renderRosterTable(){
   buildRosterHead();
   var pageInfo = currentRosterPage();
   var all = pageInfo.all, pageRows = pageInfo.pageRows, totalPages = pageInfo.totalPages;
+  var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
 
   if (!state.schema.length){
     els.rosterBody.innerHTML = '<tr><td style="text-align:center;padding:30px;color:var(--ink-soft);">Import a CSV to define this session\'s fields.</td></tr>';
@@ -1785,7 +1865,7 @@ function renderRosterTable(){
       var mismatchKeys = {};
       res.mismatches.forEach(function(m){ mismatchKeys[m.key]=true; });
       var fieldCells = state.schema.map(function(f){
-        return '<td data-label="'+esc(f.label)+'" class="'+(f.key===state.keyField?"mono":"")+' '+(mismatchKeys[f.key]?"cell-diff":"")+'">'+esc(r[f.key])+'</td>';
+        return '<td data-label="'+esc(f.label)+'" class="'+(f.key===state.keyField?"mono":"")+' '+(mismatchKeys[f.key]?"cell-diff":"")+' '+(excludedKeys[f.key]?"cell-excluded":"")+'">'+esc(r[f.key])+'</td>';
       }).join("");
       var diffHtml;
       if (res.status === "Misaligned"){
@@ -1797,7 +1877,7 @@ function renderRosterTable(){
       } else if (res.status === "Key Not Found in Master"){
         diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">No matching '+esc(keyLabel())+' in Master File</span>';
       } else {
-        diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">Matches Master File</span>';
+        diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">Matches Master File across '+checkFields().length+' auto-detected field(s)</span>';
       }
       if (isDup) diffHtml += '<div style="margin-top:4px;"><span class="stamp dup">Duplicate Key</span></div>';
       var confPct = res.status==="Key Not Found in Master" ? null : Math.round(res.confidence*100);
@@ -1845,9 +1925,12 @@ function renderRosterTable(){
   els.tabCountRoster.textContent = "(" + state.roster.length.toLocaleString() + ")";
 
   var subtitleParts = [state.roster.length.toLocaleString()+" working record(s)", state.master.length.toLocaleString()+" Master File record(s)"];
+  var autoExcl = autoExcludedFields();
   els.subtitle.innerHTML = subtitleParts.join(" &middot; ") + ' &middot; <span class="tag ok">spacing-safe</span>' +
     (state.keyField ? ' &middot; <span class="tag info">key: '+esc(keyLabel())+'</span>' : ' &middot; <span class="tag warn">no key field set</span>') +
+    ' &middot; <span class="tag ok">'+checkFields().length+' field(s) auto-checked</span>' +
     (state.dupKeys.size ? ' &middot; <span class="tag warn">'+state.dupKeys.size+' duplicate key(s)</span>' : "") +
+    (autoExcl.length ? ' &middot; <span class="tag warn">'+autoExcl.length+' auto-excluded (one-sided)</span>' : "") +
     (state.ignoredFields.size ? ' &middot; <span class="tag info">ignoring '+esc(Array.from(state.ignoredFields).map(fieldLabel).join(", "))+'</span>' : "");
 }
 function wireSortHeaders(containerId, sortState, renderFn){
@@ -1914,6 +1997,7 @@ function renderMasterTable(){
   if (state.page.master > totalPages) state.page.master = totalPages;
   var startIdx = (state.page.master-1)*pageSize;
   var pageRows = all.slice(startIdx, startIdx+pageSize);
+  var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
   if (!state.schema.length){
     els.masterBody.innerHTML = '<tr><td style="text-align:center;padding:30px;color:var(--ink-soft);">Import a CSV to define this session\'s fields.</td></tr>';
   } else if (!pageRows.length){
@@ -1922,7 +2006,7 @@ function renderMasterTable(){
     els.masterBody.innerHTML = pageRows.map(function(m){
       var isDup = state.keyField ? state.master.filter(function(x){ return normCmp(x[state.keyField],state.caseInsensitive)===normCmp(m[state.keyField],state.caseInsensitive); }).length > 1 : false;
       var cells = state.schema.map(function(f){
-        return '<td data-label="'+esc(f.label)+'" class="'+(f.key===state.keyField?"mono":"")+'">'+esc(m[f.key])+(f.key===state.keyField&&isDup?' <span class="stamp dup">Dup</span>':'')+'</td>';
+        return '<td data-label="'+esc(f.label)+'" class="'+(f.key===state.keyField?"mono":"")+' '+(excludedKeys[f.key]?"cell-excluded":"")+'">'+esc(m[f.key])+(f.key===state.keyField&&isDup?' <span class="stamp dup">Dup</span>':'')+'</td>';
       }).join("");
       var actions = '<button type="button" class="small ghost" data-editmaster="'+m.id+'">Edit</button>'+
         '<button type="button" class="small danger" data-delmaster="'+m.id+'">Delete</button>';
@@ -1974,6 +2058,7 @@ function renderSettingsModal(){
     els.ignoreList.innerHTML = '<p class="hint-note" style="padding:8px;">No fields yet &mdash; import a CSV first.</p>';
     return;
   }
+  var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
   els.ignoreList.innerHTML = state.schema.map(function(f){
     var isKey = f.key === state.keyField;
     var checked = !state.ignoredFields.has(f.key);
@@ -1981,7 +2066,8 @@ function renderSettingsModal(){
       '<input type="radio" name="keyfield" value="'+esc(f.key)+'" data-keyradio'+(isKey?" checked":"")+' title="Use as the Key / ID field">'+
       '<span class="ir-label"><input type="text" data-labelinput value="'+esc(f.label)+'"></span>'+
       '<label class="ir-sub" style="display:flex;align-items:center;gap:4px;"><input type="checkbox" data-ignorekey '+(isKey?"disabled":"")+(checked?" checked":"")+'> checked</label>'+
-      (isKey?'<span class="keypill">Key</span>':'<button type="button" class="small danger" data-delfield="'+esc(f.key)+'" style="margin:0;">Delete</button>')+
+      (isKey?'<span class="keypill">Key</span>':(excludedKeys[f.key]?'<span class="autopill" title="Data only on one side \u2014 excluded automatically">auto</span>':''))+
+      (isKey?'':'<button type="button" class="small danger" data-delfield="'+esc(f.key)+'" style="margin:0;">Delete</button>')+
     '</div>';
   }).join("");
   els.ignoreList.querySelectorAll("[data-delfield]").forEach(function(btn){
@@ -2079,18 +2165,20 @@ function openCompareModal(rowId){
   var r = state.roster.find(function(x){ return x.id===rowId; });
   var res = state.results.get(rowId);
   if (!r || !res) return;
-  els.cmpModalSub.textContent = "Row Nr "+r.nr+" \u00b7 status: "+(res.status==="Key Not Found in Master"?"Not Found":res.status)+(res.status!=="Key Not Found in Master"?" \u00b7 "+Math.round(res.confidence*100)+"% match":"");
+  var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
+  els.cmpModalSub.textContent = "Row Nr "+r.nr+" \u00b7 status: "+(res.status==="Key Not Found in Master"?"Not Found":res.status)+(res.status!=="Key Not Found in Master"?" \u00b7 "+Math.round(res.confidence*100)+"% match across "+checkFields().length+" auto-detected field(s)":"");
   var mrec = res.master;
   var rowsHtml = state.schema.map(function(f){
     var isKey = f.key === state.keyField;
+    var isExcluded = !!excludedKeys[f.key];
     var rv = r[f.key], mv = mrec ? mrec[f.key] : null;
-    var mismatch = !isKey && mrec && (normCmp(rv,state.caseInsensitive) !== normCmp(mv,state.caseInsensitive));
+    var mismatch = !isKey && !isExcluded && mrec && (normCmp(rv,state.caseInsensitive) !== normCmp(mv,state.caseInsensitive));
     var tok = mrec ? diffChars(normVal(rv), normVal(mv)) : null;
-    return '<tr class="'+(isKey?"cmp-key":"")+(mismatch?" cmp-mismatch":"")+'">'+
-      '<td>'+esc(f.label)+(isKey?' <span class="keypill">Key</span>':'')+'</td>'+
-      '<td>'+(tok&&!isKey?diffHtmlFrom(tok):esc(rv)||'<i style="color:var(--ink-soft);">(blank)</i>')+'</td>'+
-      '<td>'+(mrec ? (tok&&!isKey?diffHtmlTo(tok):esc(mv)||'<i style="color:var(--ink-soft);">(blank)</i>') : '<i style="color:var(--ink-soft);">no matching record</i>')+'</td>'+
-      '<td style="text-align:center;">'+(isKey?'&mdash;':mrec?(mismatch?'<span class="stamp misaligned">&ne;</span>':'<span class="stamp aligned">&#10003;</span>'):'&mdash;')+'</td>'+
+    return '<tr class="'+(isKey?"cmp-key":"")+(mismatch?" cmp-mismatch":"")+(isExcluded?" cmp-excluded":"")+'">'+
+      '<td>'+esc(f.label)+(isKey?' <span class="keypill">Key</span>':'')+(isExcluded?' <span class="autopill">auto</span>':'')+'</td>'+
+      '<td>'+(tok&&!isKey&&!isExcluded?diffHtmlFrom(tok):esc(rv)||'<i style="color:var(--ink-soft);">(blank)</i>')+'</td>'+
+      '<td>'+(mrec ? (tok&&!isKey&&!isExcluded?diffHtmlTo(tok):esc(mv)||'<i style="color:var(--ink-soft);">(blank)</i>') : '<i style="color:var(--ink-soft);">no matching record</i>')+'</td>'+
+      '<td style="text-align:center;">'+(isKey?'&mdash;':isExcluded?'<span class="autopill">skip</span>':mrec?(mismatch?'<span class="stamp misaligned">&ne;</span>':'<span class="stamp aligned">&#10003;</span>'):'&mdash;')+'</td>'+
     '</tr>';
   }).join("");
   els.cmpBody.innerHTML = '<table class="cmp-table"><thead><tr><th>Field</th><th>Working Data</th><th>Master File</th><th style="width:40px;">&nbsp;</th></tr></thead><tbody>'+rowsHtml+'</tbody></table>';
@@ -2363,21 +2451,24 @@ function renderInstructions(){
     '<h2>Any file, any columns</h2>'+
     '<p>Unlike a fixed template, this tool has no hardcoded columns. The very first CSV you import defines the schema for the session: every column header becomes a field, and you choose which one is the unique Key/ID. Later imports auto-match columns to existing fields by header name, and any brand-new column is added to the schema automatically (backfilled as blank on existing records) rather than dropped.</p>'+
 
+    '<h2>Auto-detected discrepancy fields (fully dynamic)</h2>'+
+    '<p>You never have to tell the tool which columns to compare. On every recompute, it automatically scans both datasets and checks, header by header, whether each field actually carries real data on <b>both</b> the Master File and Working Data. Only that intersection is used for Misaligned/Aligned detection, Match Confidence, the Discrepancy Detail column, and Auto-Correct. A field that only appears in one of the two files &mdash; say, a column unique to your Master File export, or one only present in the Working Data extract &mdash; is automatically left out of the crosscheck instead of falsely flagging every row, and is marked with a small <span class="autopill">auto</span> tag wherever it appears in the tables and Schema &amp; Settings. As soon as that field gets real data on both sides (via import, manual edit, or Promote), it\u2019s automatically pulled back into the comparison &mdash; no settings to update, and it works identically regardless of what the headers are called or what kind of data they hold.</p>'+
+
     '<h2>Character-aligned differences</h2>'+
-    '<p>Every mismatch is shown with character-level highlighting: the Working Data value with the differing characters struck out, and the Master File value with the differing characters highlighted &mdash; so you can see exactly what changed, not just that something did. Click <b>Compare</b> on any row for a full side-by-side table of every field, aligned column for column, key field included for reference.</p>'+
+    '<p>Every mismatch is shown with character-level highlighting: the Working Data value with the differing characters struck out, and the Master File value with the differing characters highlighted &mdash; so you can see exactly what changed, not just that something did. Click <b>Compare</b> on any row for a full side-by-side table of every field, aligned column for column, key field included for reference, with auto-excluded fields greyed out and marked <span class="autopill">skip</span>.</p>'+
 
     '<h2>Match Confidence</h2>'+
-    '<p>Each row gets a similarity score (0&ndash;100%) across its checked fields, even when Aligned or Misaligned, using a character-edit-distance comparison. Use it to spot near-misses (likely typos) versus wildly different values (likely a wrong record) at a glance. The Dashboard shows an overall average.</p>'+
+    '<p>Each row gets a similarity score (0&ndash;100%) across its auto-detected checked fields, even when Aligned or Misaligned, using a character-edit-distance comparison. Use it to spot near-misses (likely typos) versus wildly different values (likely a wrong record) at a glance. The Dashboard shows an overall average.</p>'+
 
     '<h2>Spacing-tolerant comparison, exact-format correction</h2>'+
     '<p>Detecting a mismatch trims leading/trailing spaces and collapses doubled internal spaces before comparing, so stray spacing alone never flags a false Misaligned row. Turn on <b>Case-insensitive comparison</b> in Schema &amp; Settings if capitalization shouldn\u2019t count either.</p>'+
     '<p><b>But when a field IS corrected</b> (via any Fix button, Auto-Correct Selected, or Auto-Correct All), Working Data receives the Master File\u2019s value <b>exactly as typed there</b> &mdash; same spacing, capitalization, and punctuation.</p>'+
 
     '<h2>Schema &amp; Settings</h2>'+
-    '<p>Rename any field, change which field is the Key, exclude a field from the crosscheck, delete a field entirely, or add a new blank field by hand. The Key field is never compared or corrected &mdash; it\u2019s only used to match rows between the two files.</p>'+
+    '<p>Rename any field, change which field is the Key, exclude a field from the crosscheck by hand, delete a field entirely, or add a new blank field by hand. Fields already excluded automatically (because they\u2019re one-sided) are marked <span class="autopill">auto</span> so you can tell them apart from fields you\u2019ve chosen to ignore yourself. The Key field is never compared or corrected &mdash; it\u2019s only used to match rows between the two files.</p>'+
 
     '<h2>Live Check &mdash; validating data entry in real time</h2>'+
-    '<p>Adding or editing a Working Data record shows a Live Check panel that updates as you type, comparing your in-progress entry against the matching Master File record. Editing a Master File record instead checks the Key for duplicates, since the Master File must have exactly one record per key.</p>'+
+    '<p>Adding or editing a Working Data record shows a Live Check panel that updates as you type, comparing your in-progress entry against the matching Master File record across the same auto-detected field set. Editing a Master File record instead checks the Key for duplicates, since the Master File must have exactly one record per key.</p>'+
 
     '<h2>Bulk actions</h2>'+
     '<p>Tick rows (or the header checkbox) to open a bulk bar: <b>Auto-Correct Selected</b>, <b>Promote Selected</b> (for eligible Not Found rows), <b>Export Selected</b> (quick CSV), <b>Build Export&hellip;</b> (opens the full Export Builder below), and <b>Delete Selected</b>. <b>Select all matching filter</b> extends the selection to every row matching your current filters, even off-page.</p>'+
@@ -2398,11 +2489,11 @@ function renderInstructions(){
 
     '<h2>Buttons &amp; automation</h2>'+
     '<ul>'+
-      '<li><b>Auto-Correct All</b> &mdash; fixes every Misaligned row in one action, using the Master File\u2019s exact values. Undo-safe.</li>'+
+      '<li><b>Auto-Correct All</b> &mdash; fixes every Misaligned row in one action, using the Master File\u2019s exact values for the auto-detected fields. Undo-safe.</li>'+
       '<li><b>Undo / Redo</b> &mdash; unlimited history. <span class="kbd">Ctrl/Cmd+Z</span> / <span class="kbd">Ctrl/Cmd+Shift+Z</span>.</li>'+
       '<li><b>Errors CSV / Working CSV / Export Filtered / Export Master CSV</b> &mdash; quick exports at whichever scope you need, including Match Confidence and status.</li>'+
       '<li><b>Export Builder</b> &mdash; the full custom export described above, for Print/PDF, Word, or Excel with your own column and row arrangement.</li>'+
-      '<li><b>Import CSV</b> &mdash; bulk-add or update either file, with the column mapping preview described above.</li>'+
+      '<li><b>Import CSV</b> &mdash; bulk-add or update either file, with the column mapping preview described above and a live count of auto-matched columns.</li>'+
       '<li><b>Export Backup / Restore Backup</b> &mdash; a full JSON snapshot including the schema, key field, and settings &mdash; portable across browsers/devices.</li>'+
       '<li><b>Promote</b> &mdash; inserts a Not Found row into the Master File as a new reference record.</li>'+
       '<li><b>Sample Data</b> &mdash; loads a generic generated dataset so every feature is demoable immediately.</li>'+
@@ -2527,7 +2618,7 @@ els.settingsSaveBtn.addEventListener("click", function(){
   recompute();
   els.settingsBackdrop.classList.remove("show");
   var labels = ignored.map(fieldLabel);
-  logAudit("Update Settings", (keyChanged?"Key field changed to "+fieldLabel(state.keyField)+". ":"")+(labels.length ? "Ignored fields: "+labels.join(", ") : "All fields are checked")+(state.caseInsensitive?" \u00b7 case-insensitive":""), 0);
+  logAudit("Update Settings", (keyChanged?"Key field changed to "+fieldLabel(state.keyField)+". ":"")+(labels.length ? "Manually ignored fields: "+labels.join(", ") : "No manually-ignored fields")+(state.caseInsensitive?" \u00b7 case-insensitive":""), 0);
   showToast("Settings saved.");
   renderAll();
 });
