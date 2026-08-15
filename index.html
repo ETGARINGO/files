@@ -179,6 +179,7 @@
   .ignore-row .ir-sub{color:var(--ink-soft);font-size:10.5px;font-family:'Courier New',monospace;white-space:nowrap;}
   .keypill{font-family:'Courier New',monospace;font-size:9.5px;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:10px;border:1px solid var(--accent);color:var(--accent);}
   .autopill{font-family:'Courier New',monospace;font-size:9.5px;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:10px;border:1px solid var(--warn);color:var(--warn);}
+  .typepill{font-family:'Courier New',monospace;font-size:9.5px;font-weight:800;text-transform:uppercase;padding:2px 7px;border-radius:10px;border:1px solid var(--info);color:var(--info);}
 
   .undo-list{display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;}
   .undo-item{border:1.5px solid var(--hairline);border-radius:8px;padding:9px 11px;font-size:12px;}
@@ -213,6 +214,10 @@
   #csvMappingPreview .map-auto{color:var(--ok);font-weight:800;font-size:10px;text-transform:uppercase;font-family:'Courier New',monospace;}
   #csvMappingPreview .map-new{color:var(--warn);font-weight:800;font-size:10px;text-transform:uppercase;font-family:'Courier New',monospace;}
 
+  #csvSampleRows{width:100%;border-collapse:collapse;margin-top:6px;}
+  #csvSampleRows th{background:var(--thead-bg);text-align:left;font-size:10px;text-transform:uppercase;padding:5px 7px;border-bottom:1.5px solid var(--hairline);white-space:nowrap;}
+  #csvSampleRows td{padding:5px 7px;border-bottom:1px solid var(--hairline);font-size:11.5px;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis;}
+
   .cmp-table{width:100%;border-collapse:collapse;margin-top:10px;}
   .cmp-table th{background:var(--thead-bg);text-align:left;font-size:10.5px;text-transform:uppercase;padding:7px 8px;border-bottom:1.5px solid var(--hairline);}
   .cmp-table td{padding:8px;border-bottom:1px solid var(--hairline);font-size:12.5px;vertical-align:top;}
@@ -221,11 +226,21 @@
   .cmp-table tr.cmp-excluded td{opacity:.5;}
 
   .schema-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+  .schema-toolbar .stb-group{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
 
   .exp-two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .exp-lists{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .exp-lists .ignore-list{max-height:260px;overflow-y:auto;}
   .exp-format-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
+
+  .dq-list{display:flex;flex-direction:column;gap:8px;}
+  .dq-item{background:var(--surface);border:1.5px solid var(--hairline);border-radius:var(--radius);padding:12px 14px;}
+  .dq-item .dq-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+  .dq-item .dq-count{font-family:'Courier New',monospace;font-weight:800;color:var(--bad);}
+  .dq-item .dq-rows{font-size:11.5px;color:var(--ink-soft);}
+  .rule-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:center;padding:8px;border-radius:6px;border-bottom:1px solid var(--hairline);}
+  .rule-row:last-child{border-bottom:none;}
+  .rule-row select, .rule-row input{padding:6px 8px;font-size:12px;}
 
   /* ============ RESPONSIVE / MOBILE AUTO-FIT ============ */
   @media (max-width:900px){
@@ -243,6 +258,7 @@
     .modal-actions{flex-direction:column-reverse;}
     .modal-actions button{width:100%;}
     .exp-two-col, .exp-lists{grid-template-columns:1fr;}
+    .rule-row{grid-template-columns:1fr;}
   }
   /* Card layout for data tables on narrow phones */
   @media (max-width:620px){
@@ -280,6 +296,7 @@
     </div>
     <div class="actions">
       <button class="ghost" id="themeToggleBtn" title="Toggle light / dark theme">&#127769; Dark</button>
+      <button class="ghost" id="shortcutsBtn" title="Keyboard shortcuts &amp; quick help">? Help</button>
       <button class="ghost" id="printBtn">Print</button>
       <button class="ghost" id="downloadErrorsBtn" title="Download every Misaligned / Not Found row as CSV">Errors CSV</button>
       <button class="ghost" id="downloadRosterBtn">Working CSV</button>
@@ -301,6 +318,7 @@
     <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
     <button class="tab-btn" data-tab="roster">Working Data <span class="tab-count" id="tabCountRoster"></span></button>
     <button class="tab-btn" data-tab="master">Master File <span class="tab-count" id="tabCountMaster"></span></button>
+    <button class="tab-btn" data-tab="quality">Data Quality <span class="tab-count" id="tabCountQuality"></span></button>
     <button class="tab-btn" data-tab="audit">Audit Log <span class="tab-count" id="tabCountAudit"></span></button>
     <button class="tab-btn" data-tab="instructions">Instructions</button>
   </div>
@@ -308,7 +326,7 @@
   <!-- ================= DASHBOARD ================= -->
   <div class="tab-panel active" id="tab-dashboard">
     <div class="banner info">
-      <span>&#10003;&nbsp;<b>Spacing-safe comparison is on, and the checked field set is auto-detected.</b> Extra or doubled spaces never by themselves cause a Misaligned flag. Whichever headers actually carry data in <b>both</b> the Master File and Working Data are compared automatically &mdash; fields that only exist on one side never falsely flag as mismatched. When a field IS corrected, it's written back exactly as the Master File has it &mdash; same spacing, casing and punctuation.</span>
+      <span>&#10003;&nbsp;<b>Spacing-safe, type-aware comparison is on, and every field is auto-checked by default.</b> The moment you import Master File and Working Data CSVs, whichever headers match by name on <b>both</b> sides are automatically turned into comparable fields &mdash; no setup, no mapping required. Extra or doubled spaces never by themselves cause a Misaligned flag, and Number/Date fields tolerate formatting differences (commas, leading zeros, slashes vs. dashes) that mean the same value. Fields with data on only one side are auto-excluded so they never falsely flag every row. Want a field left out anyway? Uncheck it any time in <b>Schema &amp; Settings</b> &mdash; and re-check it whenever you want it back in the crosscheck. When a field IS corrected, it's written back exactly as the Master File has it &mdash; same spacing, casing and punctuation.</span>
     </div>
     <div class="banner warn">
       <span>&#128190;&nbsp;<b>Your work autosaves to this browser's local database</b> (nothing leaves your machine). Use <b>Export Backup</b> for a portable copy, or <b>Clear All</b> in the header to wipe everything and start from empty.</span>
@@ -323,10 +341,13 @@
     <div class="banner info" id="autoExcludeBanner" style="display:none;">
       <span id="autoExcludeBannerText"></span>
     </div>
+    <div class="banner warn" id="dqBanner" style="display:none;">
+      <span id="dqBannerText"></span>
+    </div>
     <section class="stats" id="emptyStateWrap" style="display:none;">
       <div class="empty-state" style="grid-column:1/-1;">
         <h3>No data yet</h3>
-        <p>Import <b>any</b> Master File and Working File CSV export &mdash; column headers are detected automatically and become the schema for this session, and the fields actually compared are auto-detected from whichever headers carry data on both sides &mdash; add records by hand, restore a JSON backup, or load generated sample data to see every feature in action.</p>
+        <p>Import <b>any</b> Master File and Working File CSV export &mdash; column headers are detected automatically and become the schema for this session, every matching field is auto-checked for comparison from the moment it has data on both sides, add records by hand, restore a JSON backup, or load generated sample data to see every feature in action.</p>
         <div class="es-actions">
           <button type="button" class="primary" id="emptyImportBtn">Import CSV</button>
           <button type="button" class="ghost" id="emptySampleBtn">Load Sample Data</button>
@@ -379,6 +400,7 @@
         <option value="all">Show all (no paging)</option>
       </select>
       <button class="ghost" id="downloadFilteredBtn" title="Download only the rows matching the current filters">Export Filtered</button>
+      <button class="ghost" id="findReplaceBtn" title="Bulk find &amp; replace text within one field of Working Data">Find &amp; Replace</button>
       <button class="primary" id="addRosterBtn">+ Add Record</button>
     </div>
     <div class="bulk-bar" id="bulkBar">
@@ -416,6 +438,15 @@
     </div>
     <div class="pager" id="masterPager"></div>
     <footer>The Master File is the source of truth used to crosscheck and auto-correct the Working Data. Its exact typing is what corrected fields are copied from.</footer>
+  </div>
+
+  <!-- ================= DATA QUALITY ================= -->
+  <div class="tab-panel" id="tab-quality">
+    <div class="filter-bar">
+      <p class="hint-note" style="margin:0;max-width:640px;">Validation rules check each field's raw value on its own &mdash; independent of the Master File crosscheck &mdash; so you can catch blanks, malformed values, or out-of-pattern entries in either file. Rules apply to both Working Data and Master File.</p>
+      <button class="primary" id="manageRulesBtn" style="margin-left:auto;">Manage Rules&hellip;</button>
+    </div>
+    <div class="dq-list" id="dqResults"></div>
   </div>
 
   <!-- ================= AUDIT LOG ================= -->
@@ -458,13 +489,17 @@
 <div class="modal-backdrop" id="settingsBackdrop">
   <div class="modal wide">
     <h2>Schema &amp; Settings</h2>
-    <p class="modal-sub">This session's fields, in order. Rename a field, mark the one Key/ID column used to match records, or exclude a field from the crosscheck. Fields tagged <span class="autopill">auto</span> are already excluded automatically because they only carry data on one side. Changes apply to Working Data and Master File alike.</p>
+    <p class="modal-sub">This session's fields, in order. Every field is auto-checked (included in the crosscheck) by default. Rename a field, mark the one Key/ID column used to match records, set its Type for smarter comparison, or untick a field to leave it out of the crosscheck &mdash; and tick it again any time to bring it back in. Changes apply to Working Data and Master File alike.</p>
     <div class="schema-toolbar">
       <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;"><input type="checkbox" id="caseInsensitiveChk"> Case-insensitive comparison</label>
-      <button type="button" class="ghost small" id="addFieldBtn" style="margin:0;">+ Add Field</button>
+      <div class="stb-group">
+        <button type="button" class="ghost small" id="checkAllFieldsBtn" style="margin:0;" title="Auto-check every non-key field for the crosscheck">Check All</button>
+        <button type="button" class="ghost small" id="uncheckAllFieldsBtn" style="margin:0;" title="Untick every non-key field (nothing gets crosschecked)">Uncheck All</button>
+        <button type="button" class="ghost small" id="addFieldBtn" style="margin:0;">+ Add Field</button>
+      </div>
     </div>
     <div class="ignore-list" id="ignoreList"></div>
-    <p class="hint-note" style="margin-top:10px;">The Key/ID field is used only to match rows between files &mdash; it's never compared or auto-corrected. Deleting a field removes it from every record.</p>
+    <p class="hint-note" style="margin-top:10px;">The Key/ID field is used only to match rows between files &mdash; it's never compared or auto-corrected. Deleting a field removes it from every record. Field <b>Type</b> controls comparison: Number and Date fields tolerate formatting differences (e.g. "1,000" = "1000", "3/4/2026" = "2026-03-04") that don't change the underlying value; Text fields compare literal (spacing-trimmed) characters.</p>
     <div class="modal-actions">
       <button type="button" class="ghost" id="settingsCancelBtn">Close</button>
       <button type="button" class="primary" id="settingsSaveBtn">Save Changes</button>
@@ -493,7 +528,7 @@
 <div class="modal-backdrop" id="csvBackdrop">
   <div class="modal wide">
     <h2>Import CSV</h2>
-    <p class="modal-sub">Any column headers work. Known fields are auto-matched by name; unrecognized columns are added as new fields. Review the mapping before importing.</p>
+    <p class="modal-sub">Any column headers work. Known fields are auto-matched by name; unrecognized columns are added as new fields and auto-checked as soon as both sides carry data. Review the mapping and sample rows before importing.</p>
     <div class="field-row">
       <label>Import Into</label>
       <select id="csvTargetSelect">
@@ -513,6 +548,11 @@
       <p class="hint-note">Pick the column that uniquely identifies each record (an ID, badge, code, or account number). Every future import matches on this column.</p>
     </div>
     <div class="field-row" id="csvMappingPreview" style="margin-top:8px;"></div>
+    <div class="field-row" id="csvSampleWrap" style="margin-top:8px;display:none;">
+      <label>Sample Rows Preview (first 5)</label>
+      <div style="overflow-x:auto;"><table id="csvSampleRows"></table></div>
+    </div>
+    <div class="hint-note" id="csvImpactSummary" style="font-weight:700;"></div>
     <div class="modal-actions">
       <button type="button" class="ghost" id="csvCancelBtn">Cancel</button>
       <button type="button" class="primary" id="csvImportBtn">Import Rows</button>
@@ -617,6 +657,65 @@
   </div>
 </div>
 
+<!-- ===================== FIND & REPLACE MODAL ===================== -->
+<div class="modal-backdrop" id="frBackdrop">
+  <div class="modal">
+    <h2>Find &amp; Replace</h2>
+    <p class="modal-sub">Bulk-edit one field across Working Data. Undo-safe &mdash; use Undo afterward if something looks off.</p>
+    <div class="field-row">
+      <label>Field</label>
+      <select id="frField"></select>
+    </div>
+    <div class="field-row">
+      <label>Find</label>
+      <input id="frFind" placeholder="Text to find">
+    </div>
+    <div class="field-row">
+      <label>Replace With</label>
+      <input id="frReplace" placeholder="Replacement text (leave blank to remove)">
+    </div>
+    <div class="field-row">
+      <label style="display:flex;align-items:center;gap:6px;text-transform:none;font-weight:600;color:var(--ink);"><input type="checkbox" id="frCase"> Case-sensitive match</label>
+      <label style="display:flex;align-items:center;gap:6px;text-transform:none;font-weight:600;color:var(--ink);margin-top:6px;"><input type="checkbox" id="frScope"> Only within rows matching current filters</label>
+    </div>
+    <p class="hint-note" id="frPreview">Enter search text to preview affected rows.</p>
+    <div class="modal-actions">
+      <button type="button" class="ghost" id="frCancelBtn">Cancel</button>
+      <button type="button" class="primary" id="frApplyBtn">Replace All</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== VALIDATION RULES MODAL ===================== -->
+<div class="modal-backdrop" id="rulesBackdrop">
+  <div class="modal wide">
+    <h2>Data Quality Rules</h2>
+    <p class="modal-sub">Define per-field checks that run independently of the Master File crosscheck &mdash; useful for catching blanks or malformed values in either file.</p>
+    <div id="rulesList"></div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button type="button" class="ghost small" id="addRuleBtn" style="margin:0;">+ Add Rule</button>
+      <span class="exp-format-row">
+        <button type="button" class="ghost" id="rulesCloseBtn">Close</button>
+        <button type="button" class="primary" id="rulesSaveBtn">Save Rules</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SHORTCUTS / HELP MODAL ===================== -->
+<div class="modal-backdrop" id="shortcutsBackdrop">
+  <div class="modal">
+    <h2>Keyboard Shortcuts</h2>
+    <p class="modal-sub">Quick reference &mdash; works anywhere outside a text field.</p>
+    <table style="width:100%;border-collapse:collapse;">
+      <tbody id="shortcutsBody"></tbody>
+    </table>
+    <div class="modal-actions">
+      <button type="button" class="primary" id="shortcutsCloseBtn">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -625,7 +724,7 @@
 
 // =================================================================
 // DYNAMIC SCHEMA — built from whatever CSV columns the user imports.
-// state.schema: [{key,label}, ...]   state.keyField: schema key used to match rows
+// state.schema: [{key,label,type}, ...]   state.keyField: schema key used to match rows
 // =================================================================
 function normVal(v){
   if (v===null||v===undefined) return "";
@@ -652,6 +751,57 @@ function slugify(label, existing){
 }
 function normalizeHeader(h){
   return String(h||"").toLowerCase().replace(/[.:]/g,"").replace(/[-_]/g," ").replace(/\s+/g," ").trim();
+}
+
+// -----------------------------------------------------------------
+// FIELD TYPES — Number and Date fields get format-tolerant comparison
+// so "1,000" == "1000" and "3/4/2026" == "2026-03-04". Text compares
+// on the trimmed/spacing-normalized string as before.
+// -----------------------------------------------------------------
+function parseNumberLoose(v){
+  var s = normVal(v);
+  if (!s) return null;
+  var cleaned = s.replace(/[,\s]/g,"").replace(/^\((.*)\)$/,"-$1");
+  if (!/^-?\d+(\.\d+)?$/.test(cleaned)) return null;
+  var n = parseFloat(cleaned);
+  return isNaN(n) ? null : n;
+}
+function parseDateLoose(v){
+  var s = normVal(v);
+  if (!s) return null;
+  var m;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))) return new Date(Date.UTC(+m[1], +m[2]-1, +m[3])).getTime();
+  if ((m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/))) return new Date(Date.UTC(+m[3], +m[1]-1, +m[2])).getTime();
+  if ((m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})$/))) return new Date(Date.UTC(2000+ +m[3], +m[1]-1, +m[2])).getTime();
+  var t = Date.parse(s);
+  return isNaN(t) ? null : t;
+}
+function guessFieldType(samples){
+  var nums=0, dates=0, total=0;
+  samples.forEach(function(v){
+    var s = normVal(v);
+    if (!s) return;
+    total++;
+    if (parseNumberLoose(s)!==null) nums++;
+    else if (parseDateLoose(s)!==null && /[\/\-]/.test(s)) dates++;
+  });
+  if (!total) return "text";
+  if (dates/total > 0.7) return "date";
+  if (nums/total > 0.7) return "number";
+  return "text";
+}
+function valuesEqualTyped(a, b, type, ci){
+  if (type === "number"){
+    var na = parseNumberLoose(a), nb = parseNumberLoose(b);
+    if (na!==null && nb!==null) return na === nb;
+    return normCmp(a,ci) === normCmp(b,ci);
+  }
+  if (type === "date"){
+    var da = parseDateLoose(a), db = parseDateLoose(b);
+    if (da!==null && db!==null) return da === db;
+    return normCmp(a,ci) === normCmp(b,ci);
+  }
+  return normCmp(a,ci) === normCmp(b,ci);
 }
 
 // Levenshtein distance + similarity (used for the match-confidence score)
@@ -732,13 +882,13 @@ function mulberry32(seed){
 // on ANY kind of master/working-file pair, not one fixed domain.
 // =================================================================
 var SAMPLE_SCHEMA = [
-  {key:"employeeId", label:"Employee ID"},
-  {key:"firstName", label:"First Name"},
-  {key:"lastName", label:"Last Name"},
-  {key:"department", label:"Department"},
-  {key:"jobTitle", label:"Job Title"},
-  {key:"location", label:"Location"},
-  {key:"email", label:"Email"}
+  {key:"employeeId", label:"Employee ID", type:"text"},
+  {key:"firstName", label:"First Name", type:"text"},
+  {key:"lastName", label:"Last Name", type:"text"},
+  {key:"department", label:"Department", type:"text"},
+  {key:"jobTitle", label:"Job Title", type:"text"},
+  {key:"location", label:"Location", type:"text"},
+  {key:"email", label:"Email", type:"text"}
 ];
 var SAMPLE_KEYFIELD = "employeeId";
 var S_FIRST=["Juan","Maria","Pedro","Ana","Jose","Liza","Carlos","Rosa","Miguel","Sofia","Antonio","Elena","Ramon","Carmen","Luis","Teresa","Manuel","Cristina","Rafael","Angela"];
@@ -806,26 +956,30 @@ var state = {
   modal:{target:null,mode:null,id:null},
   unitChartField: null,
   storageMode:"unknown",
-  masterFieldsWithData: null, rosterFieldsWithData: null
+  masterFieldsWithData: null, rosterFieldsWithData: null,
+  rules: [], dqIssues: []
 };
 
 var els = {};
-["subtitle","autosaveLine","themeToggleBtn","printBtn","downloadErrorsBtn","downloadRosterBtn","importCsvBtn","backupBtn","restoreBtn","restoreFileInput","loadSampleBtn","settingsBtn","undoBtn","redoBtn","newSessionBtn","autoCorrectAllBtn",
+["subtitle","autosaveLine","themeToggleBtn","shortcutsBtn","printBtn","downloadErrorsBtn","downloadRosterBtn","importCsvBtn","backupBtn","restoreBtn","restoreFileInput","loadSampleBtn","settingsBtn","undoBtn","redoBtn","newSessionBtn","autoCorrectAllBtn",
  "statTotal","statAligned","statMisaligned","statNotFound","statDup","statConfidence","barChart","fieldChart","unitChart","unitChartLabel","unitChartField","dashFooter",
- "searchInput","statusChips","filterFieldSelect","filterValueSelect","pageSizeSelect","downloadFilteredBtn","addRosterBtn","rosterBody","rosterPager","rosterHead",
+ "searchInput","statusChips","filterFieldSelect","filterValueSelect","pageSizeSelect","downloadFilteredBtn","findReplaceBtn","addRosterBtn","rosterBody","rosterPager","rosterHead",
  "masterSearchInput","downloadMasterBtn","addMasterBtn","masterBody","masterPager","masterHead",
  "auditSearchInput","downloadAuditBtn","auditBody","auditPager",
- "tabCountRoster","tabCountMaster","tabCountAudit","instrBody",
+ "tabCountRoster","tabCountMaster","tabCountAudit","tabCountQuality","instrBody",
  "modalBackdrop","modalTitle","modalSub","modalForm","modalCancelBtn","modalSaveBtn",
- "settingsBackdrop","ignoreList","settingsCancelBtn","settingsSaveBtn","caseInsensitiveChk","addFieldBtn",
+ "settingsBackdrop","ignoreList","settingsCancelBtn","settingsSaveBtn","caseInsensitiveChk","addFieldBtn","checkAllFieldsBtn","uncheckAllFieldsBtn",
  "undoBackdrop","undoModalSub","undoList","redoList","undoCancelBtn","undoConfirmBtn","redoConfirmBtn",
- "csvBackdrop","csvTargetSelect","csvTargetHint","csvFileInput","csvTextarea","csvPreview","csvMappingPreview","csvCancelBtn","csvImportBtn","csvKeyRow","csvKeySelect",
+ "csvBackdrop","csvTargetSelect","csvTargetHint","csvFileInput","csvTextarea","csvPreview","csvMappingPreview","csvSampleWrap","csvSampleRows","csvImpactSummary","csvCancelBtn","csvImportBtn","csvKeyRow","csvKeySelect",
  "mergeBackdrop","mergeModalSub","mergeList","mergeCloseBtn",
  "cmpBackdrop","cmpModalSub","cmpBody","cmpCloseBtn","cmpFixAllBtn",
  "toast", "bulkBar", "bulkCount", "bulkFixBtn","bulkPromoteBtn","bulkExportBtn","bulkBuildExportBtn","bulkDeleteBtn","bulkSelectAllFilteredBtn","bulkClearBtn",
  "emptyStateWrap","statsGrid","barsStatusDist","barsFieldChart","barsUnitChart","emptyImportBtn","emptySampleBtn",
  "dupBanner","dupBannerText","dupBannerBtn","dupMergeBtn","dupChip",
- "autoExcludeBanner","autoExcludeBannerText",
+ "autoExcludeBanner","autoExcludeBannerText","dqBanner","dqBannerText","dqResults","manageRulesBtn",
+ "rulesBackdrop","rulesList","addRuleBtn","rulesCloseBtn","rulesSaveBtn",
+ "frBackdrop","frField","frFind","frReplace","frCase","frScope","frPreview","frCancelBtn","frApplyBtn",
+ "shortcutsBackdrop","shortcutsBody","shortcutsCloseBtn",
  "exportBuilderBtn","exportBackdrop","expSourceSelect","expColumnList","expRowList","expTitle","expOrientation","expTableStyle","expFontSize","expIncludeStatus","expSummary","expCancelBtn","expPdfBtn","expWordBtn","expExcelBtn"
 ].forEach(function(id){ els[id] = document.getElementById(id); });
 
@@ -844,6 +998,7 @@ function logAudit(action, details, rowsAffected){
 }
 function fieldByKey(key){ return state.schema.find(function(f){ return f.key===key; }); }
 function fieldLabel(key){ var f=fieldByKey(key); return f ? f.label : key; }
+function fieldType(key){ var f=fieldByKey(key); return (f && f.type) || "text"; }
 
 // -----------------------------------------------------------------
 // AUTO-DETECTED COMPARABLE FIELDS
@@ -852,7 +1007,9 @@ function fieldLabel(key){ var f=fieldByKey(key); return f ? f.label : key; }
 // Working Data. Fields with data on only one side (e.g. a column that
 // only ever appeared in one of the two imported files) are excluded
 // from the crosscheck automatically instead of falsely flagging every
-// row as Misaligned against a permanently-blank column.
+// row as Misaligned against a permanently-blank column. Every field
+// that DOES have data on both sides starts out auto-checked (included)
+// the moment it qualifies — nothing needs to be turned on by hand.
 // -----------------------------------------------------------------
 function computeFieldsWithData(){
   var masterHas = {}, rosterHas = {};
@@ -874,9 +1031,10 @@ function computeFieldsWithData(){
   state.rosterFieldsWithData = rosterHas;
 }
 // A field is "comparable" (checked for mismatches) when it isn't the Key,
-// isn't manually ignored, AND has real data on both sides. This is fully
-// automatic and re-evaluates on every recompute, so it adapts live as you
-// import files with different headers or fill in previously-blank columns.
+// hasn't been manually unchecked, AND has real data on both sides. This is
+// fully automatic and re-evaluates on every recompute, so it adapts live as
+// you import files with different headers or fill in previously-blank
+// columns — every qualifying field is auto-checked unless you uncheck it.
 function checkFields(){
   return state.schema.filter(function(f){
     if (f.key===state.keyField || state.ignoredFields.has(f.key)) return false;
@@ -894,6 +1052,12 @@ function autoExcludedFields(){
     var rOk = !state.rosterFieldsWithData || state.rosterFieldsWithData[f.key];
     return !(mOk && rOk);
   });
+}
+// Fields the user has manually unchecked (distinct from auto-excluded
+// one-sided fields) — surfaced separately so the subtitle/tags can tell
+// the two reasons for exclusion apart.
+function manuallyIgnoredFields(){
+  return state.schema.filter(function(f){ return f.key!==state.keyField && state.ignoredFields.has(f.key); });
 }
 function keyLabel(){ return state.keyField ? fieldLabel(state.keyField) : "Key"; }
 
@@ -941,8 +1105,9 @@ function setAutosaveIndicator(ok, msg){
 }
 function saveSession(){
   var payload = {
-    v:4, savedAt:new Date(), schema:state.schema, keyField:state.keyField, caseInsensitive:state.caseInsensitive,
-    master: state.master, roster: state.roster, ignoredFields: Array.from(state.ignoredFields), auditLog: state.auditLog
+    v:5, savedAt:new Date(), schema:state.schema, keyField:state.keyField, caseInsensitive:state.caseInsensitive,
+    master: state.master, roster: state.roster, ignoredFields: Array.from(state.ignoredFields), auditLog: state.auditLog,
+    rules: state.rules
   };
   idbPut(DB_KEY, payload).then(function(){
     state.storageMode = "indexeddb";
@@ -950,9 +1115,10 @@ function saveSession(){
   }).catch(function(){
     try{
       var lsPayload = {
-        v:4, savedAt:payload.savedAt.toISOString(), schema:state.schema, keyField:state.keyField, caseInsensitive:state.caseInsensitive,
+        v:5, savedAt:payload.savedAt.toISOString(), schema:state.schema, keyField:state.keyField, caseInsensitive:state.caseInsensitive,
         master: state.master, roster: state.roster, ignoredFields: Array.from(state.ignoredFields),
-        auditLog: state.auditLog.map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; })
+        auditLog: state.auditLog.map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; }),
+        rules: state.rules
       };
       localStorage.setItem(LEGACY_LS_KEY, JSON.stringify(lsPayload));
       state.storageMode = "localstorage";
@@ -1015,7 +1181,7 @@ function computeRow(rrec, masterIndex){
   var mismatches = [], simSum = 0, cf = checkFields();
   cf.forEach(function(f){
     var cur = rrec[f.key], correct = mrec[f.key];
-    var eq = normCmp(cur,state.caseInsensitive) === normCmp(correct,state.caseInsensitive);
+    var eq = valuesEqualTyped(cur, correct, f.type, state.caseInsensitive);
     if (!eq) mismatches.push({key:f.key, label:f.label, current:cur, correct:correct});
     simSum += similarity(cur, correct);
   });
@@ -1033,6 +1199,35 @@ function computeDuplicateKeys(){
   var dup = new Set();
   counts.forEach(function(n,k){ if (n>1) dup.add(k); });
   return dup;
+}
+// -----------------------------------------------------------------
+// DATA QUALITY RULES — independent field-level checks (required,
+// pattern, min/max length) that flag rows in either file regardless
+// of whether a Master File match exists.
+// -----------------------------------------------------------------
+function ruleFails(rule, value){
+  var v = normVal(value);
+  if (rule.type === "required") return v === "";
+  if (rule.type === "pattern"){
+    if (!rule.pattern) return false;
+    try{ var re = new RegExp(rule.pattern); return v !== "" && !re.test(v); } catch(e){ return false; }
+  }
+  if (rule.type === "minlen") return v !== "" && v.length < (parseInt(rule.pattern,10)||0);
+  if (rule.type === "maxlen") return v !== "" && v.length > (parseInt(rule.pattern,10)||99999);
+  return false;
+}
+function computeDataQuality(){
+  var issues = [];
+  state.rules.forEach(function(rule){
+    if (!fieldByKey(rule.field)) return;
+    var rosterHits = [], masterHits = [];
+    if (rule.scope !== "master") state.roster.forEach(function(r){ if (ruleFails(rule, r[rule.field])) rosterHits.push(r); });
+    if (rule.scope !== "roster") state.master.forEach(function(m){ if (ruleFails(rule, m[rule.field])) masterHits.push(m); });
+    if (rosterHits.length || masterHits.length){
+      issues.push({ rule: rule, rosterHits: rosterHits, masterHits: masterHits });
+    }
+  });
+  state.dqIssues = issues;
 }
 function recompute(){
   state.masterIndex = buildMasterIndex();
@@ -1052,6 +1247,7 @@ function recompute(){
   state.fieldCounts = fieldCounts;
   state.avgConfidence = confN ? confSum/confN : null;
   state.dupKeys = computeDuplicateKeys();
+  computeDataQuality();
   var liveIds = new Set(state.roster.map(function(r){ return r.id; }));
   state.selectedRosterIds.forEach(function(id){ if (!liveIds.has(id)) state.selectedRosterIds.delete(id); });
   if (!state.unitChartField || !fieldByKey(state.unitChartField)){
@@ -1207,6 +1403,52 @@ function deleteSelected(){
 }
 
 // =================================================================
+// FIND & REPLACE — bulk edit one field across Working Data
+// =================================================================
+function frMatches(){
+  var field = els.frField.value, find = els.frFind.value;
+  if (!field || !find) return [];
+  var ci = !els.frCase.checked;
+  var scopeOnly = els.frScope.checked;
+  var pool = scopeOnly ? filteredRoster() : state.roster;
+  var needle = ci ? find.toLowerCase() : find;
+  return pool.filter(function(r){
+    var v = String(r[field]||"");
+    return (ci ? v.toLowerCase() : v).indexOf(needle) !== -1;
+  });
+}
+function updateFrPreview(){
+  var find = els.frFind.value;
+  if (!els.frField.value || !find){ els.frPreview.textContent = "Enter search text to preview affected rows."; return; }
+  var matches = frMatches();
+  els.frPreview.textContent = matches.length
+    ? matches.length.toLocaleString()+" row(s) contain a match in "+fieldLabel(els.frField.value)+"."
+    : "No rows currently contain a match.";
+}
+function applyFindReplace(){
+  var field = els.frField.value, find = els.frFind.value, repl = els.frReplace.value;
+  if (!field || !find){ showToast("Enter a field and search text first.", true); return; }
+  var matches = frMatches();
+  if (!matches.length){ showToast("No matching rows to replace.", true); return; }
+  var ci = !els.frCase.checked;
+  var flags = ci ? "gi" : "g";
+  var re;
+  try{ re = new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), flags); } catch(e){ showToast("Invalid search text.", true); return; }
+  var entries = [];
+  matches.forEach(function(r){
+    var before = {}; before[field] = r[field];
+    r[field] = String(r[field]||"").replace(re, repl);
+    entries.push({rowId:r.id, before:before});
+  });
+  pushUndo("Find & Replace in "+fieldLabel(field)+" ("+entries.length+" row(s))", entries);
+  recompute();
+  logAudit("Find & Replace", 'Field "'+fieldLabel(field)+'" \u00b7 "'+find+'" \u2192 "'+repl+'" across '+entries.length+" row(s)", entries.length);
+  showToast("Replaced in "+entries.length.toLocaleString()+" row(s).");
+  els.frBackdrop.classList.remove("show");
+  renderAll();
+}
+
+// =================================================================
 // MERGE DUPLICATE KEYS
 // =================================================================
 function duplicateGroups(){
@@ -1299,12 +1541,55 @@ function buildMapSelect(idx, header, autoKey){
   opts.push('<option value="__new__"'+(autoKey===null?" selected":"")+'>+ Add as new field ("'+esc(header)+'")</option>');
   return '<select data-mapcol="'+idx+'">'+opts.join("")+'</select>';
 }
+function renderCsvSamplePreview(){
+  var text = (els.csvTextarea.value||"").trim();
+  if (!text){ els.csvSampleWrap.style.display="none"; els.csvImpactSummary.textContent=""; return; }
+  var lines = parseCsv(text);
+  if (lines.length < 2){ els.csvSampleWrap.style.display="none"; els.csvImpactSummary.textContent=""; return; }
+  var header = lines[0];
+  var sample = lines.slice(1, 6);
+  els.csvSampleWrap.style.display = "block";
+  var headHtml = '<thead><tr>' + header.map(function(h){ return '<th>'+esc(h||"(blank)")+'</th>'; }).join("") + '</tr></thead>';
+  var bodyHtml = '<tbody>' + sample.map(function(row){
+    return '<tr>' + header.map(function(h,i){ return '<td>'+esc(row[i]!==undefined?row[i]:"")+'</td>'; }).join("") + '</tr>';
+  }).join("") + '</tbody>';
+  els.csvSampleRows.innerHTML = headHtml + bodyHtml;
+
+  // Impact summary: predict added/updated/skipped without mutating state
+  var target = els.csvTargetSelect.value;
+  var keyForCol = resolveKeyForCol(header);
+  var keyIdx = state.keyField ? keyForCol.indexOf(state.keyField) : (els.csvKeySelect.value ? parseInt(els.csvKeySelect.value,10) : -1);
+  var dataRows = lines.length - 1;
+  if (!state.keyField && (isNaN(keyIdx) || keyIdx < 0)){
+    els.csvImpactSummary.textContent = dataRows.toLocaleString()+" data row(s) detected. Choose a Key column above to see the import impact.";
+    return;
+  }
+  var keyCol = state.keyField ? keyIdx : keyIdx;
+  var seenKeys = {}, willAdd=0, willUpdate=0, willSkip=0;
+  for (var r=1;r<lines.length;r++){
+    var row = lines[r];
+    if (!row.length || row.every(function(c){ return String(c).trim()===""; })) continue;
+    var kv = normVal(row[keyCol]);
+    if (!kv){ willSkip++; continue; }
+    var kn = state.caseInsensitive ? kv.toLowerCase() : kv;
+    if (target === "master"){
+      var exists = state.master.some(function(m){ return normCmp(m[state.keyField]||"", state.caseInsensitive) === kn; }) || seenKeys[kn];
+      if (exists) willUpdate++; else willAdd++;
+      seenKeys[kn] = true;
+    } else {
+      willAdd++;
+    }
+  }
+  els.csvImpactSummary.textContent = target === "master"
+    ? ("On import: ~"+willAdd.toLocaleString()+" new reference record(s), ~"+willUpdate.toLocaleString()+" updated, "+willSkip.toLocaleString()+" skipped (missing key).")
+    : ("On import: ~"+willAdd.toLocaleString()+" row(s) added to Working Data, "+willSkip.toLocaleString()+" skipped (missing key).");
+}
 function renderCsvMappingPreview(){
   var text = (els.csvTextarea.value||"").trim();
   csvColumnOverrides = {}; csvNewFieldLabels = {};
-  if (!text){ els.csvMappingPreview.innerHTML = ""; els.csvKeyRow.style.display="none"; return; }
+  if (!text){ els.csvMappingPreview.innerHTML = ""; els.csvKeyRow.style.display="none"; renderCsvSamplePreview(); return; }
   var lines = parseCsv(text);
-  if (!lines.length || !lines[0].length){ els.csvMappingPreview.innerHTML = ""; els.csvKeyRow.style.display="none"; return; }
+  if (!lines.length || !lines[0].length){ els.csvMappingPreview.innerHTML = ""; els.csvKeyRow.style.display="none"; renderCsvSamplePreview(); return; }
   var header = lines[0];
   var auto = computeAutoMapping(header);
   var matchedCount = auto.filter(function(k){ return k!==null; }).length;
@@ -1315,11 +1600,12 @@ function renderCsvMappingPreview(){
   els.csvMappingPreview.innerHTML =
     '<label style="margin-bottom:6px;">Detected Column Mapping &mdash; '+matchedCount+' of '+header.length+' column(s) auto-matched by header name to this session\u2019s existing fields</label>'+
     '<table><thead><tr><th style="text-align:left;padding:4px 6px;font-size:10.5px;color:var(--ink-soft);">CSV Column</th><th style="text-align:left;padding:4px 6px;font-size:10.5px;color:var(--ink-soft);">Maps To</th></tr></thead><tbody>'+rowsHtml+'</tbody></table>'+
-    '<p class="hint-note">Unrecognized columns default to becoming new fields automatically. Override any column before importing. After import, the Discrepancy checker automatically compares only the fields that end up with real data on both the Master File and Working Data &mdash; no manual setup required.</p>';
+    '<p class="hint-note">Unrecognized columns default to becoming new fields automatically, and are auto-checked for comparison as soon as they carry data on both sides. Override any column before importing. After import, the Discrepancy checker automatically compares only the fields that end up with real data on both the Master File and Working Data &mdash; no manual setup required.</p>';
   els.csvMappingPreview.querySelectorAll("[data-mapcol]").forEach(function(sel){
-    sel.addEventListener("change", function(){ csvColumnOverrides[sel.getAttribute("data-mapcol")] = sel.value; refreshCsvKeySelect(header); });
+    sel.addEventListener("change", function(){ csvColumnOverrides[sel.getAttribute("data-mapcol")] = sel.value; refreshCsvKeySelect(header); renderCsvSamplePreview(); });
   });
   refreshCsvKeySelect(header);
+  renderCsvSamplePreview();
 }
 function refreshCsvKeySelect(header){
   if (state.keyField){ els.csvKeyRow.style.display="none"; return; }
@@ -1328,6 +1614,7 @@ function refreshCsvKeySelect(header){
   var guessIdx = header.findIndex(function(h){ return /\b(id|code|no\.?|number|key|badge|account)\b/i.test(h||""); });
   els.csvKeySelect.innerHTML = opts.join("");
   if (guessIdx>=0) els.csvKeySelect.value = String(guessIdx);
+  els.csvKeySelect.addEventListener("change", renderCsvSamplePreview);
 }
 function resolveKeyForCol(header){
   var auto = computeAutoMapping(header);
@@ -1363,7 +1650,8 @@ function importCsvInto(target, text){
     if (k === "__new__"){
       var newKey = slugify(header[idx], existingKeys);
       existingKeys.push(newKey);
-      state.schema.push({key:newKey, label: header[idx] || newKey});
+      var sampleVals = parsed.slice(1, 21).map(function(row){ return row[idx]; });
+      state.schema.push({key:newKey, label: header[idx] || newKey, type: guessFieldType(sampleVals)});
       addedFieldsThisImport.push(newKey);
       return newKey;
     }
@@ -1425,7 +1713,7 @@ function importCsvInto(target, text){
 
   if (!added && !updated) throw new Error("No valid data rows found (rows need a value in the "+keyLabel()+" column).");
   recompute();
-  var schemaNote = addedFieldsThisImport.length ? " New field(s) added to schema: "+addedFieldsThisImport.map(fieldLabel).join(", ")+"." : "";
+  var schemaNote = addedFieldsThisImport.length ? " New field(s) added to schema (auto-checked, type auto-detected): "+addedFieldsThisImport.map(fieldLabel).join(", ")+"." : "";
   var excludedNow = autoExcludedFields();
   var exclNote = excludedNow.length ? " "+excludedNow.length+" field(s) currently auto-excluded from the crosscheck (data only on one side): "+excludedNow.map(fieldLabel).join(", ")+"." : "";
   var detail = (target==="roster"
@@ -1461,11 +1749,11 @@ function computeLiveRosterCheck(){
   }
   var mismatches = [];
   checkFields().forEach(function(f){
-    if (normCmp(fields[f.key],state.caseInsensitive) !== normCmp(mrec[f.key],state.caseInsensitive)) mismatches.push({key:f.key, label:f.label, current:fields[f.key], correct:mrec[f.key]});
+    if (!valuesEqualTyped(fields[f.key], mrec[f.key], f.type, state.caseInsensitive)) mismatches.push({key:f.key, label:f.label, current:fields[f.key], correct:mrec[f.key]});
   });
   if (!mismatches.length){
     box.className = "live-check ok";
-    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp aligned">Aligned</span></div><p class="hint-note">Matches the Master File original exactly (spacing-tolerant, across '+checkFields().length+' auto-detected comparable field(s)).</p>';
+    box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp aligned">Aligned</span></div><p class="hint-note">Matches the Master File original exactly (spacing-tolerant, across '+checkFields().length+' auto-checked field(s)).</p>';
   } else {
     box.className = "live-check bad";
     box.innerHTML = '<div class="live-check-head">Live Check &middot; <span class="stamp misaligned">Misaligned</span></div>' +
@@ -1578,7 +1866,7 @@ function deleteRecord(target, id){
 // =================================================================
 function addSampleData(n){
   if (!state.schema.length){
-    state.schema = SAMPLE_SCHEMA.map(function(f){ return {key:f.key,label:f.label}; });
+    state.schema = SAMPLE_SCHEMA.map(function(f){ return {key:f.key,label:f.label,type:f.type||"text"}; });
     state.keyField = SAMPLE_KEYFIELD;
   }
   var seed = Math.floor(Math.random()*100000) + 1;
@@ -1601,9 +1889,10 @@ function addSampleData(n){
 }
 function exportBackup(){
   var payload = {
-    v:4, exportedAt: new Date().toISOString(), schema: state.schema, keyField: state.keyField, caseInsensitive: state.caseInsensitive,
+    v:5, exportedAt: new Date().toISOString(), schema: state.schema, keyField: state.keyField, caseInsensitive: state.caseInsensitive,
     master: state.master, roster: state.roster, ignoredFields: Array.from(state.ignoredFields),
-    auditLog: state.auditLog.map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; })
+    auditLog: state.auditLog.map(function(a){ return {ts:a.ts.toISOString(), action:a.action, details:a.details, rows:a.rows}; }),
+    rules: state.rules
   };
   var blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
   var url = URL.createObjectURL(blob);
@@ -1628,6 +1917,7 @@ function restoreFromFile(file){
       state.roster = data.roster;
       state.ignoredFields = new Set(data.ignoredFields || []);
       state.auditLog = (data.auditLog || []).map(function(a){ return {ts:new Date(a.ts), action:a.action, details:a.details, rows:a.rows}; });
+      state.rules = Array.isArray(data.rules) ? data.rules : [];
       state.undoStack = []; state.redoStack = []; state.selectedRosterIds = new Set();
       state.page = { roster:1, master:1, audit:1 };
       recompute();
@@ -1695,7 +1985,7 @@ function renderDashboard(){
   els.barsStatusDist.style.display = hasData ? "block" : "none";
   els.barsFieldChart.style.display = hasData ? "block" : "none";
   els.barsUnitChart.style.display = hasData ? "block" : "none";
-  if (!hasData){ els.dashFooter.textContent = "No data loaded yet."; renderDupBanner(); renderAutoExcludeBanner(); return; }
+  if (!hasData){ els.dashFooter.textContent = "No data loaded yet."; renderDupBanner(); renderAutoExcludeBanner(); renderDqBanner(); return; }
 
   var c = state.counts, total = state.roster.length;
   els.statTotal.textContent = total.toLocaleString();
@@ -1753,10 +2043,11 @@ function renderDashboard(){
     }).join("");
   }
 
-  els.dashFooter.textContent = "Master File: " + state.master.length.toLocaleString() + " reference record(s) \u00b7 Working Data: " + total.toLocaleString() + " record(s) \u00b7 Auto-detected checked fields: " +
+  els.dashFooter.textContent = "Master File: " + state.master.length.toLocaleString() + " reference record(s) \u00b7 Working Data: " + total.toLocaleString() + " record(s) \u00b7 Auto-checked fields: " +
     (checkFields().map(function(f){ return f.label; }).join(", ") || "none");
   renderDupBanner();
   renderAutoExcludeBanner();
+  renderDqBanner();
 }
 function renderDupBanner(){
   var n = state.dupKeys.size;
@@ -1768,11 +2059,26 @@ function renderDupBanner(){
 function renderAutoExcludeBanner(){
   if (!els.autoExcludeBanner) return;
   var excluded = autoExcludedFields();
-  if (!excluded.length){ els.autoExcludeBanner.style.display="none"; return; }
+  var ignored = manuallyIgnoredFields();
+  if (!excluded.length && !ignored.length){ els.autoExcludeBanner.style.display="none"; return; }
   els.autoExcludeBanner.style.display="flex";
-  els.autoExcludeBannerText.innerHTML = '&#128269;&nbsp;<b>Auto-detected: '+excluded.length+' field(s) excluded from the crosscheck</b> because they only have data on one side (Master File or Working Data), not both \u2014 '+
-    excluded.map(function(f){ return esc(f.label); }).join(", ") +
-    '. This is fully automatic and updates as soon as both sides have data for a field \u2014 no setup needed, and it works the same way no matter what headers your files use.';
+  var parts = [];
+  if (excluded.length){
+    parts.push('&#128269;&nbsp;<b>Auto-detected: '+excluded.length+' field(s) excluded from the crosscheck</b> because they only have data on one side (Master File or Working Data), not both \u2014 '+
+      excluded.map(function(f){ return esc(f.label); }).join(", ") +
+      '. This is fully automatic and updates as soon as both sides have data for a field \u2014 no setup needed, and it works the same way no matter what headers your files use.');
+  }
+  if (ignored.length){
+    parts.push('<b>'+ignored.length+' field(s) manually unchecked</b> in Schema &amp; Settings \u2014 '+ignored.map(function(f){ return esc(f.label); }).join(", ")+'. Tick them again any time to bring them back into the crosscheck.');
+  }
+  els.autoExcludeBannerText.innerHTML = parts.join(' &middot; ');
+}
+function renderDqBanner(){
+  if (!els.dqBanner) return;
+  if (!state.dqIssues.length){ els.dqBanner.style.display="none"; return; }
+  var totalHits = state.dqIssues.reduce(function(s,i){ return s + i.rosterHits.length + i.masterHits.length; }, 0);
+  els.dqBanner.style.display="flex";
+  els.dqBannerText.innerHTML = '&#9888;&nbsp;<b>'+state.dqIssues.length+' data quality rule(s) found issues</b> across '+totalHits.toLocaleString()+' row(s) total. See the <b>Data Quality</b> tab for details.';
 }
 
 // =================================================================
@@ -1786,8 +2092,9 @@ function stampClass(status){
 function buildRosterHead(){
   var cols = ['<th class="col-chk"><input type="checkbox" id="chkAllRoster" title="Select all rows on this page"></th>','<th class="col-nr" data-sort="nr">Nr<span class="sort-arrow"></span></th>'];
   var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
+  var ignoredKeys = {}; manuallyIgnoredFields().forEach(function(f){ ignoredKeys[f.key]=true; });
   state.schema.forEach(function(f){
-    cols.push('<th data-sort="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?' <span class="keypill">Key</span>':'')+(excludedKeys[f.key]?' <span class="autopill" title="Auto-excluded: data only on one side">auto</span>':'')+'<span class="sort-arrow"></span></th>');
+    cols.push('<th data-sort="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?' <span class="keypill">Key</span>':'')+(excludedKeys[f.key]?' <span class="autopill" title="Auto-excluded: data only on one side">auto</span>':'')+(ignoredKeys[f.key]?' <span class="autopill" title="Manually unchecked in Schema & Settings">off</span>':'')+'<span class="sort-arrow"></span></th>');
   });
   cols.push('<th class="col-status" data-sort="status">Status<span class="sort-arrow"></span></th>');
   cols.push('<th class="col-conf">Match</th>');
@@ -1798,8 +2105,9 @@ function buildRosterHead(){
 function buildMasterHead(){
   var cols = [];
   var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
+  var ignoredKeys = {}; manuallyIgnoredFields().forEach(function(f){ ignoredKeys[f.key]=true; });
   state.schema.forEach(function(f){
-    cols.push('<th data-sort="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?' <span class="keypill">Key</span>':'')+(excludedKeys[f.key]?' <span class="autopill" title="Auto-excluded: data only on one side">auto</span>':'')+'<span class="sort-arrow"></span></th>');
+    cols.push('<th data-sort="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?' <span class="keypill">Key</span>':'')+(excludedKeys[f.key]?' <span class="autopill" title="Auto-excluded: data only on one side">auto</span>':'')+(ignoredKeys[f.key]?' <span class="autopill" title="Manually unchecked in Schema & Settings">off</span>':'')+'<span class="sort-arrow"></span></th>');
   });
   cols.push('<th class="col-fix"></th>');
   els.masterHead.innerHTML = cols.join("");
@@ -1853,6 +2161,7 @@ function renderRosterTable(){
   var pageInfo = currentRosterPage();
   var all = pageInfo.all, pageRows = pageInfo.pageRows, totalPages = pageInfo.totalPages;
   var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
+  manuallyIgnoredFields().forEach(function(f){ excludedKeys[f.key]=true; });
 
   if (!state.schema.length){
     els.rosterBody.innerHTML = '<tr><td style="text-align:center;padding:30px;color:var(--ink-soft);">Import a CSV to define this session\'s fields.</td></tr>';
@@ -1877,7 +2186,7 @@ function renderRosterTable(){
       } else if (res.status === "Key Not Found in Master"){
         diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">No matching '+esc(keyLabel())+' in Master File</span>';
       } else {
-        diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">Matches Master File across '+checkFields().length+' auto-detected field(s)</span>';
+        diffHtml = '<span style="color:var(--ink-soft);font-size:11px;">Matches Master File across '+checkFields().length+' auto-checked field(s)</span>';
       }
       if (isDup) diffHtml += '<div style="margin-top:4px;"><span class="stamp dup">Duplicate Key</span></div>';
       var confPct = res.status==="Key Not Found in Master" ? null : Math.round(res.confidence*100);
@@ -1926,12 +2235,14 @@ function renderRosterTable(){
 
   var subtitleParts = [state.roster.length.toLocaleString()+" working record(s)", state.master.length.toLocaleString()+" Master File record(s)"];
   var autoExcl = autoExcludedFields();
+  var manuallyOff = manuallyIgnoredFields();
   els.subtitle.innerHTML = subtitleParts.join(" &middot; ") + ' &middot; <span class="tag ok">spacing-safe</span>' +
     (state.keyField ? ' &middot; <span class="tag info">key: '+esc(keyLabel())+'</span>' : ' &middot; <span class="tag warn">no key field set</span>') +
     ' &middot; <span class="tag ok">'+checkFields().length+' field(s) auto-checked</span>' +
     (state.dupKeys.size ? ' &middot; <span class="tag warn">'+state.dupKeys.size+' duplicate key(s)</span>' : "") +
     (autoExcl.length ? ' &middot; <span class="tag warn">'+autoExcl.length+' auto-excluded (one-sided)</span>' : "") +
-    (state.ignoredFields.size ? ' &middot; <span class="tag info">ignoring '+esc(Array.from(state.ignoredFields).map(fieldLabel).join(", "))+'</span>' : "");
+    (manuallyOff.length ? ' &middot; <span class="tag info">'+manuallyOff.length+' manually unchecked</span>' : "") +
+    (state.dqIssues.length ? ' &middot; <span class="tag warn">'+state.dqIssues.length+' data quality rule(s) flagged</span>' : "");
 }
 function wireSortHeaders(containerId, sortState, renderFn){
   document.querySelectorAll("#"+containerId+" th[data-sort]").forEach(function(th){
@@ -1998,6 +2309,7 @@ function renderMasterTable(){
   var startIdx = (state.page.master-1)*pageSize;
   var pageRows = all.slice(startIdx, startIdx+pageSize);
   var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
+  manuallyIgnoredFields().forEach(function(f){ excludedKeys[f.key]=true; });
   if (!state.schema.length){
     els.masterBody.innerHTML = '<tr><td style="text-align:center;padding:30px;color:var(--ink-soft);">Import a CSV to define this session\'s fields.</td></tr>';
   } else if (!pageRows.length){
@@ -2019,6 +2331,31 @@ function renderMasterTable(){
   wireSortHeaders("masterHead", state.sortMaster, renderMasterTable);
   renderPager("masterPager", state.page.master, totalPages, all.length, function(p){ state.page.master=p; renderMasterTable(); });
   els.tabCountMaster.textContent = "(" + state.master.length.toLocaleString() + ")";
+}
+
+// =================================================================
+// RENDER: Data Quality tab
+// =================================================================
+function renderDataQuality(){
+  els.tabCountQuality.textContent = state.dqIssues.length ? "(" + state.dqIssues.length + ")" : "";
+  if (!state.rules.length){
+    els.dqResults.innerHTML = '<div class="empty-state"><h3>No rules defined yet</h3><p>Add a rule (required field, pattern match, min/max length) to catch data quality problems independent of the Master File crosscheck.</p><div class="es-actions"><button type="button" class="primary" data-openrules>Manage Rules&hellip;</button></div></div>';
+    var btn = els.dqResults.querySelector("[data-openrules]");
+    if (btn) btn.addEventListener("click", openRulesModal);
+    return;
+  }
+  if (!state.dqIssues.length){
+    els.dqResults.innerHTML = '<div class="banner info"><span>&#10003;&nbsp;All '+state.rules.length+' active rule(s) pass across every record in Working Data and Master File.</span></div>';
+    return;
+  }
+  els.dqResults.innerHTML = state.dqIssues.map(function(issue){
+    var r = issue.rule;
+    var typeLabel = {required:"Required", pattern:"Pattern: "+esc(r.pattern||""), minlen:"Min length "+esc(r.pattern||""), maxlen:"Max length "+esc(r.pattern||"")}[r.type] || r.type;
+    var total = issue.rosterHits.length + issue.masterHits.length;
+    var sampleRows = issue.rosterHits.slice(0,5).map(function(x){ return "Working Nr "+x.nr; }).concat(issue.masterHits.slice(0,5).map(function(x){ return "Master "+esc(x[state.keyField]||x.id); }));
+    return '<div class="dq-item"><div class="dq-head"><span class="stamp misaligned">'+total+' issue(s)</span><b>'+esc(fieldLabel(r.field))+'</b><span class="typepill">'+typeLabel+'</span></div>' +
+      '<div class="dq-rows">'+(issue.rosterHits.length ? issue.rosterHits.length+" in Working Data" : "")+(issue.rosterHits.length && issue.masterHits.length ? " \u00b7 " : "")+(issue.masterHits.length ? issue.masterHits.length+" in Master File" : "")+' &mdash; e.g. '+sampleRows.slice(0,6).join(", ")+(total>6?", &hellip;":"")+'</div></div>';
+  }).join("");
 }
 
 // =================================================================
@@ -2062,10 +2399,13 @@ function renderSettingsModal(){
   els.ignoreList.innerHTML = state.schema.map(function(f){
     var isKey = f.key === state.keyField;
     var checked = !state.ignoredFields.has(f.key);
+    var typeSel = '<select data-typeselect="'+esc(f.key)+'" style="width:auto;padding:4px 6px;font-size:11px;" '+(isKey?"disabled":"")+'>'+
+      ["text","number","date"].map(function(t){ return '<option value="'+t+'"'+((f.type||"text")===t?" selected":"")+'>'+t.charAt(0).toUpperCase()+t.slice(1)+'</option>'; }).join("")+'</select>';
     return '<div class="ignore-row" data-fieldkey="'+esc(f.key)+'">'+
       '<input type="radio" name="keyfield" value="'+esc(f.key)+'" data-keyradio'+(isKey?" checked":"")+' title="Use as the Key / ID field">'+
       '<span class="ir-label"><input type="text" data-labelinput value="'+esc(f.label)+'"></span>'+
-      '<label class="ir-sub" style="display:flex;align-items:center;gap:4px;"><input type="checkbox" data-ignorekey '+(isKey?"disabled":"")+(checked?" checked":"")+'> checked</label>'+
+      typeSel+
+      '<label class="ir-sub" style="display:flex;align-items:center;gap:4px;" title="Auto-checked by default — untick to leave this field out of the crosscheck"><input type="checkbox" data-ignorekey '+(isKey?"disabled":"")+(checked?" checked":"")+'> checked</label>'+
       (isKey?'<span class="keypill">Key</span>':(excludedKeys[f.key]?'<span class="autopill" title="Data only on one side \u2014 excluded automatically">auto</span>':''))+
       (isKey?'':'<button type="button" class="small danger" data-delfield="'+esc(f.key)+'" style="margin:0;">Delete</button>')+
     '</div>';
@@ -2089,12 +2429,22 @@ els.addFieldBtn && els.addFieldBtn.addEventListener("click", function(){
   var label = prompt("New field name:");
   if (!label || !label.trim()) return;
   var key = slugify(label, state.schema.map(function(f){return f.key;}));
-  state.schema.push({key:key, label:label.trim()});
+  state.schema.push({key:key, label:label.trim(), type:"text"});
   state.master.forEach(function(m){ m[key] = ""; });
   state.roster.forEach(function(r){ r[key] = ""; });
   recompute();
-  logAudit("Add Field", 'Field "'+label.trim()+'" added to schema', 0);
+  logAudit("Add Field", 'Field "'+label.trim()+'" added to schema (auto-checked)', 0);
   renderSettingsModal();
+});
+// Check All / Uncheck All — bulk-toggle every non-key field's inclusion
+// in the crosscheck directly from the modal, without opening each row.
+els.checkAllFieldsBtn && els.checkAllFieldsBtn.addEventListener("click", function(){
+  els.ignoreList.querySelectorAll("[data-ignorekey]:not(:disabled)").forEach(function(cb){ cb.checked = true; });
+  showToast("All fields ticked \u2014 click Save Changes to apply.");
+});
+els.uncheckAllFieldsBtn && els.uncheckAllFieldsBtn.addEventListener("click", function(){
+  els.ignoreList.querySelectorAll("[data-ignorekey]:not(:disabled)").forEach(function(cb){ cb.checked = false; });
+  showToast("All fields unticked \u2014 click Save Changes to apply.");
 });
 
 // =================================================================
@@ -2166,13 +2516,14 @@ function openCompareModal(rowId){
   var res = state.results.get(rowId);
   if (!r || !res) return;
   var excludedKeys = {}; autoExcludedFields().forEach(function(f){ excludedKeys[f.key]=true; });
-  els.cmpModalSub.textContent = "Row Nr "+r.nr+" \u00b7 status: "+(res.status==="Key Not Found in Master"?"Not Found":res.status)+(res.status!=="Key Not Found in Master"?" \u00b7 "+Math.round(res.confidence*100)+"% match across "+checkFields().length+" auto-detected field(s)":"");
+  manuallyIgnoredFields().forEach(function(f){ excludedKeys[f.key]=true; });
+  els.cmpModalSub.textContent = "Row Nr "+r.nr+" \u00b7 status: "+(res.status==="Key Not Found in Master"?"Not Found":res.status)+(res.status!=="Key Not Found in Master"?" \u00b7 "+Math.round(res.confidence*100)+"% match across "+checkFields().length+" auto-checked field(s)":"");
   var mrec = res.master;
   var rowsHtml = state.schema.map(function(f){
     var isKey = f.key === state.keyField;
     var isExcluded = !!excludedKeys[f.key];
     var rv = r[f.key], mv = mrec ? mrec[f.key] : null;
-    var mismatch = !isKey && !isExcluded && mrec && (normCmp(rv,state.caseInsensitive) !== normCmp(mv,state.caseInsensitive));
+    var mismatch = !isKey && !isExcluded && mrec && !valuesEqualTyped(rv, mv, f.type, state.caseInsensitive);
     var tok = mrec ? diffChars(normVal(rv), normVal(mv)) : null;
     return '<tr class="'+(isKey?"cmp-key":"")+(mismatch?" cmp-mismatch":"")+(isExcluded?" cmp-excluded":"")+'">'+
       '<td>'+esc(f.label)+(isKey?' <span class="keypill">Key</span>':'')+(isExcluded?' <span class="autopill">auto</span>':'')+'</td>'+
@@ -2190,6 +2541,103 @@ els.cmpBackdrop.addEventListener("click", function(e){ if (e.target===els.cmpBac
 els.cmpFixAllBtn.addEventListener("click", function(){
   if (cmpRowId){ applyAutoCorrectRow(cmpRowId); els.cmpBackdrop.classList.remove("show"); }
 });
+
+// =================================================================
+// VALIDATION RULES MODAL
+// =================================================================
+var rulesDraft = [];
+function openRulesModal(){
+  if (!state.schema.length){ showToast("Import a CSV first to define fields.", true); return; }
+  rulesDraft = state.rules.map(function(r){ return Object.assign({}, r); });
+  renderRulesModal();
+  els.rulesBackdrop.classList.add("show");
+}
+function renderRulesModal(){
+  if (!rulesDraft.length){
+    els.rulesList.innerHTML = '<p class="hint-note" style="padding:8px;">No rules yet. Click "+ Add Rule" below.</p>';
+    return;
+  }
+  els.rulesList.innerHTML = rulesDraft.map(function(r, i){
+    return '<div class="rule-row" data-ruleidx="'+i+'">'+
+      '<select data-rulefield>'+state.schema.map(function(f){ return '<option value="'+esc(f.key)+'"'+(r.field===f.key?" selected":"")+'>'+esc(f.label)+'</option>'; }).join("")+'</select>'+
+      '<select data-ruletype>'+
+        '<option value="required"'+(r.type==="required"?" selected":"")+'>Must not be blank</option>'+
+        '<option value="pattern"'+(r.type==="pattern"?" selected":"")+'>Must match pattern (regex)</option>'+
+        '<option value="minlen"'+(r.type==="minlen"?" selected":"")+'>Minimum length</option>'+
+        '<option value="maxlen"'+(r.type==="maxlen"?" selected":"")+'>Maximum length</option>'+
+      '</select>'+
+      '<input data-rulepattern placeholder="'+(r.type==="required"?"(not needed)":r.type==="pattern"?"e.g. ^[A-Z0-9-]+$":"e.g. 5")+'" value="'+esc(r.pattern||"")+'" '+(r.type==="required"?"disabled":"")+'>'+
+      '<button type="button" class="small danger" data-delrule="'+i+'" style="margin:0;">Remove</button>'+
+    '</div>';
+  }).join("");
+  els.rulesList.querySelectorAll("[data-ruleidx]").forEach(function(row){
+    var idx = parseInt(row.getAttribute("data-ruleidx"),10);
+    row.querySelector("[data-rulefield]").addEventListener("change", function(){ rulesDraft[idx].field = this.value; });
+    row.querySelector("[data-ruletype]").addEventListener("change", function(){ rulesDraft[idx].type = this.value; renderRulesModal(); });
+    row.querySelector("[data-rulepattern]").addEventListener("input", function(){ rulesDraft[idx].pattern = this.value; });
+  });
+  els.rulesList.querySelectorAll("[data-delrule]").forEach(function(btn){
+    btn.addEventListener("click", function(){ rulesDraft.splice(parseInt(btn.getAttribute("data-delrule"),10),1); renderRulesModal(); });
+  });
+}
+els.addRuleBtn && els.addRuleBtn.addEventListener("click", function(){
+  var firstNonKey = state.schema.find(function(f){ return f.key!==state.keyField; }) || state.schema[0];
+  rulesDraft.push({field: firstNonKey ? firstNonKey.key : state.schema[0].key, type:"required", pattern:"", scope:"both"});
+  renderRulesModal();
+});
+els.rulesCloseBtn && els.rulesCloseBtn.addEventListener("click", function(){ els.rulesBackdrop.classList.remove("show"); });
+els.rulesBackdrop && els.rulesBackdrop.addEventListener("click", function(e){ if (e.target===els.rulesBackdrop) els.rulesBackdrop.classList.remove("show"); });
+els.rulesSaveBtn && els.rulesSaveBtn.addEventListener("click", function(){
+  state.rules = rulesDraft.filter(function(r){ return r.field; });
+  recompute();
+  logAudit("Update Data Quality Rules", state.rules.length+" active rule(s)", 0);
+  els.rulesBackdrop.classList.remove("show");
+  showToast("Rules saved.");
+  renderAll();
+});
+els.manageRulesBtn && els.manageRulesBtn.addEventListener("click", openRulesModal);
+
+// =================================================================
+// FIND & REPLACE MODAL
+// =================================================================
+function openFindReplace(){
+  if (!state.schema.length){ showToast("Import a CSV first.", true); return; }
+  els.frField.innerHTML = state.schema.map(function(f){ return '<option value="'+esc(f.key)+'">'+esc(f.label)+(f.key===state.keyField?" (Key)":"")+'</option>'; }).join("");
+  els.frFind.value = ""; els.frReplace.value = ""; els.frCase.checked=false; els.frScope.checked=false;
+  updateFrPreview();
+  els.frBackdrop.classList.add("show");
+  setTimeout(function(){ els.frFind.focus(); }, 30);
+}
+els.findReplaceBtn && els.findReplaceBtn.addEventListener("click", openFindReplace);
+[els.frField, els.frFind, els.frCase, els.frScope].forEach(function(el){ el && el.addEventListener("input", updateFrPreview); el && el.addEventListener("change", updateFrPreview); });
+els.frCancelBtn && els.frCancelBtn.addEventListener("click", function(){ els.frBackdrop.classList.remove("show"); });
+els.frBackdrop && els.frBackdrop.addEventListener("click", function(e){ if (e.target===els.frBackdrop) els.frBackdrop.classList.remove("show"); });
+els.frApplyBtn && els.frApplyBtn.addEventListener("click", function(){
+  var n = frMatches().length;
+  if (!n){ showToast("No matching rows.", true); return; }
+  if (!confirm("Replace text in "+n.toLocaleString()+" row(s)? You can Undo this afterward.")) return;
+  applyFindReplace();
+});
+
+// =================================================================
+// SHORTCUTS / HELP MODAL
+// =================================================================
+var SHORTCUTS = [
+  ["/", "Focus the Working Data search box"],
+  ["Ctrl/Cmd + Z", "Undo the most recent correction or edit"],
+  ["Ctrl/Cmd + Shift + Z", "Redo"],
+  ["Esc", "Close any open modal"],
+  ["Click a Dashboard stat card", "Jump to Working Data filtered to that status"],
+  ["Click a column header", "Sort the table by that column (click again to reverse)"]
+];
+function renderShortcuts(){
+  els.shortcutsBody.innerHTML = SHORTCUTS.map(function(s){
+    return '<tr><td style="padding:6px 8px;"><span class="kbd">'+esc(s[0])+'</span></td><td style="padding:6px 8px;font-size:12.5px;">'+esc(s[1])+'</td></tr>';
+  }).join("");
+}
+els.shortcutsBtn && els.shortcutsBtn.addEventListener("click", function(){ renderShortcuts(); els.shortcutsBackdrop.classList.add("show"); });
+els.shortcutsCloseBtn && els.shortcutsCloseBtn.addEventListener("click", function(){ els.shortcutsBackdrop.classList.remove("show"); });
+els.shortcutsBackdrop && els.shortcutsBackdrop.addEventListener("click", function(e){ if (e.target===els.shortcutsBackdrop) els.shortcutsBackdrop.classList.remove("show"); });
 
 // =================================================================
 // EXPORT BUILDER — pick rows + columns, arrange sequence, choose print
@@ -2448,30 +2896,40 @@ function renderInstructions(){
     '<h2>What this tool does</h2>'+
     '<p>It cross-checks a <b>Working Data</b> file against a <b>Master File</b> reference (the source-of-truth), matched on a single Key/ID field you choose, and flags every row as <b>Aligned</b>, <b>Misaligned</b>, or <b>Key Not Found in Master</b>. It runs entirely in your browser &mdash; nothing is uploaded anywhere.</p>'+
 
-    '<h2>Any file, any columns</h2>'+
-    '<p>Unlike a fixed template, this tool has no hardcoded columns. The very first CSV you import defines the schema for the session: every column header becomes a field, and you choose which one is the unique Key/ID. Later imports auto-match columns to existing fields by header name, and any brand-new column is added to the schema automatically (backfilled as blank on existing records) rather than dropped.</p>'+
+    '<h2>Any file, any columns, fully dynamic</h2>'+
+    '<p>Unlike a fixed template, this tool has no hardcoded columns. The very first CSV you import defines the schema for the session: every column header becomes a field, and you choose which one is the unique Key/ID. Later imports auto-match columns to existing fields by header name, and any brand-new column is added to the schema automatically (backfilled as blank on existing records) rather than dropped, with its Type (Text/Number/Date) guessed from its sample values. The whole schema &mdash; and which fields get cross-matched &mdash; is derived purely from whatever headers your two files actually share, so the same tool works identically on payroll rosters, inventory lists, student records, or any other paired dataset.</p>'+
 
-    '<h2>Auto-detected discrepancy fields (fully dynamic)</h2>'+
-    '<p>You never have to tell the tool which columns to compare. On every recompute, it automatically scans both datasets and checks, header by header, whether each field actually carries real data on <b>both</b> the Master File and Working Data. Only that intersection is used for Misaligned/Aligned detection, Match Confidence, the Discrepancy Detail column, and Auto-Correct. A field that only appears in one of the two files &mdash; say, a column unique to your Master File export, or one only present in the Working Data extract &mdash; is automatically left out of the crosscheck instead of falsely flagging every row, and is marked with a small <span class="autopill">auto</span> tag wherever it appears in the tables and Schema &amp; Settings. As soon as that field gets real data on both sides (via import, manual edit, or Promote), it\u2019s automatically pulled back into the comparison &mdash; no settings to update, and it works identically regardless of what the headers are called or what kind of data they hold.</p>'+
+    '<h2>Every column is auto-checked by default</h2>'+
+    '<p>You never have to tell the tool which columns to compare. The instant a field carries real data on <b>both</b> the Master File and Working Data, it is automatically turned on for Misaligned/Aligned detection, Match Confidence, the Discrepancy Detail column, and Auto-Correct &mdash; no setup, no manual mapping. A field that only appears in one of the two files (say, a column unique to your Master File export) is automatically left out instead of falsely flagging every row, and is marked with a small <span class="autopill">auto</span> tag wherever it appears. As soon as that field gets real data on both sides, it is automatically pulled back into the comparison.</p>'+
+    '<p>If you want a field left out anyway &mdash; even though both sides have data for it &mdash; open <b>Schema &amp; Settings</b> and untick it; it\u2019s marked <span class="autopill">off</span> everywhere it appears. Tick it again at any time to bring it straight back into the crosscheck. Use <b>Check All</b> / <b>Uncheck All</b> in that same modal to toggle every field at once, then fine-tune individual fields as needed.</p>'+
+
+    '<h2>Type-aware comparison</h2>'+
+    '<p>Each field has a Type &mdash; Text, Number, or Date &mdash; guessed automatically from its sample values when a column is created, and adjustable any time in <b>Schema &amp; Settings</b>. Number fields tolerate formatting differences that don\u2019t change the underlying value, such as thousands separators or parentheses for negatives ("1,000" = "1000"). Date fields tolerate different date formats representing the same day ("3/4/2026" = "2026-03-04"). This keeps genuinely equivalent values from being flagged as Misaligned just because they were typed or exported differently, while still catching real discrepancies.</p>'+
 
     '<h2>Character-aligned differences</h2>'+
-    '<p>Every mismatch is shown with character-level highlighting: the Working Data value with the differing characters struck out, and the Master File value with the differing characters highlighted &mdash; so you can see exactly what changed, not just that something did. Click <b>Compare</b> on any row for a full side-by-side table of every field, aligned column for column, key field included for reference, with auto-excluded fields greyed out and marked <span class="autopill">skip</span>.</p>'+
+    '<p>Every mismatch is shown with character-level highlighting: the Working Data value with the differing characters struck out, and the Master File value with the differing characters highlighted &mdash; so you can see exactly what changed, not just that something did. Click <b>Compare</b> on any row for a full side-by-side table of every field, aligned column for column, key field included for reference, with excluded fields greyed out and marked <span class="autopill">skip</span>.</p>'+
 
     '<h2>Match Confidence</h2>'+
-    '<p>Each row gets a similarity score (0&ndash;100%) across its auto-detected checked fields, even when Aligned or Misaligned, using a character-edit-distance comparison. Use it to spot near-misses (likely typos) versus wildly different values (likely a wrong record) at a glance. The Dashboard shows an overall average.</p>'+
+    '<p>Each row gets a similarity score (0&ndash;100%) across its auto-checked fields, even when Aligned or Misaligned, using a character-edit-distance comparison. Use it to spot near-misses (likely typos) versus wildly different values (likely a wrong record) at a glance. The Dashboard shows an overall average.</p>'+
 
     '<h2>Spacing-tolerant comparison, exact-format correction</h2>'+
     '<p>Detecting a mismatch trims leading/trailing spaces and collapses doubled internal spaces before comparing, so stray spacing alone never flags a false Misaligned row. Turn on <b>Case-insensitive comparison</b> in Schema &amp; Settings if capitalization shouldn\u2019t count either.</p>'+
     '<p><b>But when a field IS corrected</b> (via any Fix button, Auto-Correct Selected, or Auto-Correct All), Working Data receives the Master File\u2019s value <b>exactly as typed there</b> &mdash; same spacing, capitalization, and punctuation.</p>'+
 
+    '<h2>Data Quality rules (separate from the crosscheck)</h2>'+
+    '<p>The <b>Data Quality</b> tab lets you define standalone validation rules per field &mdash; must not be blank, must match a pattern (regex), or minimum/maximum length &mdash; that check Working Data and Master File independently of whether a row has a matching Master File record. This catches problems a crosscheck alone would miss, like a blank email column or an ID that doesn\u2019t follow your expected format. Manage rules from the tab\u2019s <b>Manage Rules&hellip;</b> button.</p>'+
+
     '<h2>Schema &amp; Settings</h2>'+
-    '<p>Rename any field, change which field is the Key, exclude a field from the crosscheck by hand, delete a field entirely, or add a new blank field by hand. Fields already excluded automatically (because they\u2019re one-sided) are marked <span class="autopill">auto</span> so you can tell them apart from fields you\u2019ve chosen to ignore yourself. The Key field is never compared or corrected &mdash; it\u2019s only used to match rows between the two files.</p>'+
+    '<p>Rename any field, change which field is the Key, set its Type, untick a field to leave it out of the crosscheck (or use <b>Check All</b> / <b>Uncheck All</b> for a bulk toggle), delete a field entirely, or add a new blank field by hand. Fields excluded automatically because they\u2019re one-sided are marked <span class="autopill">auto</span>, and fields you\u2019ve manually unchecked are marked <span class="autopill">off</span> wherever they appear, so you can always tell the two reasons for exclusion apart. The Key field is never compared or corrected &mdash; it\u2019s only used to match rows between the two files.</p>'+
 
     '<h2>Live Check &mdash; validating data entry in real time</h2>'+
-    '<p>Adding or editing a Working Data record shows a Live Check panel that updates as you type, comparing your in-progress entry against the matching Master File record across the same auto-detected field set. Editing a Master File record instead checks the Key for duplicates, since the Master File must have exactly one record per key.</p>'+
+    '<p>Adding or editing a Working Data record shows a Live Check panel that updates as you type, comparing your in-progress entry against the matching Master File record across the same auto-checked field set. Editing a Master File record instead checks the Key for duplicates, since the Master File must have exactly one record per key.</p>'+
 
-    '<h2>Bulk actions</h2>'+
-    '<p>Tick rows (or the header checkbox) to open a bulk bar: <b>Auto-Correct Selected</b>, <b>Promote Selected</b> (for eligible Not Found rows), <b>Export Selected</b> (quick CSV), <b>Build Export&hellip;</b> (opens the full Export Builder below), and <b>Delete Selected</b>. <b>Select all matching filter</b> extends the selection to every row matching your current filters, even off-page.</p>'+
+    '<h2>Bulk actions &amp; Find &amp; Replace</h2>'+
+    '<p>Tick rows (or the header checkbox) to open a bulk bar: <b>Auto-Correct Selected</b>, <b>Promote Selected</b> (for eligible Not Found rows), <b>Export Selected</b> (quick CSV), <b>Build Export&hellip;</b> (opens the full Export Builder below), and <b>Delete Selected</b>. <b>Select all matching filter</b> extends the selection to every row matching your current filters, even off-page. <b>Find &amp; Replace</b> (in the Working Data filter bar) bulk-edits text within one field across many rows at once, with a live match-count preview before you commit and full Undo support afterward.</p>'+
+
+    '<h2>Import Preview</h2>'+
+    '<p>The Import CSV dialog now shows a live sample of the first 5 rows as mapped, plus a running estimate of how many records will be added, updated, or skipped &mdash; so you can catch a wrong column mapping or wrong Key column before committing the import, not after.</p>'+
 
     '<h2>Export Builder &mdash; sequence, columns, print style, and file format</h2>'+
     '<p>Open it from the header (<b>Export Builder</b>) or from the bulk bar (<b>Build Export&hellip;</b>). It lets you:</p>'+
@@ -2489,14 +2947,16 @@ function renderInstructions(){
 
     '<h2>Buttons &amp; automation</h2>'+
     '<ul>'+
-      '<li><b>Auto-Correct All</b> &mdash; fixes every Misaligned row in one action, using the Master File\u2019s exact values for the auto-detected fields. Undo-safe.</li>'+
+      '<li><b>Auto-Correct All</b> &mdash; fixes every Misaligned row in one action, using the Master File\u2019s exact values for the auto-checked fields. Undo-safe.</li>'+
       '<li><b>Undo / Redo</b> &mdash; unlimited history. <span class="kbd">Ctrl/Cmd+Z</span> / <span class="kbd">Ctrl/Cmd+Shift+Z</span>.</li>'+
       '<li><b>Errors CSV / Working CSV / Export Filtered / Export Master CSV</b> &mdash; quick exports at whichever scope you need, including Match Confidence and status.</li>'+
       '<li><b>Export Builder</b> &mdash; the full custom export described above, for Print/PDF, Word, or Excel with your own column and row arrangement.</li>'+
-      '<li><b>Import CSV</b> &mdash; bulk-add or update either file, with the column mapping preview described above and a live count of auto-matched columns.</li>'+
-      '<li><b>Export Backup / Restore Backup</b> &mdash; a full JSON snapshot including the schema, key field, and settings &mdash; portable across browsers/devices.</li>'+
+      '<li><b>Import CSV</b> &mdash; bulk-add or update either file, with the column mapping preview, sample-row preview, and import impact estimate described above.</li>'+
+      '<li><b>Find &amp; Replace</b> &mdash; bulk text substitution within one Working Data field.</li>'+
+      '<li><b>Export Backup / Restore Backup</b> &mdash; a full JSON snapshot including the schema, key field, rules, and settings &mdash; portable across browsers/devices.</li>'+
       '<li><b>Promote</b> &mdash; inserts a Not Found row into the Master File as a new reference record.</li>'+
       '<li><b>Sample Data</b> &mdash; loads a generic generated dataset so every feature is demoable immediately.</li>'+
+      '<li><b>Help (?)</b> &mdash; quick keyboard shortcut reference.</li>'+
       '<li><b>Clear All</b> &mdash; wipes everything, including the schema, so you can start a completely fresh session with a different kind of file.</li>'+
     '</ul>'+
 
@@ -2515,6 +2975,7 @@ function renderAll(){
   populateFilterFieldSelect();
   renderRosterTable();
   renderMasterTable();
+  renderDataQuality();
   renderAudit();
   renderUndoButton();
   saveSessionDebounced();
@@ -2606,6 +3067,8 @@ els.settingsSaveBtn.addEventListener("click", function(){
     var key = row.getAttribute("data-fieldkey");
     var labelInput = row.querySelector("[data-labelinput]");
     if (labelInput && labelInput.value.trim()) fieldByKey(key).label = labelInput.value.trim();
+    var typeSel = row.querySelector("[data-typeselect]");
+    if (typeSel && !typeSel.disabled) fieldByKey(key).type = typeSel.value;
     var radio = row.querySelector("[data-keyradio]");
     if (radio && radio.checked) newKey = key;
     var ignChk = row.querySelector("[data-ignorekey]");
@@ -2618,7 +3081,7 @@ els.settingsSaveBtn.addEventListener("click", function(){
   recompute();
   els.settingsBackdrop.classList.remove("show");
   var labels = ignored.map(fieldLabel);
-  logAudit("Update Settings", (keyChanged?"Key field changed to "+fieldLabel(state.keyField)+". ":"")+(labels.length ? "Manually ignored fields: "+labels.join(", ") : "No manually-ignored fields")+(state.caseInsensitive?" \u00b7 case-insensitive":""), 0);
+  logAudit("Update Settings", (keyChanged?"Key field changed to "+fieldLabel(state.keyField)+". ":"")+(labels.length ? "Manually unchecked fields: "+labels.join(", ") : "All fields auto-checked")+(state.caseInsensitive?" \u00b7 case-insensitive":""), 0);
   showToast("Settings saved.");
   renderAll();
 });
@@ -2673,9 +3136,10 @@ els.importCsvBtn.addEventListener("click", function(){
   els.csvBackdrop.classList.add("show");
   els.csvTargetSelect.value = "roster";
   els.csvTextarea.value=""; els.csvPreview.textContent=""; els.csvMappingPreview.innerHTML=""; els.csvKeyRow.style.display="none";
+  els.csvSampleWrap.style.display="none"; els.csvImpactSummary.textContent="";
   updateCsvTargetHint();
 });
-els.csvTargetSelect.addEventListener("change", updateCsvTargetHint);
+els.csvTargetSelect.addEventListener("change", function(){ updateCsvTargetHint(); renderCsvSamplePreview(); });
 function updateCsvTargetHint(){
   els.csvTargetHint.textContent = els.csvTargetSelect.value === "roster"
     ? "New Working Data rows are appended (each gets the next sequential Nr)."
@@ -2759,7 +3223,7 @@ els.bulkSelectAllFilteredBtn.addEventListener("click", function(){
 els.bulkClearBtn.addEventListener("click", function(){ state.selectedRosterIds = new Set(); renderRosterTable(); });
 
 els.newSessionBtn.addEventListener("click", function(){
-  if (!confirm("Clear all data? This permanently deletes every record, the schema, the audit log, and undo/redo history saved in this browser. This cannot be undone.")) return;
+  if (!confirm("Clear all data? This permanently deletes every record, the schema, the audit log, data quality rules, and undo/redo history saved in this browser. This cannot be undone.")) return;
   clearSession();
   state.undoStack = []; state.redoStack = [];
   state.auditLog = [];
@@ -2769,6 +3233,7 @@ els.newSessionBtn.addEventListener("click", function(){
   state.filters = { status:"all", search:"", field:"all", value:"all" };
   state.masterSearch = ""; state.auditSearch = "";
   state.page = { roster:1, master:1, audit:1 };
+  state.rules = []; state.dqIssues = [];
   els.searchInput.value = ""; els.masterSearchInput.value = ""; els.auditSearchInput.value = "";
   recompute();
   logAudit("Clear All Data", "All data and schema wiped; session reset to empty", 0);
@@ -2794,7 +3259,7 @@ document.addEventListener("keydown", function(e){
   if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase()==="z" && !typing){ e.preventDefault(); undoLast(); }
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase()==="z" && !typing){ e.preventDefault(); redoLast(); }
   if (e.key === "Escape"){
-    [els.modalBackdrop, els.settingsBackdrop, els.undoBackdrop, els.csvBackdrop, els.mergeBackdrop, els.cmpBackdrop, els.exportBackdrop].forEach(function(m){ m.classList.remove("show"); });
+    [els.modalBackdrop, els.settingsBackdrop, els.undoBackdrop, els.csvBackdrop, els.mergeBackdrop, els.cmpBackdrop, els.exportBackdrop, els.frBackdrop, els.rulesBackdrop, els.shortcutsBackdrop].forEach(function(m){ m.classList.remove("show"); });
   }
 });
 
@@ -2807,18 +3272,19 @@ function boot(){
   els.subtitle.textContent = "Loading\u2026";
   loadSession().then(function(saved){
     if (saved){
-      state.schema = Array.isArray(saved.schema) ? saved.schema : [];
+      state.schema = Array.isArray(saved.schema) ? saved.schema.map(function(f){ return {key:f.key, label:f.label, type:f.type||"text"}; }) : [];
       state.keyField = saved.keyField || null;
       state.caseInsensitive = !!saved.caseInsensitive;
       state.master = saved.master;
       state.roster = saved.roster;
       state.ignoredFields = new Set(saved.ignoredFields || []);
       state.auditLog = saved.auditLog || [];
+      state.rules = Array.isArray(saved.rules) ? saved.rules : [];
       recompute();
       renderAll();
       showToast("Restored your last saved session ("+state.roster.length.toLocaleString()+" record(s)).");
     } else {
-      state.schema = SAMPLE_SCHEMA.map(function(f){ return {key:f.key,label:f.label}; });
+      state.schema = SAMPLE_SCHEMA.map(function(f){ return {key:f.key,label:f.label,type:f.type||"text"}; });
       state.keyField = SAMPLE_KEYFIELD;
       var ds = generateSampleDataset(6000, 42);
       state.master = ds.master;
